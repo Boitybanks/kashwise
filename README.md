@@ -1,141 +1,62 @@
-KashWise
+# KashWise
 
-Earn it. Prove it. Grow it.
+**Earn it. Prove it. Grow it.**
 
-KashWise is a mobile-first platform connecting South Africans with local earning opportunities while turning completed work into verified work history, documented earnings, and practical financial insight.
+KashWise connects South Africans with local paid work, turns each client-confirmed job into a verified work record,
+and explains a worker's earnings with **iBanks**, an event-driven financial-intelligence engine built for irregular
+income. Built for the FNB App of the Year 2026 hackathon (Financial Inclusion and Money Confidence). KashWise is built
+on SideGigs by team CodeCraft — see [NOTICE.md](NOTICE.md).
 
-It combines a community gig marketplace with iBanks-powered income intelligence to help people earn, understand their money, and plan for the future—especially when income is irregular.
+> **Status: hackathon MVP in development.** Payments are a labelled **simulation**: no real money moves, KashWise holds
+> no funds, and no bank (including FNB) is connected. What works and how it was tested:
+> [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md). Judging self-assessment:
+> [docs/FNB_JUDGING_SCORECARD.md](docs/FNB_JUDGING_SCORECARD.md).
 
-Our mission: Turn everyday work into verified income, economic credibility, and greater financial confidence.
+## What is built
 
-The problem
+- **KashWise Work** — clients post local jobs; workers find them by distance and skill, apply, get chosen, and start and
+  finish on site with a QR handshake. Workers can also list priced services.
+- **KashWise Proof** — the client's confirmation creates a portfolio record ("client-confirmed"); when the payment
+  provider's settlement is posted it also shows "payment confirmed". Work Passport, signed work history (ML-DSA-65)
+  and `/verify`.
+- **KashWise Money, powered by iBanks** (`/money`) — a signed provider event is posted once to an append-only ledger
+  (integer cents; earned ≠ paid out ≠ on hold), which wakes iBanks: protection rules, a 7- and 30-day income outlook
+  with its backtest error and confidence, earning patterns, persisted insights and an audit trail the worker can open.
+  Ask iBanks answers from those figures only, with a rules fallback when no AI is configured. Savings and retirement
+  are opt-in simulations.
+- **Unit economics** (`/economics`) — editable scenarios for the 10% success fee. Assumptions, not results.
+- **Android / iOS** (`mobile/`, Expo) — sign-in, KashWise Money, Find work, My proof and client jobs against the
+  same backend and the same iBanks engine. Bundles for Android; not yet run on a device. See `mobile/README.md`.
 
-Millions of people earn through informal, freelance, and short-term work, but finding reliable customers is only one challenge. Workers may also lack proof of experience, consistent income records, and financial tools designed for variable earnings.
+Not done yet: deployment of the iBanks database changes and new functions, device testing, live payment partner.
 
-KashWise connects the opportunity to the outcome: find work, complete it, document it, receive payment through a regulated provider, and learn from your earnings.
+## Stack
 
-How KashWise works
+React 19 + TypeScript + Vite + Tailwind 4 · Supabase (Postgres, RLS, Auth, Storage) · Netlify (hosting + Functions) ·
+Vitest + PGlite (migrations tested in an in-process Postgres) · Playwright.
 
-Find work: Customers post local jobs; workers discover and apply for opportunities.
+## Run locally
 
-Complete the job: Both sides confirm the agreed scope and completion; supporting evidence can be uploaded.
+```bash
+npm ci
+cp .env.example .env      # Supabase URL + publishable key; server secrets only in Netlify
+npm run dev               # or `netlify dev` to include the functions
+```
 
-Get paid: An authorised payment provider processes and settles payments. KashWise does not hold customer or worker funds.
+## Checks
 
-Build proof: Completed, verified work contributes to a portable portfolio of experience, ratings, and platform-recorded earnings.
+```bash
+npm run typecheck && npm run lint && npm run test:serial && npm run build
+```
 
-Grow financial confidence: The iBanks intelligence layer explains earnings trends, flags unusual activity, and supports opt-in savings goals.
+`npm run test:serial` runs one test file at a time; use it while the repo is inside OneDrive, where parallel workers
+time out. `npm run test:journey` writes to the **live** database and is not part of the routine checks.
 
-Product pillars
+## Docs
 
-Pillar
+`docs/IBANKS_INTELLIGENCE_ENGINEERING_SPEC.md` (normative iBanks spec) · `docs/IBANKS_ARCHITECTURE.md` ·
+`docs/IBANKS_EVENT_CONTRACTS.md` · `docs/IBANKS_RISK_RULES.md` · `docs/AS_IS_AUDIT.md` ·
+`docs/FNB_JUDGING_EXECUTION_BRIEF.md`.
 
-Purpose
-
-KashWise Work
-
-Discover local jobs, apply, hire, and complete gigs.
-
-KashWise Proof
-
-Build a verified record of completed work and a portfolio of evidence.
-
-KashWise Intelligence
-
-Understand weekly/monthly earnings, variable income, and financial patterns with an AI assistant powered by iBanks.
-
-KashWise Future
-
-Explore voluntary savings goals and, later, retirement options through appropriately authorised providers.
-
-Hackathon MVP scope
-
-This repository is in development. The items below describe our initial targets, not features already shipped.
-
-Worker and customer onboarding
-
-Local job posting, discovery, and application flow
-
-Job acceptance, completion, and customer confirmation
-
-Portfolio of evidence, ratings, and work-history timeline
-
-Simulated payment lifecycle and auditable earnings ledger
-
-Weekly and monthly income dashboard
-
-iBanks-powered earnings summaries and plain-language financial insights
-
-Opt-in savings and retirement-contribution simulations (no real transfers)
-
-Mobile usability, accessibility, and end-to-end demo tests
-
-Example demo journey
-
-A customer posts a painting job → a worker applies and completes it → completion is verified → the payment provider's simulated settlement event updates the worker's earnings record → KashWise Proof records the experience → KashWise Intelligence explains what was earned and suggests an optional savings goal.
-
-Proposed technology
-
-Layer
-
-Planned technology
-
-Android and iOS
-
-React Native, Expo, TypeScript
-
-Backend
-
-Firebase / TypeScript services
-
-Authentication and data
-
-Firebase Authentication and Firestore, with security rules
-
-Evidence storage
-
-Access-controlled cloud storage
-
-Financial intelligence
-
-iBanks agent, deterministic calculations, and grounded AI explanations
-
-Payments
-
-Regulated third-party payment integration (simulated in the MVP)
-
-Testing
-
-Automated tests for jobs, ledger events, permissions, and critical user journeys
-
-Implementation details may change as the MVP is validated.
-
-Safety, privacy, and responsible finance
-
-No platform custody: KashWise does not operate a wallet, hold escrow balances, or directly custody customer funds. Payment protection and payouts require a suitable authorised payment partner.
-
-Accurate financial records: Earnings are derived from validated server-side payment events; pending, settled, refunded, and disputed amounts are kept distinct.
-
-Consent and control: Savings and retirement contributions are strictly opt-in; MVP calculators are illustrative and do not move money.
-
-Responsible AI: AI explains patterns and suggestions but does not independently authorise payments or provide unlicensed regulated investment advice.
-
-Privacy by design: Access controls, minimal data collection, auditable actions, and applicable South African privacy requirements—including POPIA—guide development.
-
-Verified, not overstated: KashWise verifies activity recorded on its own platform; that is not a guarantee of creditworthiness or a complete picture of someone’s income.
-
-Development
-
-The repository is being set up. Installation instructions and working scripts will be documented after the application scaffold is committed.
-
-Target platforms: Android and iOS.
-Initial focus: South Africa.
-Hackathon track: FNB App of the Year 2026 — Financial Inclusion and Money Confidence.
-
-Project status
-
-Early-stage / hackathon MVP development. This README describes the intended product and build scope. It does not imply that the platform, payment rails, AI agent, or financial-provider partnerships are production-ready.
-
-Intellectual property and licensing
-
-Copyright © 2026 KashWise contributors. All rights reserved unless a licence is explicitly added to this repository. Public visibility does not grant permission to copy, redistribute, or commercially reuse the code.
+Copyright © 2026 KashWise contributors and the SideGigs (CodeCraft) authors. All rights reserved unless a licence is
+explicitly added.

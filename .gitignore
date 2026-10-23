@@ -1,0 +1,28 @@
+# dependencies & builds
+node_modules/
+dist/
+.netlify/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+.cache/
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+*.log
+
+# Original briefing bundles as delivered (their documents are copied into docs/)
+/KashWise_FNB_Judging_70_70_Claude_Pack/
+/KashWise_iBanks_Claude_Engineering_Pack/
+/IBANKS_INTELLIGENCE_ENGINEERING_SPEC.md
+/KashWise_Claude_Opus_5.5_Master_Build_Prompt.md
+/KashWise_FNB_70_of_70_Claude_Execution_Brief.md
