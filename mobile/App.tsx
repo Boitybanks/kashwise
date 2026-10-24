@@ -12,7 +12,7 @@ import { formatRand } from '../src/lib/money'
 import { askIbanks, fetchMoney, fetchMyGigs, fetchOpenGigs, fetchProof, type MoneyRows, type OpenGig, type ProofRecord } from './src/data'
 import { configured, DEMO, DEMO_PASSWORD, supabase } from './src/supabase'
 
-const C = { brand: '#0b7a4b', brandSoft: '#e8f5ee', ink: '#14231d', muted: '#5b6b64', line: '#dfe7e2', canvas: '#f6f8f6', sun: '#fff4d6', sunInk: '#7a5300', clay: '#a33a1f' }
+const C = { brand: '#007b83', brandSoft: '#e8f8fa', ink: '#172b32', muted: '#607784', line: '#dce8ed', canvas: '#f8fcfd', sun: '#ffead6', sunInk: '#8c450c', clay: '#a33a1f' }
 
 type Role = 'worker' | 'customer'
 type Tab = 'work' | 'money' | 'proof' | 'gigs'

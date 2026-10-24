@@ -3,17 +3,18 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 
-const base = 'https://sidegigs-codecraft.netlify.app'
+const base = (process.env.DEPLOY_URL ?? 'https://sidegigs-codecraft.netlify.app').replace(/\/$/, '')
 const checks = []
 async function request(path, options) {
   return fetch(base + path, { signal: AbortSignal.timeout(20000), ...options })
 }
-for (const path of ['/', '/welcome', '/discover?category=tutoring', '/login', '/gigs/new', '/trust', '/identity-demo']) {
+for (const path of ['/', '/welcome', '/discover?category=tutoring', '/login', '/gigs/new', '/trust', '/identity-demo', '/money', '/money/earn-goal', '/verify']) {
   const r = await request(path)
   assert.equal(r.status, 200, path)
   const html = await r.text()
   assert.match(html, /DM\+Sans/, 'Approved typography must be deployed')
   assert.match(html, /id="root"/, 'SPA entry point')
+  assert.match(html, /<title>KashWise/, 'Current KashWise branding must be deployed')
   assert.ok(r.headers.get('content-security-policy'))
   assert.match(r.headers.get('permissions-policy'), /camera=\(self\)/)
   assert.match(r.headers.get('permissions-policy'), /microphone=\(\)/)
@@ -33,7 +34,8 @@ const script = html.match(/src="([^" ]+\.js)"/)[1]
 const js = await (await request(script)).text()
 assert.match(js, /Your thing/)
 assert.match(js, /Someone’s next find/)
-checks.push({ approvedHeroBundle: true })
+assert.match(js, /ProofScript/, 'ProofScript branding is missing')
+checks.push({ approvedHeroBundle: true, proofScriptBranding: true })
 const identityChunk = js.match(/IdentityDemo-[\w-]+\.js/)[0]
 const identityJs = await (await request(`/assets/${identityChunk}`)).text()
 assert.match(identityJs, /demo_completed/)
@@ -47,4 +49,15 @@ checks.push({ unauthenticatedContactReveal: denied.status })
 const invalid = await request('/api/work-credential?worker=invalid')
 assert.equal(invalid.status, 400)
 checks.push({ invalidCredentialRequest: invalid.status })
+for (const [path, method] of [
+  ['/api/earn-goal', 'GET'],
+  ['/api/ibanks/ask', 'POST'],
+  ['/api/payments/sandbox', 'POST'],
+  ['/api/payments/webhook', 'POST'],
+]) {
+  const r = await request(path, { method, headers: { 'Content-Type': 'application/json' }, ...(method === 'POST' ? { body: '{}' } : {}) })
+  assert.equal(r.status, 401, `${path}: expected authentication/signature rejection`)
+  assert.match(r.headers.get('content-type') ?? '', /application\/json/, `${path}: must be a function, not the SPA fallback`)
+  checks.push({ path, unauthenticatedRequestRejected: true })
+}
 console.log(JSON.stringify({ result: 'PASS', checkedAt: new Date().toISOString(), checks }, null, 2))

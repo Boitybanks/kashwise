@@ -53,6 +53,10 @@ Vitest + PGlite (migrations tested in an in-process Postgres) · Playwright.
 
 ## Run locally
 
+For Windows/macOS/Linux setup, full-stack development, mobile, environment variables and release instructions, see
+[HOW_TO_RUN.md](HOW_TO_RUN.md).
+
+
 ```bash
 npm ci
 cp .env.example .env      # Supabase URL + publishable key; server secrets only in Netlify
