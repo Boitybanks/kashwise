@@ -9,7 +9,7 @@ KashWise is a substantial hackathon MVP for a South African local-work marketpla
 ## Product and architecture
 
 - **Work:** customer job posting, worker discovery and applications, assignment, QR start/finish handshakes, services and reviews.
-- **Proof:** client-confirmed portfolio records, Work Passport, signed work history, income statements and skills profiles; browser verification of signed records.
+- **Proof:** client-confirmed portfolio records, ProofScript, signed work history, income statements and skills profiles; browser verification of signed records.
 - **Money / iBanks:** signed provider events, an append-only ledger, settlement and payout separation, outbox processing, risk rules, forecasts, earning patterns, insights and diagnostics. Ask iBanks has deterministic answers and optional Anthropic rephrasing. Savings and retirement are simulations.
 - **Business model:** a scenario calculator models a 10% success fee. These are assumptions rather than measured commercial results.
 - **Web:** React 19, TypeScript, Vite, Tailwind and React Query; pages in `src/pages`, shared domain logic in `src/lib`.

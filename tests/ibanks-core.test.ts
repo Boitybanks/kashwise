@@ -324,6 +324,17 @@ describe('#8 #12 Ask iBanks is grounded', () => {
     expect(classifyIntent('Show my proof of income')).toBe('show_work_proof')
   })
 
+  it('answers ProofScript and work-transcript questions from confirmed records', () => {
+    for (const question of ['Show my ProofScript', 'Open my proof script', 'Show my work transcript']) {
+      expect(classifyIntent(question)).toBe('show_work_proof')
+      const { output } = answerDeterministic(question, facts())
+      expect(output.intent).toBe('show_work_proof')
+      expect(output.answer).toContain('1 client-confirmed job')
+      expect(output.source_refs).toEqual(['SG-ABC'])
+      expect(output.suggested_actions).toContainEqual({ action: 'open_proof', requires_consent: false })
+    }
+  })
+
   it('answers "How much did I make this week?" with exact ledger values, payout status and scope', () => {
     const { output } = answerDeterministic('How much did I make this week?', facts())
     expect(output.answer).toContain('R900 net from 1 settled job')

@@ -63,15 +63,15 @@ function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; clai
 function PassportQr({ url, first, onCopy }: { url: string; first: string; onCopy: () => void }) {
   return (
     <Card className="p-5 text-center">
-      <h2 className="font-bold">Work Passport QR</h2>
-      <QrCode value={url} label={`QR code that opens ${first}’s Work Passport`} className="mx-auto mt-3 size-44 rounded-lg ring-1 ring-line" />
+      <h2 className="font-bold">ProofScript QR</h2>
+      <QrCode value={url} label={`QR code that opens ${first}’s ProofScript`} className="mx-auto mt-3 size-44 rounded-lg ring-1 ring-line" />
       <p className="mt-3 text-sm text-muted">Scan to view {first}’s verified experience.</p>
       <Button variant="secondary" size="sm" className="mt-3" onClick={onCopy}><Copy className="size-4" aria-hidden /> Copy link</Button>
     </Card>
   )
 }
 
-/** Public Work Passport: what a customer sees when choosing a worker. */
+/** Public ProofScript: what a customer sees when choosing a worker. */
 export default function WorkerProfile() {
   const { id = '' } = useParams()
   const { hash } = useLocation()
@@ -91,7 +91,7 @@ export default function WorkerProfile() {
     if (highlighted && portfolioQ.data) document.getElementById(highlighted)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [highlighted, portfolioQ.data])
 
-  if (profileQ.isPending) return <Spinner label="Loading Work Passport…" />
+  if (profileQ.isPending) return <Spinner label="Loading ProofScript…" />
   if (profileQ.isError) return <ErrorState error={profileQ.error} onRetry={() => profileQ.refetch()} />
   const p = profileQ.data
   if (!p) return <NotFound what="profile" />
@@ -120,7 +120,7 @@ export default function WorkerProfile() {
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(url)
-      toast.show('Work Passport link copied.')
+      toast.show('ProofScript link copied.')
     } catch {
       toast.show('Copying isn’t available here — use Share instead.', 'error')
     }
@@ -128,7 +128,7 @@ export default function WorkerProfile() {
 
   async function share() {
     try {
-      if (navigator.share) await navigator.share({ title: `${p!.display_name} on KashWise`, text: `See ${first}’s verified work on KashWise`, url })
+      if (navigator.share) await navigator.share({ title: `${p!.display_name} on KashWise`, text: `See ${first}’s ProofScript on KashWise`, url })
       else await copyLink()
     } catch {
       /* dismissed */
@@ -159,7 +159,7 @@ export default function WorkerProfile() {
         <div className="flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:gap-5 sm:text-left">
           <span className="rounded-full ring-4 ring-brand-50"><Avatar name={p.display_name} id={p.id} src={avatarUrl(p.avatar_path)} size="xl" /></span>
           <div className="min-w-0 flex-1">
-            {isWorker && <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand-600">Work Passport</p>}
+            {isWorker && <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand-600">ProofScript</p>}
             <div className="mt-0.5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <h1 className="text-2xl font-extrabold sm:text-3xl">{p.display_name}</h1>
               {(s?.completed ?? 0) > 0 && (
@@ -169,6 +169,7 @@ export default function WorkerProfile() {
               )}
               {p.is_demo && <DemoBadge />}
             </div>
+            {isWorker && <p className="mt-1 text-sm text-muted">Your skills. Your work. Your proof.</p>}
             {tagline && <p className="mt-0.5 text-ink-soft">{tagline}</p>}
             <p className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted sm:justify-start">
               <span className="inline-flex items-center gap-1"><MapPin className="size-4" aria-hidden />{area ? `${area.name}, ${area.city}` : p.area_slug}</span>
@@ -176,7 +177,7 @@ export default function WorkerProfile() {
             </p>
           </div>
           <div className="flex w-full flex-wrap justify-center gap-2 sm:w-auto sm:flex-col sm:items-stretch">
-            <Button onClick={share}><Share2 className="size-4" aria-hidden /> Share passport</Button>
+            <Button onClick={share}><Share2 className="size-4" aria-hidden /> Share ProofScript</Button>
             {isWorker && (
               <Button variant="sun" className="lg:hidden" aria-expanded={showQr} aria-controls="passport-qr" onClick={() => setShowQr((v) => !v)}>
                 <QrIcon className="size-4" aria-hidden /> {showQr ? 'Hide QR code' : 'Show QR code'}
@@ -217,7 +218,7 @@ export default function WorkerProfile() {
             <WorkerServices workerId={p.id} first={first} isOwner={isOwner} />
             <section id="experience" aria-labelledby="records-h">
               <h2 id="records-h" className="text-lg font-bold">Recent experience</h2>
-              <p className="mb-3 text-sm text-muted">Each record was created by KashWise when the customer confirmed the job — not self-reported.</p>
+              <p className="mb-3 text-sm text-muted">Your work transcript grows with every client-confirmed job: skills, work photos and reviews, backed by the completed work.</p>
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
                 <EmptyState icon={<BadgeCheck className="size-5" aria-hidden />} title="No verified gigs yet"
                   action={isOwner ? <ButtonLink to="/discover">Find your first gig</ButtonLink> : undefined}>

@@ -74,7 +74,7 @@ There are TWO primary user roles, with the possibility that one verified account
 
 **Usability rules:** minimal clicks to post/apply; fast search; meaningful empty states; prevent double-booking and invalid transitions; accessible on low-end Android; permission-based geolocation rather than forced precise location; no exposure of private residential addresses. Use South African rand (ZAR), local vocabulary without stereotypes, readable microcopy. Optimize networks/bundles using compressed media, pagination, caching, and lazy loading. Optional multilingual architecture (English + structured translations ready for isiZulu/isiXhosa/Sesotho) without shipping misleading auto-translations.
 
-### D2 — KashWise Proof (evidence and portable credibility)
+### D2 — KashWise ProofScript (evidence and portable credibility)
 
 For each legitimately completed job, save:
 - job scope/category, price and dates;
@@ -138,7 +138,7 @@ KashWise should feel like an ambitious, modern South African product—trustwort
 
 Brand motifs: **KashWise**, “**Earn it. Prove it. Grow it.**”; clean, highly legible typography; rich neutral backgrounds with vibrant but accessible financial-growth accents; restrained motion and low-data alternatives; clear trust states; excellent empty/loading/error/offline states; polished dark mode only if accessible and easy to maintain. Provide a consistent responsive design system and reusable components. Do not depend on decorative animations for comprehension.
 
-**Screens required:** responsive landing/sign-in, role onboarding, client job-post wizard, local jobs feed/search, job details and applications, worker skill/profile page, client talent search/profile evaluation, job lifecycle and evidence submission, simulated checkout/payment status, worker earnings/finance dashboard, iBanks insight cards and conversational help, KashWise Proof portfolio, savings and retirement simulation, trust/settings/privacy/support. Adapt layout to mobile portrait, tablet and desktop; no horizontal scrolling in typical screen widths; adequate hit targets and keyboard support. Web should be polished enough to demonstrate live on a projector; native mobile should be comfortable on a modest Android phone and credible on iOS.
+**Screens required:** responsive landing/sign-in, role onboarding, client job-post wizard, local jobs feed/search, job details and applications, worker skill/profile page, client talent search/profile evaluation, job lifecycle and evidence submission, simulated checkout/payment status, worker earnings/finance dashboard, iBanks insight cards and conversational help, ProofScript portfolio, savings and retirement simulation, trust/settings/privacy/support. Adapt layout to mobile portrait, tablet and desktop; no horizontal scrolling in typical screen widths; adequate hit targets and keyboard support. Web should be polished enough to demonstrate live on a projector; native mobile should be comfortable on a modest Android phone and credible on iOS.
 
 Keep the original Thandi (client) / Sipho (worker) concept if present, and preserve a one-click **Try as Thandi / Try as Sipho** demo with access strictly limited to fictional accounts/data. Do not let a demo switcher bypass real-user authorisation.
 
@@ -178,7 +178,7 @@ A judge should be able to observe, with no database edits and no hardcoded finan
 2. View local gigs or qualified local talent, with useful filtering and truthful profile trust indicators.
 3. Create a job as Thandi and apply/accept as Sipho.
 4. Complete the job, attach evidence, confirm job, and settle through a clearly labelled provider simulation.
-5. See **KashWise Proof** update from the verified lifecycle.
+5. See **KashWise ProofScript** update from the verified lifecycle.
 6. See **KashWise Money** reflect precise weekly/monthly **settled net earnings**.
 7. Ask **iBanks** what changed, why, and what savings amount is feasible. The response must reconcile to the ledger.
 8. Explore a **fully optional** savings or retirement contribution simulation, with no movement of real funds and no disguised financial advice.

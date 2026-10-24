@@ -34,7 +34,7 @@ Netlify hosting + Functions (`netlify/functions`, site `sidegigs-codecraft`).
   Don't add features that control their hours or prices (that points to employment, LRA s200A).
 - Proof of income (`/wallet/statement`): `income_statement` RPC (released payments only) → `netlify/functions/income-statement.mts`
   signs it with ML-DSA-65. While payments are simulated every statement says "not valid proof of income"; never remove that.
-- Skills profile (Work Passport): `netlify/functions/skills-profile.mts` writes it from customer-confirmed records only, signs it,
+- Skills profile (ProofScript): `netlify/functions/skills-profile.mts` writes it from customer-confirmed records only, signs it,
   saves it via `save_skills_profile`. Pages show it only if the signature verifies. With the worker's consent and
   `ANTHROPIC_API_KEY`, Claude (`claude-opus-5`) phrases it; `bindToEvidence` drops any skill without record codes and any
   quote that isn't a review verbatim. No consent or key → a factual summary labelled "Summarised by SideGigs", never "AI".

@@ -27,7 +27,7 @@ After a concise audit, IMPLEMENT immediately, in tested increments:
 2. Implement signed/authorised sandbox settlement → append-only ledger → outbox → event-driven iBanks facts/rules and audit trail.
 3. Show accurate net earnings, pending/paid-out states, weekly/monthly income, grounded financial alerts, and opt-in savings/retirement simulations.
 4. Implement iBanks agent read-only tools, structured explanations with source IDs and timestamps, optional server-only LLM and offline/no-credential fallback.
-5. Build/update KashWise Proof from authenticated work records; do not invent credentials.
+5. Build/update KashWise ProofScript from authenticated work records; do not invent credentials.
 6. Rebrand and ensure usable responsive web plus Android and iOS app clients sharing the same secure backend.
 7. Run unit, integration and E2E tests; report exactly what is WORKING, SIMULATED, PARTIAL and BLOCKED.
 

@@ -89,7 +89,7 @@ The organiser screenshot lists these seven headings: **Product, Creativity, Usab
 
 **Implement:**
 - Two crystal-clear role journeys with contextual navigation, big accessible tap targets, plain-language South African English and familiar payment labels. Avoid financial jargon or provide short explanations.
-- Worker entry points: **Find Work / My Jobs / Money / My Proof**. Customer entry points: **Find Talent / Post a Job / Bookings**. A persistent clearly labelled way to get help and report a problem.
+- Worker entry points: **Find Work / My Jobs / Money / ProofScript**. Customer entry points: **Find Talent / Post a Job / Bookings**. A persistent clearly labelled way to get help and report a problem.
 - Consistent design system and cohesive KashWise rebrand, polished headings, readable contrasts, success/error states, trust indicators, responsive typography and spacing; web layouts should look intentional on 360px, 768px and 1440px.
 - Reduce friction: helpful defaults, location permission optional, manual location alternative, progressive disclosure; never force bank details to browse gigs.
 - Build for slow networks/low-end phones: appropriate asset sizing, skeletons, network timeouts, cached public browse where safe, reduced-motion preference, resilient retry/offline messaging. Avoid making sensitive write actions appear successful while offline.

@@ -46,7 +46,7 @@ Parallel thread workers time out on OneDrive ("Failed to start threads worker");
 | Ask iBanks grounded answers, injection resistance, forecast grounding | WORKING | core, intelligence and pipeline tests |
 | Ask iBanks AI re-phrasing | PARTIAL | Code + grounding check; never called against the API |
 | Savings / retirement simulation | WORKING / SIMULATED | R45 / R18 / R837; no transfer created |
-| KashWise Proof level "payment confirmed" | WORKING (local DB) | pipeline test; badge in `PortfolioRecord.tsx` |
+| ProofScript evidence level "payment confirmed" | WORKING (local DB) | pipeline test; badge in `PortfolioRecord.tsx` |
 | Insight feedback (helpful / not / dismiss) | WORKING (code, pre-existing RPC) | not separately tested this round |
 | User-declared obligations (cash-flow gaps) | NOT STARTED | |
 

@@ -104,7 +104,7 @@ function SignIn() {
 function Home({ userId, role, email }: { userId: string; role: Role; email: string }) {
   const tabs: { key: Tab; label: string }[] =
     role === 'worker'
-      ? [{ key: 'money', label: 'Money' }, { key: 'work', label: 'Find work' }, { key: 'proof', label: 'My proof' }]
+      ? [{ key: 'money', label: 'Money' }, { key: 'work', label: 'Find work' }, { key: 'proof', label: 'ProofScript' }]
       : [{ key: 'gigs', label: 'My jobs' }, { key: 'work', label: 'Open jobs' }]
   const [tab, setTab] = useState<Tab>(tabs[0].key)
   return (
@@ -321,7 +321,8 @@ function ProofScreen({ userId }: { userId: string }) {
   const { data, error, loading, reload } = useLoad<ProofRecord[]>(load)
   return (
     <Screen loading={loading} error={error} reload={reload}>
-      <Text style={s.h2}>KashWise Proof</Text>
+      <Text style={s.h2}>My ProofScript</Text>
+      <Text style={s.muted}>Your skills. Your work. Your proof.</Text>
       <Text style={s.small}>Each record was created when the client confirmed the job — never typed in by the worker. "Verified" is not an ID or bank check.</Text>
       {data?.length === 0 && <Text style={s.muted}>Complete a job and the client's confirmation adds your first record.</Text>}
       {data?.map((r) => (

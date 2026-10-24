@@ -4,7 +4,7 @@ Same Supabase project, auth, RLS and iBanks engine as the web app: the screens i
 (see `metro.config.js`), so web, server and phone compute identical figures. Publishable key only.
 
 Screens: sign in (incl. *Try as Sipho / Thandi*, fictional accounts) · worker: Money (earned / available / payout
-pending / paid out, 7- and 30-day outlook, savings simulation, insights, Ask iBanks) · Find work · My proof
+pending / paid out, 7- and 30-day outlook, savings simulation, insights, Ask iBanks) · Find work · ProofScript
 (client-confirmed / payment-confirmed records) · client: My jobs, Open jobs. Applying for and posting jobs still
 happens on the web app.
 

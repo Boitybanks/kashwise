@@ -59,7 +59,7 @@ const RULES: [Intent, RegExp][] = [
   ['get_payout_status', /\b(payout|paid out|cash ?out|pending|bank|receive[d]? (my|the) money|when will i get)\b/i],
   ['explain_fee', /\b(fee|commission|deduct|gross|net|why .* (less|lower)|cut)\b/i],
   ['explain_alert', /\b(alert|warning|dispute|refund|fail(ed|ure)?|suspicious|fraud|wrong)\b/i],
-  ['show_work_proof', /\b(proof|portfolio|cv|reference|verified|record|review|rating)\b/i],
+  ['show_work_proof', /\b(proofscript|proof script|work transcript|proof|portfolio|cv|reference|verified|record|review|rating)\b/i],
   ['compare_periods', /\b(compare|compared|versus|vs\.?|last week|than before|best|which (kind|type|gig|job))\b/i],
   ['get_financial_education', /\b(what is|explain|how does|learn|budget|emergency fund|annuity|interest)\b/i],
   ['get_earnings', /\b(earn(ed|ings)?|make|made|income|money|how much)\b/i],
@@ -237,7 +237,7 @@ export function answerDeterministic(question: string, f: AgentFacts): { output: 
           intent,
           f,
           p.confirmed_jobs === 0
-            ? 'You have no client-confirmed jobs yet. Each job a client confirms becomes a verified record in KashWise Proof.'
+            ? 'You have no client-confirmed jobs yet. Each job a client confirms becomes a verified record in your ProofScript.'
             : `You have ${p.confirmed_jobs} client-confirmed ${p.confirmed_jobs === 1 ? 'job' : 'jobs'} and ${p.reviews} ${p.reviews === 1 ? 'review' : 'reviews'}` +
                 `${p.average_rating != null ? ` averaging ${p.average_rating} out of 5` : ''}. ` +
                 `Your settled KashWise earnings are ${formatRand(L.net_earned_cents)} net. "Verified" means confirmed by the paying client on KashWise — it is not a bank or government verification.`,

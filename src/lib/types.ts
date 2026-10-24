@@ -205,7 +205,7 @@ export interface PortfolioItem {
   worker_note: string | null
   record_code: string
   is_demo: boolean
-  /** KashWise Proof level, added by fetchPortfolio: every record is client-confirmed; settled payment upgrades it. */
+  /** ProofScript evidence level, added by fetchPortfolio: every record is client-confirmed; settled payment upgrades it. */
   proof_level?: ProofLevel
 }
 

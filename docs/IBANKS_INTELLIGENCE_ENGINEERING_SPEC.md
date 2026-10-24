@@ -272,7 +272,7 @@ P0 actionable responses limited to **notify**, **show explanation**, **require s
 
 Design broader bank-side detectors as typed extension points: unusual bank merchant, recurring debit charges, amount change, bank fee retry patterns, beneficiary anomaly, forced/pressured payment indicators, bank-approved hold/release. Those require authorised bank data and bank APIs and are **not** activated in the KashWise MVP. Never make facial emotion detection the sole basis for coercion/fraud or a financial hold.
 
-### 5.5 AI professional credibility (connected to KashWise Proof)
+### 5.5 AI professional credibility (connected to ProofScript)
 
 On *genuinely confirmed* job milestones, summarize verified facts into a worker-controlled portfolio draft:
 - job category, scope, completion date, documented evidence, customer feedback, proof level, paid status;

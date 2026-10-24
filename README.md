@@ -16,9 +16,9 @@ on SideGigs by team CodeCraft — see [NOTICE.md](NOTICE.md).
 
 - **KashWise Work** — clients post local jobs; workers find them by distance and skill, apply, get chosen, and start and
   finish on site with a QR handshake. Workers can also list priced services.
-- **KashWise Proof** — the client's confirmation creates a portfolio record ("client-confirmed"); when the payment
-  provider's settlement is posted it also shows "payment confirmed". Work Passport, signed work history (ML-DSA-65)
-  and `/verify`.
+- **KashWise ProofScript** — the client's confirmation creates a portfolio record ("client-confirmed"); when the payment
+  provider's settlement is posted it also shows "payment confirmed". A living work transcript with skills, work photos
+  and client reviews, plus signed work history (ML-DSA-65) and `/verify`.
 - **KashWise Money, powered by iBanks** (`/money`) — a signed provider event is posted once to an append-only ledger
   (integer cents; earned ≠ paid out ≠ on hold), which wakes iBanks: protection rules, a 7- and 30-day income outlook
   with its backtest error and confidence, earning patterns, persisted insights and an audit trail the worker can open.
@@ -29,11 +29,22 @@ on SideGigs by team CodeCraft — see [NOTICE.md](NOTICE.md).
   area and availability. Settled, booked and suggested income stay separate. Optional local preference memory
   uses the pinned [Graphiti fork](https://github.com/Boitybanks/graphiti) with Ollama; no OpenAI API key is needed.
   See [feature boundaries](docs/EARN_MY_GOAL.md) and [local service setup](docs/GRAPHITI_LOCAL.md).
-- **Android / iOS** (`mobile/`, Expo) — sign-in, KashWise Money, Find work, My proof and client jobs against the
+- **Android / iOS** (`mobile/`, Expo) — sign-in, KashWise Money, Find work, ProofScript and client jobs against the
   same backend and the same iBanks engine. Bundles for Android; not yet run on a device. See `mobile/README.md`.
 
 Not done yet: deployment of the iBanks and earnings-goal database changes and new functions, device testing,
 live payment partner, and a verified end-to-end Graphiti ingestion on a running graph database.
+
+## ProofScript — the evidence moat
+
+**Your skills. Your work. Your proof.** ProofScript combines a worker’s skills/profile with a portfolio of evidence
+built from client-confirmed jobs, work photos and reviews. Each completed, confirmed job adds to the record; signed
+work history can be downloaded and verified. Payment confirmation remains a separate evidence level.
+
+The intended moat is the growing depth and provenance of real work evidence, repeat-client relationships and local
+marketplace participation. These benefits need pilot validation; traction and defensibility are not proven yet.
+Workers can share and download their records. The product earns retention by making the record useful.
+See [ProofScript and its boundaries](docs/PROOFSCRIPT.md) and the [20-second pitch](docs/HUSTLEWINDOW_20_SECONDS.md).
 
 ## Stack
 

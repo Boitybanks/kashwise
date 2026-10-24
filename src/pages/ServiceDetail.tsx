@@ -101,7 +101,7 @@ export default function ServiceDetail() {
               <span className="block font-bold">{isOwner ? 'You' : service.worker.display_name} {service.worker.is_demo && <DemoBadge />}</span>
               {service.worker.headline && <span className="block truncate text-xs text-muted">{service.worker.headline}</span>}
             </span>
-            <span className="text-sm font-semibold text-brand-700">Work Passport</span>
+            <span className="text-sm font-semibold text-brand-700">ProofScript</span>
           </Link>
         )}
 

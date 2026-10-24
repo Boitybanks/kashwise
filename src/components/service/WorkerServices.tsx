@@ -4,7 +4,7 @@ import { discoverServices } from '../../lib/api'
 import { ButtonLink } from '../ui'
 import { ServiceCard } from './ServiceCard'
 
-/** Work Passport section. Visitors see bookable services at the price they pay; the owner gets a link to manage them. */
+/** ProofScript section. Visitors see bookable services at the price they pay; the owner gets a link to manage them. */
 export function WorkerServices({ workerId, first, isOwner }: { workerId: string; first: string; isOwner: boolean }) {
   const q = useQuery({ queryKey: ['services', 'worker', workerId], queryFn: () => discoverServices({ worker: workerId, page: 0 }) })
   const services = q.data ?? []

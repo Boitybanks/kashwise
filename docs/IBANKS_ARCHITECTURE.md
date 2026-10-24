@@ -25,7 +25,7 @@ iBanks dispatcher (src/lib/ibanks/orchestrator.ts) — only for 'posted' events
 public.ibanks_record_dispatch(signed)  → ibanks_insights (worker-scoped RLS; a new outlook/pattern card supersedes
                                          the previous one), decision audit, outbox row marked done
 public.ibanks_my_diagnostics()         → the worker's own decisions + event states ("How iBanks decided")
-public.portfolio_payment_confirmed()   → KashWise Proof level "payment confirmed" (no amounts)
+public.portfolio_payment_confirmed()   → ProofScript evidence level "payment confirmed" (no amounts)
         ▼
 KashWise Money UI  src/pages/Money.tsx   (Overview · Earnings · Insights · Goals · History)
 Ask iBanks         netlify/functions/ibanks-ask.mts → src/lib/ibanks/agent.ts (+ optional netlify/lib/ibanks-llm.ts)
