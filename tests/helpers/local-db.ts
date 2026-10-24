@@ -87,8 +87,8 @@ export async function createLocalDb(opts: { only?: (file: string) => boolean } =
   return { db, as, admin }
 }
 
-/** Create a confirmed user + profile directly (setup only). */
-export async function seedUser(l: LocalDb, opts: { id: string; name: string; role: 'worker' | 'customer'; demo?: boolean }) {
+/** Create an eligible fixture account. Set eligible:false to exercise legacy/missing identity checks. */
+export async function seedUser(l: LocalDb, opts: { id: string; name: string; role: 'worker' | 'customer'; demo?: boolean; eligible?: boolean }) {
   await l.admin(`insert into auth.users (id, email, created_at) values ($1, $2, now())`, [opts.id, `${opts.id}@test.local`])
   await l.admin(`insert into public.profiles (id, display_name, role, area_slug, is_demo) values ($1, $2, $3, (select slug from public.areas limit 1), $4)`, [
     opts.id,
@@ -96,4 +96,9 @@ export async function seedUser(l: LocalDb, opts: { id: string; name: string; rol
     opts.role,
     opts.demo ?? false,
   ])
+  if (opts.eligible !== false && !opts.demo) {
+    const envelope = JSON.stringify({ v: 1, kid: 'test-only', alg: 'test-only', kem: '', iv: '', ct: '' })
+    await l.admin(`insert into public.profile_identity (id, gender, identity_envelope, address_envelope, id_number_hmac)
+      values ($1::uuid, 'male', $2::jsonb, $2::jsonb, decode(replace($1::text, '-', ''), 'hex'))`, [opts.id, envelope])
+  }
 }

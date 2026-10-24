@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', '.netlify', '.cache', 'node_modules', 'coverage', 'playwright-report', 'test-results', '.specify', '.claude', 'mobile/.expo', 'mobile/metro.config.js'] },
+  { ignores: ['dist', '.netlify', '.cache', 'node_modules', 'coverage', 'playwright-report', 'test-results', '.specify', '.claude', 'mobile/.expo', 'mobile/metro.config.js', '.demo-build', '.video-build', 'output', 'tmp', '**/.venv/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

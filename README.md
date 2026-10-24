@@ -25,10 +25,15 @@ on SideGigs by team CodeCraft — see [NOTICE.md](NOTICE.md).
   Ask iBanks answers from those figures only, with a rules fallback when no AI is configured. Savings and retirement
   are opt-in simulations.
 - **Unit economics** (`/economics`) — editable scenarios for the 10% success fee. Assumptions, not results.
+- **Earn My Goal** (`/money/earn-goal`) — set an income target and shortlist compatible open jobs by skills,
+  area and availability. Settled, booked and suggested income stay separate. Optional local preference memory
+  uses the pinned [Graphiti fork](https://github.com/Boitybanks/graphiti) with Ollama; no OpenAI API key is needed.
+  See [feature boundaries](docs/EARN_MY_GOAL.md) and [local service setup](docs/GRAPHITI_LOCAL.md).
 - **Android / iOS** (`mobile/`, Expo) — sign-in, KashWise Money, Find work, My proof and client jobs against the
   same backend and the same iBanks engine. Bundles for Android; not yet run on a device. See `mobile/README.md`.
 
-Not done yet: deployment of the iBanks database changes and new functions, device testing, live payment partner.
+Not done yet: deployment of the iBanks and earnings-goal database changes and new functions, device testing,
+live payment partner, and a verified end-to-end Graphiti ingestion on a running graph database.
 
 ## Stack
 

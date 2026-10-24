@@ -1,0 +1,7 @@
+# The requested user-owned fork, pinned to an inspected commit (Apache-2.0).
+graphiti-core @ git+https://github.com/Boitybanks/graphiti.git@8d8a12a22452cbef9335792afb73b8cbfe6a79fa
+fastapi>=0.115,<1
+uvicorn>=0.34,<1
+httpx>=0.28,<1
+pytest>=8,<10
+

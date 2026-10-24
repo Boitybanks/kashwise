@@ -7,6 +7,16 @@ coverage/
 playwright-report/
 test-results/
 .cache/
+.venv/
+__pycache__/
+.pytest_cache/
+
+# Local presentation/video exports and rendering intermediates
+/.demo-build/
+/.video-build/
+/demo-output/
+/output/
+/tmp/
 
 # secrets — never commit
 .env

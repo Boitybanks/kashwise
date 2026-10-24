@@ -402,6 +402,11 @@ export default function Money() {
         <strong>Payment simulation.</strong> Payments and payouts come from a labelled provider simulator. No real money moves, and no bank is connected.
       </p>
 
+      <Link to="/money/earn-goal" className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900 hover:bg-brand-100">
+        <span><strong className="block">Earn My Goal</strong><span className="text-sm">Set an income target. Find nearby work that fits your skills and time.</span></span>
+        <span aria-hidden>→</span>
+      </Link>
+
       <div role="tablist" aria-label="KashWise Money" className="mb-4 flex gap-1 overflow-x-auto">
         {TABS.map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${tab === t ? 'bg-brand-600 text-white' : 'text-ink-soft hover:bg-white'}`}>

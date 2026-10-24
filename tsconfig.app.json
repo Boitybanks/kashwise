@@ -20,5 +20,5 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src", "tests"],
-  "exclude": ["tests/journey", "tests/ibanks-sql.test.ts", "tests/ibanks-pipeline.test.ts", "tests/helpers"]
+  "exclude": ["tests/journey", "tests/ibanks-sql.test.ts", "tests/ibanks-pipeline.test.ts", "tests/earn-goal-sql.test.ts", "tests/earn-goal-api.test.ts", "tests/helpers"]
 }

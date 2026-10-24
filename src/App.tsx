@@ -25,6 +25,7 @@ const PostService = lazy(() => import('./pages/PostService'))
 const MyServices = lazy(() => import('./pages/MyServices'))
 const Wallet = lazy(() => import('./pages/Wallet'))
 const Money = lazy(() => import('./pages/Money'))
+const EarnGoal = lazy(() => import('./pages/EarnGoal'))
 const Economics = lazy(() => import('./pages/Economics'))
 const IncomeStatement = lazy(() => import('./pages/IncomeStatement'))
 const Workers = lazy(() => import('./pages/Workers'))
@@ -106,6 +107,7 @@ export default function App() {
                   <Route path="services/:id/edit" element={<RequireAuth><PostService /></RequireAuth>} />
                   <Route path="my-services" element={<RequireAuth><MyServices /></RequireAuth>} />
                   <Route path="money" element={<RequireAuth><Money /></RequireAuth>} />
+                  <Route path="money/earn-goal" element={<RequireAuth><EarnGoal /></RequireAuth>} />
                   <Route path="wallet" element={<RequireAuth><Wallet /></RequireAuth>} />
                   <Route path="wallet/statement" element={<RequireAuth><IncomeStatement /></RequireAuth>} />
                   <Route path="w/:id" element={<WorkerProfile />} />

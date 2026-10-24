@@ -16,5 +16,5 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "vitest.journey.config.ts", "netlify/functions", "netlify/lib", "tests/journey", "tests/ibanks-sql.test.ts", "tests/ibanks-pipeline.test.ts", "tests/helpers", "playwright.config.ts", "e2e"]
+  "include": ["vite.config.ts", "vitest.config.ts", "vitest.journey.config.ts", "netlify/functions", "netlify/lib", "tests/journey", "tests/ibanks-sql.test.ts", "tests/ibanks-pipeline.test.ts", "tests/earn-goal-sql.test.ts", "tests/earn-goal-api.test.ts", "tests/helpers", "playwright.config.ts", "e2e"]
 }
