@@ -14,7 +14,8 @@
     "test:serial": "vitest run --pool=forks --no-file-parallelism",
     "test:watch": "vitest",
     "test:journey": "vitest run --config vitest.journey.config.ts",
-    "keys:generate": "node scripts/generate-pq-keys.mjs"
+    "keys:generate": "node scripts/generate-pq-keys.mjs",
+    "deploy:kashwise": "node scripts/deploy.mjs"
   },
   "engines": {
     "node": ">=20"
