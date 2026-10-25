@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 
-const base = (process.env.DEPLOY_URL ?? 'https://sidegigs-codecraft.netlify.app').replace(/\/$/, '')
+const base = (process.env.DEPLOY_URL ?? 'https://kashwise.netlify.app').replace(/\/$/, '')
 const checks = []
 async function request(path, options) {
   return fetch(base + path, { signal: AbortSignal.timeout(20000), ...options })

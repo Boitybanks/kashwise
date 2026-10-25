@@ -135,7 +135,7 @@ For an authenticated CLI release to the existing site:
 
 ```sh
 npx --yes netlify-cli@27.14.2 login
-npx --yes netlify-cli@27.14.2 link --id 6a145d38-80a4-4a47-93d7-7357cf53e8aa
+npx --yes netlify-cli@27.14.2 link --id f8d681ec-ab68-4d61-8a9a-586be62127b7
 # Or run: npm run deploy:kashwise
 npm run build
 npx --yes netlify-cli@27.14.2 deploy --prod --dir=dist --functions=netlify/functions
