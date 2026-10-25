@@ -84,8 +84,8 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1 size-4 accent-brand-600" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />
         <span>
-          <strong>Let AI write it.</strong> Your first name, job titles, areas and your customers’ reviews are sent to Anthropic (in the USA) to
-          phrase your profile. No phone numbers or addresses are sent. Untick to get a plain summary written by KashWise instead.
+          <strong>AI summary.</strong> Generates a professional summary from your completed jobs and reviews. No private contact details are shared.
+
         </span>
       </label>
       <div className="flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
         <p className="mt-1 text-sm text-muted">
           {p
             ? 'Your saved profile could not be verified. Write it again to get a signed copy.'
-            : 'A short profile of what you can do, written only from jobs your customers confirmed. No self-praise: every skill links to the jobs that prove it. Share it like a business card.'}
+            : 'A professional summary of your proven skills, verified directly from confirmed jobs. Share it with clients.'}
         </p>
         {ownerControls}
       </Card>
@@ -162,8 +162,8 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
         <p className="mt-4 flex items-start gap-2 text-xs text-muted">
           <BadgeCheck className="size-4 shrink-0 text-brand-600" aria-hidden />
           <span>
-            Built only from {p.based_on.records} customer-confirmed {p.based_on.records === 1 ? 'job' : 'jobs'} and signed by KashWise on {formatDate(p.issued_at)}.
-            {p.written_by === 'ai' ? ' Phrased by AI; every skill links to the jobs that prove it and every quote is a customer’s own words.' : ''}
+            Built from {p.based_on.records} customer-confirmed {p.based_on.records === 1 ? 'job' : 'jobs'} · Signed {formatDate(p.issued_at)}.
+            {p.written_by === 'ai' ? ' Phrased by AI from confirmed work and reviews.' : ''}
             {outOfDate ? ` ${isOwner ? 'You have' : `${first} has`} newer jobs than this profile.` : ''}
           </span>
         </p>

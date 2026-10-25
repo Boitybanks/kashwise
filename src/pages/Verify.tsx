@@ -50,8 +50,8 @@ export default function Verify() {
       <PageHeader title="Verify a KashWise record" subtitle="Check that a worker’s work history, income statement or skills profile is genuine and unchanged." />
       <Card className="p-5">
         <p className="text-sm text-muted">
-          Workers can download their verified history from their ProofScript and their income statement from My Wallet. Each is signed with <strong>ML-DSA-65</strong> (NIST FIPS 204), a
-          post-quantum digital signature. Verification happens right here in your browser using KashWise’s public key — nothing is uploaded.
+          Upload or paste a KashWise file to verify its digital signature and authenticity in your browser.
+          Verification happens locally using KashWise’s public key — nothing is uploaded.
         </p>
         <label htmlFor="record-file" className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line p-6 font-semibold text-ink-soft hover:border-brand-200">
           <FileJson className="size-5" aria-hidden /> Choose a KashWise file (.json)

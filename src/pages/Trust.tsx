@@ -9,8 +9,8 @@ const sections = [
   },
   {
     icon: Lock,
-    title: 'Experimental post-quantum protection for private details',
-    body: 'Street addresses, access notes and phone numbers are encrypted on your device before they are saved, using the X-Wing hybrid construction (ML-KEM-768 + X25519) and AES-256-GCM. The database stores ciphertext for those fields, reducing what a database-only leak exposes. This is defence-in-depth, not a claim that the database or the whole app is “quantum encrypted”.',
+    title: 'Private details are end-to-end encrypted',
+    body: 'Street addresses, phone numbers and access notes are encrypted on your device and only decrypted for your confirmed match.',
   },
   {
     icon: KeyRound,
@@ -24,13 +24,13 @@ const sections = [
   },
   {
     icon: ShieldCheck,
-    title: 'Quantum-resistant proof of work',
-    body: 'Workers can download their history signed with ML-DSA-65 (NIST FIPS 204). Anyone can check it on the Verify page.',
+    title: 'Verifiable ProofScript records',
+    body: 'Workers can download their customer-confirmed work history with tamper-proof cryptographic signatures, verifiable on the Verify page.',
   },
   {
     icon: Wallet,
-    title: 'Payments are simulated in this version',
-    body: 'The hackathon build shows how KashWise protection will work (held → released or refunded) but moves no real money. It is not a regulated escrow service.',
+    title: 'Simulated payment protection',
+    body: 'Demonstrates how client payments are safely held and released upon job confirmation without moving real money in this preview.',
   },
   {
     icon: ScanLine,
@@ -40,7 +40,7 @@ const sections = [
   {
     icon: IdCard,
     title: 'Your ID number and home address stay private',
-    body: 'Everyone gives an SA ID number, the name on their ID, their gender and their home address when they sign up. The ID number, name and address are encrypted on your device before they are saved and are never shown on a profile. KashWise checks that an ID number is correctly formed; it does not check it with Home Affairs.',
+    body: 'Your ID number, real name and home address are encrypted on your device, never shown publicly, and never sold.',
   },
   {
     icon: Fingerprint,
@@ -80,9 +80,9 @@ export default function Trust() {
         <ButtonLink to="/identity-demo" variant="secondary" className="mt-4">Try the identity demo</ButtonLink>
       </Card>
       <p className="mt-6 text-sm text-muted">
-        What we don’t do yet: identity or background checks. No profile on KashWise is “ID verified” — “verified” always means a record of a
-        customer-confirmed gig. Core security still depends on HTTPS, secure authentication, database row-level access rules, protected server
-        secrets and audit logging; the post-quantum feature is an isolated experimental layer.
+        Note: &ldquo;Verified&rdquo; on KashWise refers to customer-confirmed gig records. Identity numbers are checked for formatting only, not verified against Home Affairs records.
+
+
       </p>
     </div>
   )

@@ -142,10 +142,10 @@ export default function WorkerProfile() {
       const blob = new Blob([JSON.stringify(signed, null, 2)], { type: 'application/json' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `kashwise-work-record-${p!.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`
+      a.download = `kashwise-proofscript-${p!.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`
       a.click()
       URL.revokeObjectURL(a.href)
-      toast.show('Signed work record downloaded. Anyone can check it at KashWise → Verify.')
+      toast.show('ProofScript downloaded. Verify anytime at KashWise → Verify.')
     } catch (e) {
       toast.show(friendlyError(e), 'error')
     } finally {
@@ -218,7 +218,7 @@ export default function WorkerProfile() {
             <WorkerServices workerId={p.id} first={first} isOwner={isOwner} />
             <section id="experience" aria-labelledby="records-h">
               <h2 id="records-h" className="text-lg font-bold">Recent experience</h2>
-              <p className="mb-3 text-sm text-muted">Your work transcript grows with every client-confirmed job: skills, work photos and reviews, backed by the completed work.</p>
+              <p className="mb-3 text-sm text-muted">Client-confirmed work history, skills, and reviews.</p>
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
                 <EmptyState icon={<BadgeCheck className="size-5" aria-hidden />} title="No verified gigs yet"
                   action={isOwner ? <ButtonLink to="/discover">Find your first gig</ButtonLink> : undefined}>
@@ -235,12 +235,12 @@ export default function WorkerProfile() {
           <aside className="flex flex-col gap-4 [&>.card]:mt-0" aria-label="Verification">
             <div className="hidden lg:block"><PassportQr url={url} first={first} onCopy={copyLink} /></div>
             <Card className="p-5">
-              <p className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5 text-brand-600" aria-hidden /> Credential integrity protected</p>
+              <p className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5 text-brand-600" aria-hidden /> ProofScript Transcript</p>
               <p className="mt-1 text-sm text-muted">
-                Records are created by KashWise when a customer confirms the job — never typed in by the worker. Download {isOwner ? 'your' : `${first}’s`} history
-                signed with ML-DSA-65; anyone can check it at <Link to="/verify" className="font-semibold text-brand-700 underline">KashWise Verify</Link>.
+                Customer-confirmed work history with verifiable cryptographic proof. Check anytime at{' '}
+                <Link to="/verify" className="font-semibold text-brand-700 underline">KashWise Verify</Link>.
               </p>
-              <Button variant="secondary" size="sm" className="mt-3" loading={downloading} onClick={downloadRecord}><Download className="size-4" aria-hidden /> Signed record</Button>
+              <Button variant="secondary" size="sm" className="mt-3" loading={downloading} onClick={downloadRecord}><Download className="size-4" aria-hidden /> Download ProofScript</Button>
             </Card>
             <SharedDocuments ownerId={p.id} firstName={first} />
             {!isOwner && <div className="flex justify-end"><ReportButton userId={p.id} label={`Report ${first}`} /></div>}
