@@ -8,6 +8,7 @@ import { useAreaLookup } from '../lib/hooks'
 import { formatRand } from '../lib/money'
 import { ButtonLink, Card, Skeleton } from '../components/ui'
 import { GigCard } from '../components/gig/GigCard'
+import { LiveJobsActivitySlider } from '../components/activity/LiveJobsActivitySlider'
 
 function greetingByHour(): string {
   const hour = new Date().getHours()
@@ -115,6 +116,12 @@ export default function WorkerHome() {
           </div>
         </Card>
       </section>
+
+      {/* ── Community Activity Slider ── */}
+      <LiveJobsActivitySlider
+        title="Live Community Activity"
+        subtitle="Real-time jobs booked and completed nearby with client feedback"
+      />
 
       {/* ── 3. "Available near you" Section ── */}
       <section aria-labelledby="available-heading" className="space-y-4">

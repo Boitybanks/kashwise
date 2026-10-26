@@ -10,6 +10,7 @@ import { Button, ButtonLink, EmptyState, ErrorState, PageHeader, Skeleton } from
 import { CategoryIcon } from '../components/CategoryIcon'
 import { AreaSelect } from '../components/AreaSelect'
 import { ServiceCard } from '../components/service/ServiceCard'
+import { LiveJobsActivitySlider } from '../components/activity/LiveJobsActivitySlider'
 
 /** Clients browse services that providers have priced. Prices shown are what the client pays, nothing added. */
 export default function Services() {
@@ -87,6 +88,11 @@ export default function Services() {
           </div>
         </div>
       </div>
+
+      <LiveJobsActivitySlider
+        title="Recent Verified Bookings"
+        subtitle="Confirmed customer ratings & reviews from local services"
+      />
 
       {query.isPending ? (
         <div className="grid gap-3 md:grid-cols-2">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-48" />)}</div>

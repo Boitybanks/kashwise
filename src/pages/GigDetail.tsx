@@ -1,12 +1,12 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, BadgeCheck, CalendarDays, CheckCircle2, MapPin, ScanLine, Share2 } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, CalendarDays, CheckCircle2, Clock, MapPin, ScanLine, Share2 } from 'lucide-react'
 import * as api from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryEmoji, categoryLabel } from '../lib/categories'
 import { friendlyError } from '../lib/errors'
-import { formatDay, timeAgo } from '../lib/format'
+import { formatDay, formatPostedAt, timeAgo } from '../lib/format'
 import { distanceKm, formatDistance } from '../lib/geo'
 import { allowedActions, nextStepText, TIME_WINDOW_LABEL, viewerOf } from '../lib/gig-rules'
 import { useAreaLookup } from '../lib/hooks'
@@ -198,6 +198,10 @@ export default function GigDetail() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill status={gig.status} />
               <span className="text-xs font-semibold text-muted">{categoryLabel(gig.category)}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#1b3e45]/80 px-2.5 py-0.5 text-xs font-semibold text-[#2dd4bf] border border-[#24525b]/60">
+                <Clock className="size-3 text-[#14B8A6]" aria-hidden />
+                {formatPostedAt(gig.created_at, gig.is_demo)}
+              </span>
               {gig.is_demo && <DemoBadge />}
             </div>
             <h1 className="mt-1 text-2xl font-extrabold leading-tight">{gig.title}</h1>
@@ -214,7 +218,7 @@ export default function GigDetail() {
         <p className="mt-4 whitespace-pre-line">{gig.description}</p>
         <p className="mt-4 text-xs text-muted">
           {gig.service_id ? 'Booked' : 'Posted'} by <strong className="text-ink-soft">{gig.customer?.display_name ?? 'a customer'}</strong>
-          {gig.service_id && gig.worker && <> from {viewer === 'assigned_worker' ? 'your' : `${gig.worker.display_name.split(' ')[0]}’s`} listed service</>} · {timeAgo(gig.created_at)}
+          {gig.service_id && gig.worker && <> from {viewer === 'assigned_worker' ? 'your' : `${gig.worker.display_name.split(' ')[0]}’s`} listed service</>} · <span className="font-semibold text-[#14B8A6]">{formatPostedAt(gig.created_at, gig.is_demo)}</span>
         </p>
 
         <div className="mt-5">

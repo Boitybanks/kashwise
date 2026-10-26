@@ -10,6 +10,7 @@ import { Button, ButtonLink, EmptyState, ErrorState, Skeleton } from '../compone
 import { CategoryIcon } from '../components/CategoryIcon'
 import { GigCard } from '../components/gig/GigCard'
 import { AreaSelect } from '../components/AreaSelect'
+import { LiveJobsActivitySlider } from '../components/activity/LiveJobsActivitySlider'
 
 export default function Discover() {
   const { profile } = useAuth()
@@ -120,6 +121,8 @@ export default function Discover() {
           </div>
         </div>
       </div>
+
+      <LiveJobsActivitySlider />
 
       {query.isPending ? (
         <div className="grid gap-3 md:grid-cols-2">

@@ -118,6 +118,18 @@
       radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
     background-size: 20px 20px;
   }
+  @keyframes marquee-slow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee-slow {
+    display: flex;
+    width: max-content;
+    animation: marquee-slow 42s linear infinite;
+  }
+  .animate-marquee-slow:hover {
+    animation-play-state: paused;
+  }
 }
 
 /* Campaign layout: spacious editorial photography, quiet UI, one purposeful accent. */

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, CalendarDays, MapPin, Users } from 'lucide-react'
+import { ArrowUpRight, CalendarDays, Clock, MapPin, Users } from 'lucide-react'
 import { categoryLabel } from '../../lib/categories'
 import { CategoryIcon } from '../CategoryIcon'
-import { formatDay, timeAgo } from '../../lib/format'
+import { formatDay, formatPostedAt } from '../../lib/format'
 import { formatDistance } from '../../lib/geo'
 import { TIME_WINDOW_LABEL } from '../../lib/gig-rules'
 import { formatRand, workerNetCents } from '../../lib/money'
@@ -22,8 +22,14 @@ export function GigCard({ gig, matchesSkills }: { gig: DiscoverGig; matchesSkill
               <CategoryIcon category={gig.category} />
             </span>
             <div className="min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#14B8A6]">{categoryLabel(gig.category)}</span>
-              <h3 className="text-lg font-bold leading-snug text-[#F1F5F9] transition-colors group-hover:text-white">{gig.title}</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#14B8A6]">{categoryLabel(gig.category)}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#1b3e45]/80 px-2 py-0.5 text-[10px] font-semibold text-[#2dd4bf] border border-[#24525b]/60">
+                  <Clock className="size-2.5 text-[#14B8A6]" aria-hidden />
+                  {formatPostedAt(gig.created_at, gig.is_demo)}
+                </span>
+              </div>
+              <h3 className="mt-0.5 text-lg font-bold leading-snug text-[#F1F5F9] transition-colors group-hover:text-white">{gig.title}</h3>
             </div>
           </div>
           <div className="shrink-0 text-right">
@@ -51,7 +57,7 @@ export function GigCard({ gig, matchesSkills }: { gig: DiscoverGig; matchesSkill
 
       <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-[#1E293B] pt-4 text-xs text-[#94A3B8]">
         <span>
-          Posted by <span className="font-semibold text-[#F1F5F9]">{gig.customer_name}</span> · {timeAgo(gig.created_at)}
+          Posted by <span className="font-semibold text-[#F1F5F9]">{gig.customer_name}</span> · <span className="font-medium text-[#14B8A6]">{formatPostedAt(gig.created_at, gig.is_demo)}</span>
         </span>
         {matchesSkills && (
           <span className="rounded-full bg-[#0D9488]/15 px-2.5 py-0.5 text-xs font-semibold text-[#14B8A6] border border-[#0D9488]/30">
