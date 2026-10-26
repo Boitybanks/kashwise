@@ -49,6 +49,35 @@
   --color-zest: #0d9488;
 }
 
+/* Global discreet dark scrollbars across Chromium, Firefox & WebKit */
+* {
+  scrollbar-color: #1e293b transparent;
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Utility to completely hide scrollbar while preserving touch/wheel scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

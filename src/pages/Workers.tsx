@@ -27,7 +27,7 @@ export default function Workers() {
   return (
     <div>
       <PageHeader title="Capable people near you" subtitle="Every rating comes from a customer-confirmed KashWise job." />
-      <div className="mb-5 space-y-3">
+      <div className="mb-6 space-y-4 rounded-2xl border border-[#24525b]/60 bg-[#1b3e45] p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <label htmlFor="w-area" className="text-sm font-semibold sm:w-24">Near</label>
           <div className="sm:w-72"><AreaSelect id="w-area" value={area} onChange={setAreaOverride} placeholder="Anywhere in South Africa" /></div>

@@ -26,9 +26,9 @@ function MethodOption({ method, current, onPick, title, body, fee, icon }: {
 }) {
   const on = method === current
   return (
-    <label className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${on ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600' : 'border-line bg-white hover:border-brand-200'}`}>
+    <label className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${on ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600' : 'border-line bg-surface hover:border-brand-500'}`}>
       <input type="radio" name="method" value={method} checked={on} onChange={() => onPick(method)} className="mt-1 size-4 accent-brand-600" />
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white text-brand-700 ring-1 ring-line">{icon}</span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface text-brand-500 ring-1 ring-line">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center justify-between gap-2">
           <span className="font-bold">{title}</span>
@@ -168,11 +168,11 @@ export default function Wallet() {
           </p>
         </div>
         <dl className="grid grid-cols-2 gap-px bg-line">
-          <div className="bg-white p-4">
+          <div className="bg-surface p-4">
             <dt className="text-xs text-muted">{ibanks ? 'Waiting for payment or on hold' : 'Waiting for clients to confirm'}</dt>
             <dd className="text-lg font-extrabold">{formatRand(w.held_cents)}</dd>
           </div>
-          <div className="bg-white p-4">
+          <div className="bg-surface p-4">
             <dt className="text-xs text-muted">Earned on KashWise</dt>
             <dd className="text-lg font-extrabold">{formatRand(w.earned_cents)}</dd>
           </div>

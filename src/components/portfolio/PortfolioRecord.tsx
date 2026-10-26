@@ -74,7 +74,7 @@ export function PortfolioRecord({ item, isOwner, highlighted }: { item: Portfoli
                 <img src={evidenceUrl(p)} alt={`Work photo for ${item.title}`} loading="lazy" className="size-20 rounded-lg object-cover ring-1 ring-line" />
               </a>
               {isOwner && (
-                <button type="button" onClick={() => onRemove(p)} aria-label="Remove photo" className="absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-white text-clay-700 shadow ring-1 ring-line">
+                <button type="button" onClick={() => onRemove(p)} aria-label="Remove photo" className="absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-surface-elevated text-clay-700 shadow ring-1 ring-line">
                   <Trash2 className="size-3.5" aria-hidden />
                 </button>
               )}

@@ -46,7 +46,7 @@ export default function Discover() {
 
       {profile?.role === 'worker' && <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#0D9488]/30 bg-[#0D9488]/15 p-4"><div><h2 className="font-semibold text-[#F1F5F9]">Working towards an earnings target?</h2><p className="text-sm text-[#94A3B8]">Build an income plan around your skills, time and goal.</p></div><ButtonLink to="/money/earn-goal" size="sm">Earn My Goal →</ButtonLink></div>}
 
-      <div className="mb-6 space-y-4 rounded-2xl border border-[#1E293B] bg-[#141A21] p-4 sm:p-5">
+      <div className="mb-6 space-y-4 rounded-2xl border border-[#24525b]/60 bg-[#1b3e45] p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <label htmlFor="area-filter" className="text-sm font-semibold sm:w-24">Near</label>
           <div className="sm:w-72">
@@ -59,7 +59,7 @@ export default function Discover() {
             </label>
           )}
         </div>
-        <div className="-mx-4 overflow-x-auto px-4 pb-1" role="group" aria-label="Filter by category">
+        <div className="-mx-4 overflow-x-auto px-4 pb-1 no-scrollbar" role="group" aria-label="Filter by category">
           <div className="flex w-max gap-2">
             <button type="button" className="chip" aria-pressed={category === null} onClick={() => setCategory(null)}>
               All work

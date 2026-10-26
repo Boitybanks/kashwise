@@ -39,14 +39,14 @@ function toInput(draft: Draft): GoalInput {
 function Opportunity({ gig }: { gig: GoalSuggestion }) {
   const areaOf = useAreaLookup()
   return (
-    <article className="rounded-2xl border border-line bg-white p-4 sm:p-5">
+    <article className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted">{categoryLabel(gig.category)}</p>
           <h3 className="mt-1 text-lg font-bold leading-snug">{gig.title}</h3>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-xl font-extrabold text-brand-700">{formatRand(gig.worker_net_cents)}</p>
+          <p className="text-xl font-extrabold text-brand-500">{formatRand(gig.worker_net_cents)}</p>
           <p className="text-xs text-muted">after platform fee</p>
         </div>
       </div>

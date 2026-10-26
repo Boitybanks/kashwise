@@ -101,7 +101,7 @@ export default function IncomeStatement() {
             ['Confirmed jobs', String(s.totals.jobs)],
             ['Different clients', String(s.totals.distinct_clients)],
           ].map(([label, value]) => (
-            <div key={label} className="flex flex-col-reverse bg-white p-4">
+            <div key={label} className="flex flex-col-reverse bg-surface p-4">
               <dt className="text-xs text-muted">{label}</dt>
               <dd className="text-xl font-extrabold tabular-nums">{value}</dd>
             </div>

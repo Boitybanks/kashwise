@@ -32,7 +32,7 @@ export default function MyGigs() {
           </div>
         }
       />
-      <div role="tablist" aria-label="Gig list" className="mb-4 inline-flex rounded-xl bg-white p-1 ring-1 ring-line">
+      <div role="tablist" aria-label="Gig list" className="mb-4 inline-flex rounded-xl bg-surface p-1 border border-line">
         {(['active', 'past'] as const).map((t) => (
           <button key={t} role="tab" type="button" aria-selected={tab === t} onClick={() => setTab(t)}
             className={`min-h-10 rounded-lg px-4 text-sm font-semibold ${tab === t ? 'bg-brand-600 text-white' : 'text-ink-soft'}`}>

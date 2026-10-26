@@ -409,7 +409,7 @@ export default function Money() {
 
       <div role="tablist" aria-label="KashWise Money" className="mb-4 flex gap-1 overflow-x-auto">
         {TABS.map((t) => (
-          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${tab === t ? 'bg-brand-600 text-white' : 'text-ink-soft hover:bg-white'}`}>
+          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${tab === t ? 'bg-brand-600 text-white' : 'text-ink-soft hover:bg-surface-elevated hover:text-ink'}`}>
             {t}
           </button>
         ))}

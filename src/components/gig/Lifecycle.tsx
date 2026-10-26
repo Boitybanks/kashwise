@@ -15,7 +15,7 @@ export function LifecycleStepper({ status }: { status: GigStatus }) {
           <li key={s} className="flex flex-col items-center gap-1 text-center" aria-current={active ? 'step' : undefined}>
             <span
               className={`grid size-8 place-items-center rounded-full text-xs font-bold ring-2 ${
-                done ? 'bg-brand-600 text-white ring-brand-600' : active ? 'bg-sun-400 text-ink ring-sun-400' : 'bg-white text-muted ring-line'
+                done ? 'bg-brand-600 text-white ring-brand-600' : active ? 'bg-sun-400 text-ink ring-sun-400' : 'bg-surface text-muted ring-line'
               }`}
             >
               {done ? <Check className="size-4" aria-hidden /> : i + 1}

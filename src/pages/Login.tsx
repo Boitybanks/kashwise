@@ -12,13 +12,13 @@ export default function Login() {
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(params.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (userId && profile && !busy) return <Navigate to={next ?? (profile.role === 'customer' ? '/my-gigs' : '/discover')} replace />
+  if (userId && profile && !busy) return <Navigate to={next ?? (profile.role === 'customer' ? '/my-gigs' : '/home')} replace />
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()

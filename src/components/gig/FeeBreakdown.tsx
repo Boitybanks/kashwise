@@ -18,6 +18,10 @@ export function FeeBreakdown({ payoutCents, perspective, counterpart = false }: 
         <p className="mt-1 text-xs text-[#94A3B8]">
           After KashWise’s {FEE_RATE_PERCENT}% fee ({formatRand(b.fee)}), the only deduction. No VAT is taken from your pay.
         </p>
+        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#14B8A6]">
+          <span className="size-1.5 rounded-full bg-[#14B8A6]" />
+          Starter guarantee: 5% fee on first 5 jobs. Zero upfront fee — only deducted upon confirmed payout.
+        </p>
         {counterpart && (
           <p className="mt-3 flex items-baseline justify-between gap-3 border-t border-[#0D9488]/30 pt-3 text-sm text-[#F1F5F9]">
             <span className="text-[#94A3B8]">Clients see</span>

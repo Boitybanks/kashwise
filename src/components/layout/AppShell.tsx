@@ -90,7 +90,7 @@ export function AppShell() {
       <footer className="border-t border-line bg-surface/40 pb-20 md:pb-0">
         <div className="page-width flex flex-wrap items-center justify-between gap-5 py-8 text-xs text-muted">
           <p>
-            <strong className="text-ink">KashWise</strong> — Earn it. Prove it. Grow it. Built on SideGigs by team CodeCraft.
+            <strong className="text-ink">KashWise</strong> — Earn it. Prove it. Grow it. Built on SideGigs by team CodeCraft. © 2026
           </p>
           <nav aria-label="Footer" className="flex gap-4">
             <NavLink to="/trust" className="hover:text-ink">Trust &amp; safety</NavLink>

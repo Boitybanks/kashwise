@@ -37,15 +37,15 @@ export default function Services() {
         action={profile?.role === 'worker' ? <ButtonLink to="/my-services" variant="secondary">List your own service</ButtonLink> : undefined}
       />
 
-      <div className="mb-6 space-y-4 rounded-xl border border-line bg-white p-4">
+      <div className="mb-6 space-y-4 rounded-2xl border border-[#24525b]/60 bg-[#1b3e45] p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <label htmlFor="service-area" className="text-sm font-semibold sm:w-24">Near</label>
+          <label htmlFor="service-area" className="text-sm font-semibold text-[#F1F5F9] sm:w-24">Near</label>
           <div className="sm:w-72">
             <AreaSelect id="service-area" value={area} onChange={(v) => setAreaOverride(v)} placeholder="Anywhere in South Africa" />
           </div>
           <p className="text-xs text-muted sm:ml-auto">{area ? `Closest to ${areaOf(area)?.name ?? 'your area'} first` : 'Choose an area to sort by distance'}</p>
         </div>
-        <div className="-mx-4 overflow-x-auto px-4 pb-1" role="group" aria-label="Filter by category">
+        <div className="-mx-4 overflow-x-auto px-4 pb-1 no-scrollbar" role="group" aria-label="Filter by category">
           <div className="flex w-max gap-2">
             <button type="button" className="chip" aria-pressed={category === null} onClick={() => setCategory(null)}>All services</button>
             {CATEGORIES.map((c) => (

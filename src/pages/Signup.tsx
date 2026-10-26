@@ -90,11 +90,11 @@ export default function Signup() {
                 <label
                   key={r.value}
                   className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition focus-within:ring-2 focus-within:ring-brand-600 ${
-                    form.role === r.value ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-200' : 'border-line bg-white hover:border-brand-200'
+                    form.role === r.value ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-200' : 'border-line bg-surface hover:border-brand-500'
                   }`}
                 >
                   <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={() => set('role', r.value)} className="sr-only" />
-                  <r.icon className="mt-0.5 size-5 shrink-0 text-brand-700" aria-hidden />
+                  <r.icon className="mt-0.5 size-5 shrink-0 text-brand-500" aria-hidden />
                   <span>
                     <span className="block font-bold">{r.title}</span>
                     <span className="block text-xs text-muted">{r.body}</span>

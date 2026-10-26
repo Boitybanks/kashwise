@@ -35,10 +35,11 @@ export default function ResetPassword() {
     if (link.kind === 'tokens' || link.kind === 'token_hash' || link.kind === 'code') {
       if (!started.current) {
         started.current = true
-        // Keep the one-time tokens/code out of browser history and screenshots.
-        window.history.replaceState(null, '', window.location.pathname)
         startPasswordRecovery(link).then(
-          () => setPhase('ready'),
+          () => {
+            window.history.replaceState(null, '', window.location.pathname)
+            setPhase('ready')
+          },
           async (err) => {
             // Check if user already has an active session before failing
             const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }))

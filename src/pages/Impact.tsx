@@ -28,7 +28,7 @@ export default function Impact() {
         title="Impact"
         subtitle="KashWise succeeds when people earn. Live numbers straight from the database."
         action={
-          <div role="group" aria-label="Data shown" className="inline-flex rounded-xl bg-white p-1 ring-1 ring-line">
+          <div role="group" aria-label="Data shown" className="inline-flex rounded-xl bg-surface p-1 border border-line">
             {[true, false].map((v) => (
               <button key={String(v)} type="button" aria-pressed={includeDemo === v} onClick={() => setIncludeDemo(v)}
                 className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${includeDemo === v ? 'bg-brand-600 text-white' : 'text-ink-soft'}`}>

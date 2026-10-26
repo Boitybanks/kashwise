@@ -38,7 +38,7 @@ export function JobQrMenu({ gig, workerName }: { gig: Pick<Gig, 'id' | 'status' 
           Show a QR code (or on-site PIN) <ChevronDown className={`size-4 transition ${open ? 'rotate-180' : ''}`} aria-hidden />
         </Button>
         {open && (
-          <ul id={menuId} className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-line bg-white p-1 shadow-lg">
+          <ul id={menuId} className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-[#1E293B] bg-[#141A21] p-1 shadow-lg">
             {(['start', 'finish'] as HandshakeStep[]).map((s) => (
               <li key={s}>
                 <button type="button" disabled={!ready[s]} onClick={() => { setShown(s); setOpen(false) }}

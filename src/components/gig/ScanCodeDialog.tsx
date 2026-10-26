@@ -119,7 +119,7 @@ export function ScanCodeDialog({ step, gigId, initialCode = '', onSubmit, onClos
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId}
         // pb-24 on phones keeps the submit button clear of the host's floating corner badge.
-        className="max-h-[100dvh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-5 pb-24 focus:outline-none sm:rounded-3xl sm:pb-5">
+        className="max-h-[100dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-[#1E293B] bg-[#141A21] p-5 pb-24 focus:outline-none sm:rounded-3xl sm:pb-5">
         <div className="flex items-start justify-between gap-3">
           <h2 id={titleId} className="text-lg font-bold">{title}</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="grid size-9 place-items-center rounded-full hover:bg-canvas"><X className="size-5" aria-hidden /></button>

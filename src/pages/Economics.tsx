@@ -48,7 +48,7 @@ export default function Economics() {
       </p>
       <div role="tablist" aria-label="Scenario" className="mb-4 flex flex-wrap gap-1">
         {(Object.keys(SCENARIOS) as Key[]).map((k) => (
-          <button key={k} role="tab" aria-selected={key === k} onClick={() => pick(k)} className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${key === k ? 'bg-brand-600 text-white' : 'text-ink-soft hover:bg-white'}`}>
+          <button key={k} role="tab" aria-selected={key === k} onClick={() => pick(k)} className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${key === k ? 'bg-brand-600 text-white' : 'text-ink-soft hover:bg-surface-elevated hover:text-ink'}`}>
             {SCENARIOS[k].title}
           </button>
         ))}

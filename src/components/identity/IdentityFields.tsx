@@ -39,7 +39,7 @@ export function IdentityFields({ value, onChange, errors }: {
         <legend className="mb-2 text-sm font-semibold">Gender</legend>
         <div className="grid grid-cols-2 gap-2" id="gender" tabIndex={-1}>
           {(['male', 'female'] as Gender[]).map((g) => (
-            <label key={g} className={`flex cursor-pointer items-center justify-center rounded-xl border p-3 font-semibold transition focus-within:ring-2 focus-within:ring-brand-600 ${value.gender === g ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-line bg-white text-ink-soft hover:border-brand-200'}`}>
+            <label key={g} className={`flex cursor-pointer items-center justify-center rounded-xl border p-3 font-semibold transition focus-within:ring-2 focus-within:ring-brand-600 ${value.gender === g ? 'border-brand-600 bg-brand-50 text-brand-500' : 'border-line bg-surface text-ink-soft hover:border-brand-500'}`}>
               <input type="radio" name="gender" value={g} checked={value.gender === g} onChange={() => set('gender', g)} className="sr-only" />
               {GENDER_LABEL[g]}
             </label>
