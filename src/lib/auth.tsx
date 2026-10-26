@@ -16,6 +16,15 @@ export const DEMO_ACCOUNTS: Record<Role, { email: string; name: string; blurb: s
   worker: { email: 'demo.worker@sidegigs.app', name: 'Sipho', blurb: 'Find work and build a portfolio' },
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const TESTER_ACCOUNT = {
+  email: 'mrsboitymbhele@gmail.com',
+  password: '12345678',
+  name: 'Boitumelo',
+  role: 'customer' as const,
+  blurb: 'Real customer account',
+}
+
 interface AuthValue {
   session: Session | null
   userId: string | null
@@ -25,6 +34,7 @@ interface AuthValue {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: SignupInput & IdentityInput) => Promise<void>
   signInDemo: (role: Role) => Promise<void>
+  signInTester: () => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -99,6 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [signIn],
   )
 
+  const signInTester = useCallback(async () => {
+    await supabase.auth.signOut({ scope: 'local' })
+    await signIn(TESTER_ACCOUNT.email, TESTER_ACCOUNT.password)
+  }, [signIn])
+
   const signOut = useCallback(async () => {
     // Local scope: signing out here must not end other sessions (demo accounts are shared).
     await supabase.auth.signOut({ scope: 'local' })
@@ -121,10 +136,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signInDemo,
+      signInTester,
       signOut,
       refreshProfile,
     }),
-    [session, profile, loading, signIn, signUp, signInDemo, signOut, refreshProfile],
+    [session, profile, loading, signIn, signUp, signInDemo, signInTester, signOut, refreshProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

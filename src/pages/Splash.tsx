@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, LoaderCircle } from 'lucide-react'
-import { DEMO_ACCOUNTS, useAuth } from '../lib/auth'
+import { ArrowRight, LoaderCircle, UserCheck } from 'lucide-react'
+import { DEMO_ACCOUNTS, TESTER_ACCOUNT, useAuth } from '../lib/auth'
 import { friendlyError } from '../lib/errors'
 import type { Role } from '../lib/types'
 import { LogoMark } from '../components/layout/Logo'
@@ -54,16 +54,27 @@ function Skyline({ className }: { className?: string }) {
 
 /** First screen for signed-out visitors: sign in or register. */
 export default function Splash() {
-  const { signInDemo } = useAuth()
+  const { signInDemo, signInTester } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
-  const [busy, setBusy] = useState<Role | null>(null)
+  const [busy, setBusy] = useState<Role | 'tester' | null>(null)
 
   async function tryDemo(role: Role) {
     setBusy(role)
     try {
       await signInDemo(role)
-      navigate(role === 'customer' ? '/my-gigs' : '/discover')
+      navigate(role === 'customer' ? '/my-gigs' : '/home')
+    } catch (e) {
+      toast.show(friendlyError(e), 'error')
+      setBusy(null)
+    }
+  }
+
+  async function tryTester() {
+    setBusy('tester')
+    try {
+      await signInTester()
+      navigate('/my-gigs')
     } catch (e) {
       toast.show(friendlyError(e), 'error')
       setBusy(null)
@@ -110,6 +121,17 @@ export default function Splash() {
                 <span className="text-xs font-normal text-white/60">demo {role}</span>
               </button>
             ))}
+            <button
+              type="button"
+              disabled={busy !== null}
+              aria-busy={busy === 'tester' || undefined}
+              onClick={tryTester}
+              className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#0D9488]/20 px-3 text-sm font-semibold text-white ring-1 ring-inset ring-[#0D9488]/40 transition hover:bg-[#0D9488]/30 disabled:opacity-60"
+            >
+              {busy === 'tester' ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <UserCheck className="size-4 text-[#14B8A6]" aria-hidden />}
+              <span>Sign in as {TESTER_ACCOUNT.name}</span>
+              <span className="text-xs font-normal text-white/70">· real account</span>
+            </button>
           </div>
         </div>
         <p className="mt-4 text-center text-sm">

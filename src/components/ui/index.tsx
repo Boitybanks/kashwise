@@ -204,14 +204,34 @@ export function Stars({ value, size = 'sm', label }: { value: number | null; siz
   )
 }
 
-export function PageHeader({ title, subtitle, action }: { title: ReactNode; subtitle?: ReactNode; action?: ReactNode }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  subtitle,
+  action,
+  className = '',
+}: {
+  eyebrow?: ReactNode
+  title: ReactNode
+  subtitle?: ReactNode
+  action?: ReactNode
+  className?: string
+}) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-extrabold sm:text-3xl">{title}</h1>
-        {subtitle && <p className="mt-1 text-muted">{subtitle}</p>}
+    <div className={`mb-6 flex flex-wrap items-end justify-between gap-4 ${className}`}>
+      <div className="max-w-2xl">
+        {eyebrow && (
+          <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#14B8A6]">
+            <span className="size-1.5 rounded-full bg-[#14B8A6] shadow-[0_0_8px_#14B8A6]" aria-hidden />
+            {eyebrow}
+          </div>
+        )}
+        <h1 className="text-2xl font-extrabold tracking-tight text-[#F1F5F9] sm:text-3xl md:text-4xl [&>em]:font-normal [&>em]:text-[#2dd4bf]">
+          {title}
+        </h1>
+        {subtitle && <p className="mt-2 text-sm leading-relaxed text-[#94A3B8] sm:text-base">{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   )
 }
