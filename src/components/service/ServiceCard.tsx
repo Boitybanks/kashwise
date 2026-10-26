@@ -13,42 +13,53 @@ export function ServiceCard({ service, showProvider = true }: { service: Discove
   return (
     <Link
       to={`/services/${service.id}`}
-      className="card group flex flex-col gap-4 p-5 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-[#1E293B] bg-[#141A21] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-[#0D9488]/50 hover:bg-[#18232d] hover:shadow-[0_12px_28px_rgba(0,0,0,0.4)]"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 gap-3">
-          <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl bg-canvas text-xl">
-            <CategoryIcon category={service.category} />
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-muted">{categoryLabel(service.category)}</p>
-            <h3 className="font-bold leading-snug text-ink group-hover:text-brand-700">{service.title}</h3>
+      <div className="space-y-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 gap-3">
+            <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#0B0F14] border border-[#24525b]/60 text-xl text-[#14B8A6] transition-transform duration-300 group-hover:scale-105">
+              <CategoryIcon category={service.category} />
+            </span>
+            <div className="min-w-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#14B8A6]">{categoryLabel(service.category)}</span>
+              <h3 className="text-lg font-bold leading-snug text-[#F1F5F9] transition-colors group-hover:text-white">{service.title}</h3>
+            </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-xl font-extrabold tabular-nums text-[#F1F5F9]">{formatRand(service.price_cents)}</p>
+            <p className="text-[11px] font-medium text-[#94A3B8]">all-inclusive</p>
           </div>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-lg font-extrabold text-brand-700">{formatRand(service.price_cents)}</p>
-          <p className="text-[11px] font-medium text-muted">you pay</p>
-        </div>
+        <p className="line-clamp-2 text-sm leading-relaxed text-[#94A3B8]">{service.description}</p>
       </div>
-      <p className="line-clamp-2 text-sm text-ink-soft">{service.description}</p>
-      <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line pt-4 text-xs text-muted">
+
+      <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[#1E293B] pt-4 text-xs text-[#94A3B8]">
         {showProvider && (
           <span className="inline-flex min-w-0 items-center gap-2">
             <Avatar name={service.worker_name} id={service.worker_id} src={avatarUrl(service.worker_avatar_path)} size="sm" />
-            <span className="truncate font-semibold text-ink-soft">{service.worker_name}</span>
+            <span className="truncate font-semibold text-[#F1F5F9]">{service.worker_name}</span>
           </span>
         )}
-        <span className="inline-flex items-center gap-1">
-          <MapPin className="size-3.5" aria-hidden />
+        <span className="inline-flex items-center gap-1 text-[#94A3B8]">
+          <MapPin className="size-3.5 text-[#64748B]" aria-hidden />
           {service.area_name}
-          {service.distance_km !== null && <span className="font-semibold text-ink-soft">· {formatDistance(service.distance_km)}</span>}
+          {service.distance_km !== null && <span className="font-semibold text-[#64748B]">· {formatDistance(service.distance_km)}</span>}
         </span>
-        <span className="inline-flex items-center gap-1"><BadgeCheck className="size-3.5 text-brand-600" aria-hidden />{service.completed} verified</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#D4A017]/10 px-2 py-0.5 font-semibold text-[#D4A017] border border-[#D4A017]/25">
+          <BadgeCheck className="size-3.5 fill-[#D4A017]/20 text-[#D4A017]" aria-hidden />
+          {service.completed} verified
+        </span>
         {service.avg_rating && (
-          <span className="inline-flex items-center gap-1"><Star className="size-3.5 fill-sun-400 text-sun-400" aria-hidden />{service.avg_rating} ({service.review_count})</span>
+          <span className="inline-flex items-center gap-1 font-semibold text-[#F1F5F9]">
+            <Star className="size-3.5 fill-[#D4A017] text-[#D4A017]" aria-hidden />
+            {service.avg_rating} <span className="text-[#64748B]">({service.review_count})</span>
+          </span>
         )}
         {service.is_demo && <DemoBadge />}
-        <span className="ml-auto inline-flex items-center gap-1 font-semibold text-brand-700">Book <ArrowUpRight size={15} aria-hidden /></span>
+        <span className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-[#0D9488]/15 px-3 py-1.5 text-xs font-semibold text-[#14B8A6] border border-[#0D9488]/30 transition-all group-hover:bg-[#0D9488] group-hover:text-white">
+          Book <ArrowUpRight className="size-3.5" aria-hidden />
+        </span>
       </div>
     </Link>
   )

@@ -181,8 +181,8 @@ export default function WorkerProfile() {
             <div className="mt-0.5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <h1 className="text-2xl font-extrabold sm:text-3xl">{p.display_name}</h1>
               {(s?.completed ?? 0) > 0 && (
-                <span className="text-brand-600" title="Has customer-confirmed gigs">
-                  <BadgeCheck className="size-6" aria-hidden /><span className="sr-only">Has customer-confirmed gigs</span>
+                <span className="text-[#D4A017]" title="Has customer-confirmed gigs">
+                  <BadgeCheck className="size-6 fill-[#D4A017]/20 text-[#D4A017]" aria-hidden /><span className="sr-only">Has customer-confirmed gigs</span>
                 </span>
               )}
               {p.is_demo && <DemoBadge />}

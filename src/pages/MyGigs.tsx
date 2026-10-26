@@ -23,7 +23,8 @@ export default function MyGigs() {
   return (
     <div>
       <PageHeader
-        title={`Sawubona, ${profile?.display_name.split(' ')[0] ?? 'there'}`}
+        eyebrow="Customer Dashboard"
+        title={<>Sawubona, <em>{profile?.display_name.split(' ')[0] ?? 'there'}.</em></>}
         subtitle={needsAction ? `${needsAction} gig${needsAction > 1 ? 's need' : ' needs'} your attention.` : 'Your posted gigs, booked services and their progress.'}
         action={
           <div className="flex flex-wrap gap-2">
@@ -32,10 +33,18 @@ export default function MyGigs() {
           </div>
         }
       />
-      <div role="tablist" aria-label="Gig list" className="mb-4 inline-flex rounded-xl bg-surface p-1 border border-line">
+      <div role="tablist" aria-label="Gig list" className="mb-6 inline-flex rounded-2xl bg-[#141A21] p-1.5 border border-[#1E293B]">
         {(['active', 'past'] as const).map((t) => (
-          <button key={t} role="tab" type="button" aria-selected={tab === t} onClick={() => setTab(t)}
-            className={`min-h-10 rounded-lg px-4 text-sm font-semibold ${tab === t ? 'bg-brand-600 text-white' : 'text-ink-soft'}`}>
+          <button
+            key={t}
+            role="tab"
+            type="button"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={`min-h-10 rounded-xl px-4 text-xs font-bold transition-all ${
+              tab === t ? 'bg-[#0D9488] text-white shadow-sm' : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+            }`}
+          >
             {t === 'active' ? `Active (${active.length})` : `Past (${past.length})`}
           </button>
         ))}
@@ -54,24 +63,24 @@ export default function MyGigs() {
         <ul className="space-y-3">
           {shown.map((g) => (
             <li key={g.id}>
-              <Link to={`/gigs/${g.id}`} className="card flex items-center gap-3 p-4 hover:border-brand-200">
-                <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl bg-canvas text-xl">{categoryEmoji(g.category)}</span>
+              <Link to={`/gigs/${g.id}`} className="group flex items-center gap-4 rounded-2xl border border-[#1E293B] bg-[#141A21] p-4 transition-all hover:border-[#0D9488]/40 hover:bg-[#18232d] shadow-sm">
+                <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#0B0F14] border border-[#24525b]/50 text-xl">{categoryEmoji(g.category)}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold">{g.title}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                  <p className="truncate font-bold text-[#F1F5F9] transition-colors group-hover:text-white">{g.title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#94A3B8]">
                     <StatusPill status={g.status} />
                     <span>{formatDay(g.scheduled_date)}</span>
-                    <span>· you pay {formatRand(g.total_cents)}</span>
-                    {g.service_id && <span className="font-semibold text-sky-800">· Booked service</span>}
+                    <span className="tabular-nums">· you pay {formatRand(g.total_cents)}</span>
+                    {g.service_id && <span className="font-semibold text-[#14B8A6]">· Booked service</span>}
                     {g.status === 'open' && (
-                      <span className={`inline-flex items-center gap-1 font-semibold ${g.applicant_count ? 'text-clay-600' : ''}`}>
+                      <span className={`inline-flex items-center gap-1 font-semibold ${g.applicant_count ? 'text-[#D4A017]' : ''}`}>
                         <Users className="size-3.5" aria-hidden /> {g.applicant_count} applied
                       </span>
                     )}
-                    {g.status === 'in_progress' && g.worker_done_at && <span className="font-semibold text-clay-600">Worker says it’s done — confirm</span>}
+                    {g.status === 'in_progress' && g.worker_done_at && <span className="font-semibold text-[#14B8A6]">Worker says it’s done — confirm</span>}
                   </div>
                 </div>
-                <ChevronRight className="size-5 text-muted" aria-hidden />
+                <ChevronRight className="size-5 text-[#64748B] transition-transform group-hover:translate-x-0.5 group-hover:text-white" aria-hidden />
               </Link>
             </li>
           ))}

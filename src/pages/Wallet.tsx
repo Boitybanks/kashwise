@@ -157,22 +157,27 @@ export default function Wallet() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="My Wallet" subtitle="Money from confirmed jobs. Cash out to your bank, or collect cash at a shop with no bank account needed." />
+      <PageHeader
+        eyebrow="Earnings & Payouts"
+        title={<>My wallet, <em>your terms.</em></>}
+        subtitle="Money from confirmed jobs. Cash out to your bank, or collect cash at a shop with no bank account needed."
+      />
 
-      <Card className="overflow-hidden">
-        <div className="bg-brand-600 p-5 text-white">
-          <p className="text-sm font-semibold text-brand-100">Available to cash out</p>
-          <p className="text-4xl font-extrabold">{formatRand(w.available_cents)}</p>
-          <p className="mt-1 text-xs text-brand-100">
+      <Card className="relative overflow-hidden rounded-2xl border border-[#24525b]/60 shadow-[0_4px_24px_rgba(0,0,0,0.25)]">
+        <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden />
+        <div className="bg-gradient-to-br from-[#0e413c] via-[#0b2f2c] to-[#0A181D] p-6 text-white">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#98e0ef]">Available to cash out</p>
+          <p className="mt-1 text-4xl font-extrabold tabular-nums tracking-tight text-white sm:text-5xl">{formatRand(w.available_cents)}</p>
+          <p className="mt-2 text-xs text-[#d4eff4]/80">
             {w.free_cashout_available ? 'Your first cash-out this week is free.' : 'You have used this week’s free cash-out; the next one costs R3 to a bank or R20 for cash.'}
           </p>
         </div>
         <dl className="grid grid-cols-2 gap-px bg-line">
-          <div className="bg-surface p-4">
-            <dt className="text-xs text-muted">{ibanks ? 'Waiting for payment or on hold' : 'Waiting for clients to confirm'}</dt>
-            <dd className="text-lg font-extrabold">{formatRand(w.held_cents)}</dd>
+          <div className="bg-[#141A21] p-4">
+            <dt className="text-xs text-[#94A3B8]">{ibanks ? 'Waiting for payment or on hold' : 'Waiting for clients to confirm'}</dt>
+            <dd className="mt-1 text-xl font-extrabold tabular-nums text-[#F1F5F9]">{formatRand(w.held_cents)}</dd>
           </div>
-          <div className="bg-surface p-4">
+          <div className="bg-[#141A21] p-4">
             <dt className="text-xs text-muted">Earned on KashWise</dt>
             <dd className="text-lg font-extrabold">{formatRand(w.earned_cents)}</dd>
           </div>

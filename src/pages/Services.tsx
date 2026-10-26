@@ -32,27 +32,58 @@ export default function Services() {
   return (
     <div>
       <PageHeader
-        title="Book a service near you"
+        eyebrow="Marketplace of Skills"
+        title={<>Book a service <em>near you.</em></>}
         subtitle="Local people list what they do and what it costs. The price you see is the price you pay — nothing is added later."
         action={profile?.role === 'worker' ? <ButtonLink to="/my-services" variant="secondary">List your own service</ButtonLink> : undefined}
       />
 
-      <div className="mb-6 space-y-4 rounded-2xl border border-[#24525b]/60 bg-[#1b3e45] p-4 sm:p-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <label htmlFor="service-area" className="text-sm font-semibold text-[#F1F5F9] sm:w-24">Near</label>
-          <div className="sm:w-72">
-            <AreaSelect id="service-area" value={area} onChange={(v) => setAreaOverride(v)} placeholder="Anywhere in South Africa" />
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-[#24525b]/80 bg-[#1b3e45] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.25)] space-y-4">
+        <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <label htmlFor="service-area" className="text-xs font-bold uppercase tracking-wider text-[#d4eff4] sm:w-20">
+              Location
+            </label>
+            <div className="sm:w-72">
+              <AreaSelect id="service-area" value={area} onChange={(v) => setAreaOverride(v)} placeholder="Anywhere in South Africa" />
+            </div>
           </div>
-          <p className="text-xs text-muted sm:ml-auto">{area ? `Closest to ${areaOf(area)?.name ?? 'your area'} first` : 'Choose an area to sort by distance'}</p>
+          <p className="text-xs text-[#d4eff4]/80">{area ? `Sorted closest to ${areaOf(area)?.name ?? 'your area'}` : 'Choose an area to sort by proximity'}</p>
         </div>
-        <div className="-mx-4 overflow-x-auto px-4 pb-1 no-scrollbar" role="group" aria-label="Filter by category">
+
+        <div className="-mx-5 overflow-x-auto px-5 pb-1 no-scrollbar" role="group" aria-label="Filter by category">
           <div className="flex w-max gap-2">
-            <button type="button" className="chip" aria-pressed={category === null} onClick={() => setCategory(null)}>All services</button>
-            {CATEGORIES.map((c) => (
-              <button key={c.slug} type="button" className="chip" aria-pressed={category === c.slug} onClick={() => setCategory(category === c.slug ? null : c.slug)}>
-                <CategoryIcon category={c.slug} className="size-4" /> {c.label}
-              </button>
-            ))}
+            <button
+              type="button"
+              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
+                category === null
+                  ? 'bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white shadow-[0_4px_12px_rgba(13,148,136,0.35)]'
+                  : 'bg-[#0B0F14]/50 border border-white/10 text-[#d4eff4] hover:bg-[#0B0F14]/80 hover:text-white hover:border-[#14B8A6]/40'
+              }`}
+              aria-pressed={category === null}
+              onClick={() => setCategory(null)}
+            >
+              All services
+            </button>
+            {CATEGORIES.map((c) => {
+              const active = category === c.slug
+              return (
+                <button
+                  key={c.slug}
+                  type="button"
+                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
+                    active
+                      ? 'bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white shadow-[0_4px_12px_rgba(13,148,136,0.35)]'
+                      : 'bg-[#0B0F14]/50 border border-white/10 text-[#d4eff4] hover:bg-[#0B0F14]/80 hover:text-white hover:border-[#14B8A6]/40'
+                  }`}
+                  aria-pressed={active}
+                  onClick={() => setCategory(active ? null : c.slug)}
+                >
+                  <CategoryIcon category={c.slug} className="size-4" /> {c.label}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -71,11 +102,14 @@ export default function Services() {
         </EmptyState>
       ) : (
         <>
-          <p className="mb-3 text-sm text-muted" aria-live="polite">
-            <Store className="mr-1 inline size-4" aria-hidden />
-            {services.length}{query.hasNextPage ? '+' : ''} service{services.length === 1 ? '' : 's'}
-          </p>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="mb-4 flex items-center justify-between text-xs text-[#94A3B8]">
+            <p className="inline-flex items-center gap-1.5 font-medium" aria-live="polite">
+              <Store className="size-3.5 text-[#14B8A6]" aria-hidden />
+              Showing <strong className="text-[#F1F5F9]">{services.length}{query.hasNextPage ? '+' : ''}</strong> service{services.length === 1 ? '' : 's'}
+            </p>
+            <span className="hidden sm:inline-block text-[11px] text-[#64748B]">Transparent direct pricing · nothing added later</span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
             {services.map((s) => <ServiceCard key={s.id} service={s} />)}
           </div>
           {query.hasNextPage && (
