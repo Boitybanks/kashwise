@@ -15,6 +15,10 @@ describe('password reset links', () => {
   it('reads a token hash from a custom email template', () => {
     expect(parseRecoveryLink('', '?token_hash=abc123&type=recovery')).toEqual({ kind: 'token_hash', tokenHash: 'abc123' })
   })
+  it('reads a PKCE authorization code from modern Supabase email redirect', () => {
+    expect(parseRecoveryLink('', '?code=pkce-auth-code')).toEqual({ kind: 'code', code: 'pkce-auth-code' })
+    expect(parseRecoveryLink('', '?code=pkce-auth-code&type=recovery')).toEqual({ kind: 'code', code: 'pkce-auth-code' })
+  })
   it('explains expired or invalid links', () => {
     expect(parseRecoveryLink('#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid', '')).toMatchObject({
       kind: 'error',
@@ -29,6 +33,9 @@ describe('password reset links', () => {
   it('spots a recovery link on any page', () => {
     expect(isRecoveryUrl('', '#access_token=a&type=recovery')).toBe(true)
     expect(isRecoveryUrl('?token_hash=x&type=recovery', '')).toBe(true)
+    expect(isRecoveryUrl('?code=auth-code', '')).toBe(true)
+    expect(isRecoveryUrl('?code=auth-code&type=recovery', '')).toBe(true)
+    expect(isRecoveryUrl('', '#access_token=a&refresh_token=b')).toBe(true)
     expect(isRecoveryUrl('?type=recoveryX', '#type=signup')).toBe(false)
   })
   it('validates the new password and email', () => {

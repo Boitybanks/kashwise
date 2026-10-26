@@ -495,23 +495,35 @@ export async function fetchMyIdentity(userId: string): Promise<{ gender: Gender;
 
 // ── Password reset ─────────────────────────────────────────────────────────
 export async function requestPasswordReset(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` })
+  const origin = window.location.origin.replace(/\/+$/, '')
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${origin}/reset-password`,
+  })
   if (error) throw error
 }
 
-export async function startPasswordRecovery(link: Extract<RecoveryLink, { kind: 'tokens' | 'token_hash' }>) {
-  const { error } =
-    link.kind === 'tokens'
-      ? await supabase.auth.setSession({ access_token: link.accessToken, refresh_token: link.refreshToken })
-      : await supabase.auth.verifyOtp({ token_hash: link.tokenHash, type: 'recovery' })
-  if (error) throw error
+export async function startPasswordRecovery(link: Extract<RecoveryLink, { kind: 'tokens' | 'token_hash' | 'code' }>) {
+  if (link.kind === 'tokens') {
+    const { error } = await supabase.auth.setSession({ access_token: link.accessToken, refresh_token: link.refreshToken })
+    if (error) throw error
+  } else if (link.kind === 'token_hash') {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: link.tokenHash, type: 'recovery' })
+    if (error) throw error
+  } else if (link.kind === 'code') {
+    const { error } = await supabase.auth.exchangeCodeForSession(link.code)
+    if (error) throw error
+  }
 }
 
 /** Sets the new password, then signs out everywhere so any other session has to use it. */
 export async function finishPasswordReset(password: string) {
   const { error } = await supabase.auth.updateUser({ password })
   if (error) throw error
-  await supabase.auth.signOut({ scope: 'global' })
+  try {
+    await supabase.auth.signOut({ scope: 'global' })
+  } catch {
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+  }
 }
 
 // ── Netlify Functions (post-quantum) ──────────────────────────────────────

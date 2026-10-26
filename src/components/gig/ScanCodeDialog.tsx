@@ -112,7 +112,7 @@ export function ScanCodeDialog({ step, gigId, initialCode = '', onSubmit, onClos
     }
   }, [supported])
 
-  const title = step === 'start' ? 'Scan the start-job QR code' : 'Scan the finish-job QR code'
+  const title = step === 'start' ? 'Start job: Enter on-site PIN or scan' : 'Complete job: Enter handover PIN or scan'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-night/70 sm:items-center sm:p-4" role="presentation"
@@ -147,7 +147,7 @@ export function ScanCodeDialog({ step, gigId, initialCode = '', onSubmit, onClos
         </div>
 
         <form className="mt-4" noValidate onSubmit={(e: FormEvent) => { e.preventDefault(); void submit(code) }}>
-          <label htmlFor={inputId} className="text-sm font-semibold">Or type the 6-character code</label>
+          <label htmlFor={inputId} className="text-sm font-semibold">Type the on-site PIN or code</label>
           <input id={inputId} className="input mt-1.5 font-mono uppercase tracking-[0.25em]" value={code} maxLength={7} autoComplete="off" spellCheck={false}
             placeholder="K7Q-4MX" onChange={(e) => { setCode(e.target.value); setError('') }} aria-invalid={error ? true : undefined} />
           <Button type="submit" block size="lg" loading={busy} className="mt-3">{step === 'start' ? 'Start job' : 'Mark as done'}</Button>

@@ -31,11 +31,11 @@ export function JobQrMenu({ gig, workerName }: { gig: Pick<Gig, 'id' | 'status' 
 
   return (
     <div className="rounded-xl border border-line p-4">
-      <p className="flex items-center gap-2 font-bold"><QrIcon className="size-5 text-brand-600" aria-hidden /> Job QR codes</p>
-      <p className="mt-1 text-xs text-muted">{workerName} scans these on site to start and to finish the job, so you know they were really there.</p>
+      <p className="flex items-center gap-2 font-bold"><QrIcon className="size-5 text-brand-600" aria-hidden /> On-site Handover PIN & QR</p>
+      <p className="mt-1 text-xs text-muted">Show this PIN or QR code to {workerName} on site to confirm handover and verify completion.</p>
       <div className="relative mt-3">
         <Button variant="secondary" aria-expanded={open} aria-controls={menuId} onClick={() => setOpen((o) => !o)}>
-          Show a QR code <ChevronDown className={`size-4 transition ${open ? 'rotate-180' : ''}`} aria-hidden />
+          Show on-site PIN / QR <ChevronDown className={`size-4 transition ${open ? 'rotate-180' : ''}`} aria-hidden />
         </Button>
         {open && (
           <ul id={menuId} className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-line bg-white p-1 shadow-lg">

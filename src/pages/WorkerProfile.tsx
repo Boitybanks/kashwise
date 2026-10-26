@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { BadgeCheck, CalendarCheck, Copy, Download, MapPin, QrCode as QrIcon, Share2, ShieldCheck, Star } from 'lucide-react'
+import { BadgeCheck, CalendarCheck, Copy, Download, Eye, EyeOff, MapPin, QrCode as QrIcon, Share2, ShieldCheck, Star } from 'lucide-react'
 import { fetchPortfolio, fetchProfile, fetchWorkCredential, fetchWorkerStats } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryEmoji, categoryLabel } from '../lib/categories'
@@ -16,6 +16,7 @@ import { QrCode } from '../components/ui/QrCode'
 import { useToast } from '../components/ui/toast'
 import { SharedDocuments } from '../components/profile/Documents'
 import { PortfolioRecord } from '../components/portfolio/PortfolioRecord'
+import { ProofScriptEmptyState } from '../components/portfolio/ProofScriptEmptyState'
 import { SkillsProfile } from '../components/portfolio/SkillsProfile'
 import { WorkerServices } from '../components/service/WorkerServices'
 import { ReportButton } from '../components/ReportButton'
@@ -80,6 +81,7 @@ export default function WorkerProfile() {
   const areaOf = useAreaLookup()
   const [downloading, setDownloading] = useState(false)
   const [showQr, setShowQr] = useState(false)
+  const [hideEarnings, setHideEarnings] = useState(false)
   const isOwner = userId === id
 
   const profileQ = useQuery({ queryKey: ['profile', id], queryFn: () => fetchProfile(id) })
@@ -113,7 +115,23 @@ export default function WorkerProfile() {
     },
     { value: decided ? `${Math.round((s!.completed / decided) * 100)}%` : '—', label: 'Completion rate' },
     isOwner && s?.earned_cents != null
-      ? { value: formatRand(s.earned_cents), label: 'Total earned · only you see this' }
+      ? {
+          value: (
+            <span className="inline-flex items-center gap-2">
+              <span>{hideEarnings ? '••••••' : formatRand(s.earned_cents)}</span>
+              <button
+                type="button"
+                onClick={() => setHideEarnings((h) => !h)}
+                className="text-muted hover:text-ink transition"
+                title={hideEarnings ? 'Show earnings' : 'Hide earnings for privacy'}
+                aria-label={hideEarnings ? 'Show earnings' : 'Hide earnings for privacy'}
+              >
+                {hideEarnings ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </span>
+          ),
+          label: 'Total earned (private to you)',
+        }
       : { value: s?.repeat_customers ?? '—', label: 'Repeat customers' },
   ]
 
@@ -220,10 +238,10 @@ export default function WorkerProfile() {
               <h2 id="records-h" className="text-lg font-bold">Recent experience</h2>
               <p className="mb-3 text-sm text-muted">Client-confirmed work history, skills, and reviews.</p>
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
-                <EmptyState icon={<BadgeCheck className="size-5" aria-hidden />} title="No verified gigs yet"
-                  action={isOwner ? <ButtonLink to="/discover">Find your first gig</ButtonLink> : undefined}>
-                  {isOwner ? 'Complete a gig and the customer’s confirmation adds your first verified record here automatically.' : `${first} is new on KashWise. Everyone starts somewhere!`}
-                </EmptyState>
+                <ProofScriptEmptyState isOwner={isOwner} firstName={first} />
+
+
+
               ) : (
                 <div className="space-y-3">
                   {items.map((item) => <PortfolioRecord key={item.id} item={item} isOwner={isOwner} highlighted={item.record_code === highlighted} />)}

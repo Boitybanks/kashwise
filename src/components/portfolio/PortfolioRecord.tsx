@@ -93,7 +93,7 @@ export function PortfolioRecord({ item, isOwner, highlighted }: { item: Portfoli
 
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-xs">
         <span className="inline-flex items-center gap-1 font-semibold text-brand-700">
-          <BadgeCheck className="size-4" aria-hidden /> Verified by customer confirmation
+          <BadgeCheck className="size-4 text-amber-500 fill-amber-100" aria-hidden /> Client confirmed & verified
         </span>
         {item.proof_level === 'payment_confirmed' && (
           <span className="inline-flex items-center gap-1 font-semibold text-brand-700" title="The payment provider confirmed the client's payment for this job. Payments are simulated in this version.">

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { finishPasswordReset, startPasswordRecovery } from '../lib/api'
 import { friendlyError } from '../lib/errors'
 import { parseRecoveryLink } from '../lib/recovery'
+import { supabase } from '../lib/supabase'
 import { firstError, newPasswordSchema } from '../lib/validation'
 import { Button, ButtonLink, Card, Field, Spinner } from '../components/ui'
 
@@ -13,7 +14,7 @@ export default function ResetPassword() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [link] = useState(() => parseRecoveryLink(window.location.hash, window.location.search))
-  const [phase, setPhase] = useState<Phase>(link.kind === 'tokens' || link.kind === 'token_hash' ? 'checking' : 'invalid')
+  const [phase, setPhase] = useState<Phase>(link.kind === 'error' ? 'invalid' : 'checking')
   const [problem, setProblem] = useState(link.kind === 'error' ? link.message : 'Open the reset link from your email to choose a new password.')
   const [form, setForm] = useState({ password: '', confirm: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -22,17 +23,50 @@ export default function ResetPassword() {
   const started = useRef(false)
 
   useEffect(() => {
-    if (started.current || (link.kind !== 'tokens' && link.kind !== 'token_hash')) return
-    started.current = true
-    // Keep the one-time tokens out of browser history and screenshots.
-    window.history.replaceState(null, '', window.location.pathname)
-    startPasswordRecovery(link).then(
-      () => setPhase('ready'),
-      () => {
-        setProblem('This reset link has expired or was already used.')
+    if (link.kind === 'error') return
+
+    // Listen for auth state changes (e.g. PASSWORD_RECOVERY event emitted by Supabase)
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        setPhase('ready')
+      }
+    })
+
+    if (link.kind === 'tokens' || link.kind === 'token_hash' || link.kind === 'code') {
+      if (!started.current) {
+        started.current = true
+        // Keep the one-time tokens/code out of browser history and screenshots.
+        window.history.replaceState(null, '', window.location.pathname)
+        startPasswordRecovery(link).then(
+          () => setPhase('ready'),
+          async (err) => {
+            // Check if user already has an active session before failing
+            const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }))
+            if (data?.session) {
+              setPhase('ready')
+            } else {
+              setProblem(friendlyError(err) || 'This reset link has expired or was already used.')
+              setPhase('invalid')
+            }
+          },
+        )
+      }
+    } else {
+      // link.kind === 'none' - check if user already has an active session
+      supabase.auth.getSession().then(({ data }) => {
+        if (data?.session) {
+          setPhase('ready')
+        } else {
+          setPhase('invalid')
+        }
+      }).catch(() => {
         setPhase('invalid')
-      },
-    )
+      })
+    }
+
+    return () => {
+      sub.subscription.unsubscribe()
+    }
   }, [link])
 
   async function onSubmit(e: FormEvent) {
