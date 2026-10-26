@@ -147,7 +147,8 @@ export function ScanCodeDialog({ step, gigId, initialCode = '', onSubmit, onClos
         </div>
 
         <form className="mt-4" noValidate onSubmit={(e: FormEvent) => { e.preventDefault(); void submit(code) }}>
-          <label htmlFor={inputId} className="text-sm font-semibold">Type the on-site PIN or code</label>
+          <label htmlFor={inputId} className="text-sm font-semibold">Or type the 6-character code</label>
+          <p className="text-xs text-muted mb-1">Enter the client's on-site handover PIN printed under their QR code.</p>
           <input id={inputId} className="input mt-1.5 font-mono uppercase tracking-[0.25em]" value={code} maxLength={7} autoComplete="off" spellCheck={false}
             placeholder="K7Q-4MX" onChange={(e) => { setCode(e.target.value); setError('') }} aria-invalid={error ? true : undefined} />
           <Button type="submit" block size="lg" loading={busy} className="mt-3">{step === 'start' ? 'Start job' : 'Mark as done'}</Button>

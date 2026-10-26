@@ -35,7 +35,7 @@ export function JobQrMenu({ gig, workerName }: { gig: Pick<Gig, 'id' | 'status' 
       <p className="mt-1 text-xs text-muted">Show this PIN or QR code to {workerName} on site to confirm handover and verify completion.</p>
       <div className="relative mt-3">
         <Button variant="secondary" aria-expanded={open} aria-controls={menuId} onClick={() => setOpen((o) => !o)}>
-          Show on-site PIN / QR <ChevronDown className={`size-4 transition ${open ? 'rotate-180' : ''}`} aria-hidden />
+          Show a QR code (or on-site PIN) <ChevronDown className={`size-4 transition ${open ? 'rotate-180' : ''}`} aria-hidden />
         </Button>
         {open && (
           <ul id={menuId} className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-line bg-white p-1 shadow-lg">
