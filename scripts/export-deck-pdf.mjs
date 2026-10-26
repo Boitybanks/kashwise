@@ -1,6 +1,5 @@
 import { chromium } from '@playwright/test'
 import { join } from 'node:path'
-import { copyFileSync } from 'node:fs'
 
 async function exportPdf() {
   console.log('Launching Chromium to render PDF slide deck...')

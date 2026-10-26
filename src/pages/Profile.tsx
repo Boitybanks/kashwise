@@ -109,7 +109,7 @@ function ProfileForm() {
           <strong>Shared demo account.</strong> Editing and phone numbers are switched off so every judge sees the same demo. Create your own free account to try profile editing.
         </p>
       )}
-      <PageHeader title={isSetup ? 'Set up your profile' : 'Your profile'} subtitle="This is what customers and workers see." action={!isSetup && userId ? <ButtonLink to={`/w/${userId}`} variant="secondary" size="sm">View public profile</ButtonLink> : undefined} />
+      <PageHeader title={isSetup ? 'Set up your profile' : 'Your profile'} subtitle="This is what customers and workers see." action={!isSetup && userId ? <ButtonLink to={`/w/${userId}`} variant="secondary" size="sm">View ProofScript</ButtonLink> : undefined} />
       {profile && <ProfilePhoto profile={profile} readOnly={readOnly} onChanged={refreshProfile} />}
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <fieldset disabled={readOnly} className="space-y-5 disabled:opacity-70">

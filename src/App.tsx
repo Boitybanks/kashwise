@@ -53,6 +53,13 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
+function ProofScriptRoute() {
+  const { userId, loading } = useAuth()
+  if (loading) return <Spinner />
+  if (userId) return <Navigate to={`/w/${userId}`} replace />
+  return <Navigate to="/login?next=%2Fproofscript" replace />
+}
+
 function HomeRoute() {
   const { userId, profile, loading } = useAuth()
   if (loading) return <Spinner />
@@ -111,6 +118,7 @@ export default function App() {
                   <Route path="wallet" element={<RequireAuth><Wallet /></RequireAuth>} />
                   <Route path="wallet/statement" element={<RequireAuth><IncomeStatement /></RequireAuth>} />
                   <Route path="w/:id" element={<WorkerProfile />} />
+                  <Route path="proofscript" element={<ProofScriptRoute />} />
                   <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
                   <Route path="impact" element={<Impact />} />
                   <Route path="economics" element={<Economics />} />

@@ -330,7 +330,7 @@ export default function GigDetail() {
                 // Money is earned only when the provider settles. The simulator stands in for it; if it is switched off,
                 // the payment simply stays authorised and the button below lets the client retry.
                 await api.sandboxPayment({ action: 'settle', gigId: gig.id }).catch(() => undefined)
-              }, `Done! ${workerFirst}’s portfolio just gained a verified record.`)
+              }, `Work verified. Added to ${workerFirst}’s ProofScript.`)
             }
           />
         )}
