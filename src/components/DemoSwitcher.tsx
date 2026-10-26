@@ -31,16 +31,16 @@ export function DemoSwitcher() {
   }
 
   return (
-    <div className="border-b border-sun-100 bg-sun-50 print:hidden">
+    <div className="border-b border-[#D4A017]/30 bg-[#1e1708] print:hidden">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 text-sm">
-        <p className="text-sun-700">
+        <p className="text-[#E5B025]">
           <strong>Demo mode:</strong> you are {profile.display_name.split(' ')[0]} ({profile.role}).
         </p>
         <button
           type="button"
           onClick={swap}
           disabled={busy}
-          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 font-semibold text-ink ring-1 ring-sun-300 hover:bg-sun-100 disabled:opacity-60"
+          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#141A21] px-3 font-medium text-[#F1F5F9] border border-[#D4A017]/40 hover:bg-[#1C242E] disabled:opacity-60"
         >
           <Repeat className={`size-4 ${busy ? 'animate-spin' : ''}`} aria-hidden />
           Switch to {DEMO_ACCOUNTS[other].name}

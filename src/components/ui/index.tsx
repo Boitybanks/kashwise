@@ -10,16 +10,16 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'sun'
 type Size = 'sm' | 'md' | 'lg'
 
 const variantClass: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm',
-  secondary: 'bg-white text-ink border border-line hover:border-brand-200 hover:bg-brand-50',
-  ghost: 'text-brand-700 hover:bg-brand-50',
-  danger: 'bg-white text-clay-700 border border-clay-100 hover:bg-clay-50',
-  sun: 'bg-sun-400 text-ink hover:bg-sun-300 shadow-sm',
+  primary: 'bg-[#0D9488] text-white hover:bg-[#14B8A6] active:scale-[0.99] transition-all font-semibold shadow-none',
+  secondary: 'bg-[#141A21] text-[#F1F5F9] border border-[#1E293B] hover:border-slate-700 hover:bg-[#1C242E] active:scale-[0.99] transition-all font-medium',
+  ghost: 'text-[#14B8A6] hover:bg-[#0D9488]/10 hover:text-white transition-all font-medium',
+  danger: 'bg-[#141A21] text-red-400 border border-red-900/40 hover:bg-red-950/20 active:scale-[0.99] transition-all font-medium',
+  sun: 'bg-[#D4A017] text-[#0B0F14] hover:bg-[#E5B025] active:scale-[0.99] transition-all font-bold shadow-none',
 }
 const sizeClass: Record<Size, string> = {
-  sm: 'min-h-9 px-3 text-sm rounded-lg',
-  md: 'min-h-11 px-4 text-[15px] rounded-xl',
-  lg: 'min-h-13 px-5 text-base rounded-xl',
+  sm: 'min-h-10 px-3.5 text-sm rounded-xl',
+  md: 'min-h-12 px-4.5 text-[15px] rounded-xl',
+  lg: 'min-h-14 px-6 text-base rounded-xl',
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -69,11 +69,11 @@ export function Card({ className = '', children }: { className?: string; childre
 
 type Tone = 'brand' | 'sun' | 'clay' | 'blue' | 'gray'
 const toneClass: Record<Tone, string> = {
-  brand: 'bg-brand-50 text-brand-800 ring-brand-100',
-  sun: 'bg-sun-50 text-sun-700 ring-sun-100',
-  clay: 'bg-clay-50 text-clay-700 ring-clay-100',
-  blue: 'bg-sky-50 text-sky-800 ring-sky-100',
-  gray: 'bg-stone-100 text-stone-700 ring-stone-200',
+  brand: 'bg-[#0D9488]/15 text-[#14B8A6] ring-1 ring-[#0D9488]/30',
+  sun: 'bg-[#D4A017]/15 text-[#E5B025] ring-1 ring-[#D4A017]/30',
+  clay: 'bg-red-950/40 text-red-400 ring-1 ring-red-800/40',
+  blue: 'bg-sky-950/40 text-sky-400 ring-1 ring-sky-800/40',
+  gray: 'bg-slate-800/60 text-slate-300 ring-1 ring-slate-700/50',
 }
 
 export function Badge({ tone = 'gray', children, className = '' }: { tone?: Tone; children: ReactNode; className?: string }) {
@@ -119,13 +119,13 @@ export function Spinner({ label = 'Loading…' }: { label?: string }) {
 }
 
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div aria-hidden className={`animate-pulse rounded-xl bg-line/60 ${className}`} />
+  return <div aria-hidden className={`animate-pulse rounded-xl bg-[#1C242E] ${className}`} />
 }
 
 export function EmptyState({ icon, title, children, action }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
   return (
     <div className="card flex flex-col items-center px-6 py-10 text-center">
-      {icon && <div className="mb-3 grid size-12 place-items-center rounded-full bg-brand-50 text-brand-700">{icon}</div>}
+      {icon && <div className="mb-3 grid size-12 place-items-center rounded-full bg-[#0D9488]/20 text-[#14B8A6]">{icon}</div>}
       <h3 className="text-lg font-bold">{title}</h3>
       {children && <div className="mt-1 max-w-sm text-sm text-muted">{children}</div>}
       {action && <div className="mt-5">{action}</div>}

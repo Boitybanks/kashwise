@@ -224,12 +224,12 @@ export default function GigDetail() {
 
       <Card className="mt-4 space-y-4 p-5">
         <LifecycleStepper status={gig.status} />
-        <p className="rounded-xl bg-canvas px-4 py-3 font-semibold" aria-live="polite">{viewer === 'other_worker' && myApp?.status === 'pending' && gig.status === 'open' ? 'Application sent. The customer will review your profile and choose a worker. Track this gig in My work.' : nextStepText(gig, viewer)}</p>
+        <p className="rounded-xl bg-[#0B0F14]/70 border border-[#1E293B] px-4 py-3 font-medium text-[#F1F5F9]" aria-live="polite">{viewer === 'other_worker' && myApp?.status === 'pending' && gig.status === 'open' ? 'Application sent. The customer will review your profile and choose a worker. Track this gig in My work.' : nextStepText(gig, viewer)}</p>
 
         {/* ── Guest ── */}
         {viewer === 'guest' && gig.status === 'open' && (
           <div className="flex flex-col gap-2 sm:flex-row">
-            <ButtonLink to={`/signup?role=worker&next=${encodeURIComponent(`/gigs/${gig.id}`)}`} size="lg">Join free to apply</ButtonLink>
+            <ButtonLink to={`/signup?role=worker&next=${encodeURIComponent(`/gigs/${gig.id}`)}`} size="lg">I’m interested — Join free</ButtonLink>
             <ButtonLink to={`/login?next=/gigs/${gig.id}`} variant="secondary" size="lg">I have an account</ButtonLink>
           </div>
         )}
@@ -251,14 +251,14 @@ export default function GigDetail() {
               Message to {gig.customer?.display_name.split(' ')[0] ?? 'the customer'} <span className="font-normal text-muted">(optional)</span>
             </label>
             <textarea id="apply-message" rows={3} maxLength={300} className="input" placeholder="e.g. I live nearby and did a similar job last month." value={message} onChange={(e) => setMessage(e.target.value)} />
-            <Button type="submit" size="lg" block loading={applyBusy}>Apply for this gig</Button>
+            <Button type="submit" size="lg" block loading={applyBusy}>I’m interested in this job</Button>
             <p className="text-sm text-muted">Applying is free. Check that the date, area and payout work for you. The customer reviews your profile before choosing a worker; applying does not book the job.</p>
             <Link to={`/profile?welcome=1&next=${encodeURIComponent(`/gigs/${gig.id}`)}`} className="inline-block text-sm font-semibold text-brand-700 underline">Improve your profile before applying</Link>
           </form>
         )}
         {viewer === 'other_worker' && myApp?.status === 'pending' && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-50 p-4">
-            <p className="flex items-center gap-2 font-semibold text-brand-800"><CheckCircle2 className="size-5" aria-hidden /> You applied {timeAgo(myApp.created_at)}. Waiting for the customer to choose.</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#0D9488]/15 border border-[#0D9488]/30 p-4">
+            <p className="flex items-center gap-2 font-semibold text-[#14B8A6]"><CheckCircle2 className="size-5" aria-hidden /> You applied {timeAgo(myApp.created_at)}. Waiting for the customer to choose.</p>
             <div className="flex flex-wrap gap-2"><ButtonLink to="/my-work" variant="secondary" size="sm">Track in My work</ButtonLink><ConfirmAction variant="danger" label="Withdraw application" confirmText="Withdraw your application? You can apply again while this gig is still open." onConfirm={() => run(() => api.withdrawApplication(gig.id), 'Application withdrawn.')} /></div>
           </div>
         )}

@@ -1,44 +1,52 @@
 @import "tailwindcss";
 
-/* KashWise: FNB-inspired teal/cyan, white and charcoal with orange accents.
-   Independent product concept; this styling does not imply a bank endorsement. */
+/* KashWise: Intentional, trustworthy, distinctly South African dark visual system.
+   Deep near-black (#0B0F14), elevated cards (#141A21), calm teal (#0D9488), and reserved gold (#D4A017). */
 @theme {
   --animate-progress-fill: progress-fill 3s linear forwards;
   @keyframes progress-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter", "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  --color-brand-50: #e8f8fa;
-  --color-brand-100: #cceff3;
-  --color-brand-200: #9bdde5;
-  --color-brand-500: #00a9b7;
-  --color-brand-600: #007b83;
-  --color-brand-700: #00656f;
-  --color-brand-800: #00505d;
-  --color-brand-900: #003e5c;
+  /* Primary Teal Scale */
+  --color-brand-50: #0b2e2b;
+  --color-brand-100: #0f443f;
+  --color-brand-200: #135d56;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e48;
 
-  --color-sun-50: #fff7ed;
-  --color-sun-100: #ffead6;
-  --color-sun-300: #ffd0a1;
-  --color-sun-400: #ffb66b;
-  --color-sun-600: #b45d13;
-  --color-sun-700: #8c450c;
+  /* Proof & Verified Accent: Reserved Gold (#D4A017) */
+  --color-gold-400: #e5b025;
+  --color-gold-500: #d4a017;
+  --color-gold-600: #b8860b;
+  --color-sun-50: #261f0e;
+  --color-sun-100: #3d2f13;
+  --color-sun-300: #a17c16;
+  --color-sun-400: #d4a017;
+  --color-sun-600: #e5b025;
+  --color-sun-700: #fef08a;
 
-  --color-clay-50: #fdefe9;
-  --color-clay-100: #fbd9cc;
-  --color-clay-500: #d9542b;
-  --color-clay-600: #b8431f;
-  --color-clay-700: #93341a;
+  /* Alerts & Destructive */
+  --color-clay-50: #2d1214;
+  --color-clay-100: #4c1d20;
+  --color-clay-500: #ef4444;
+  --color-clay-600: #dc2626;
+  --color-clay-700: #f87171;
 
-  --color-ink: #172b32;
-  --color-ink-soft: #475f6c;
-  --color-muted: #607784;
-  --color-canvas: #f8fcfd;
-  --color-line: #dce8ed;
+  /* Strict Neutrals */
+  --color-ink: #f1f5f9;
+  --color-ink-soft: #94a3b8;
+  --color-muted: #64748b;
+  --color-canvas: #0b0f14;
+  --color-surface: #141a21;
+  --color-surface-elevated: #1c242e;
+  --color-line: #1e293b;
 
-  /* Brand board: splash screen and ProofScript accents. */
-  --color-night: #122e40;
-  --color-night-soft: #194659;
-  --color-zest: #00a9b7;
+  --color-night: #0b0f14;
+  --color-night-soft: #141a21;
+  --color-zest: #0d9488;
 }
 
 @layer base {
@@ -47,38 +55,39 @@
     scroll-padding-top: 100px;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+    color-scheme: dark;
   }
   body {
     @apply bg-canvas text-ink font-sans antialiased;
     min-height: 100dvh;
   }
   :focus-visible {
-    outline: 3px solid var(--color-brand-600);
+    outline: 2px solid var(--color-brand-500);
     outline-offset: 2px;
     border-radius: 6px;
   }
-  h1, h2, h3 {
-    @apply tracking-tight text-ink;
+  h1, h2, h3, h4 {
+    @apply tracking-tight text-ink font-semibold;
   }
 }
 
 @layer components {
   .input {
-    @apply block w-full rounded-xl border border-line bg-white px-3.5 py-3 text-base text-ink placeholder:text-muted/70
-      shadow-sm transition focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200
-      disabled:cursor-not-allowed disabled:bg-canvas aria-[invalid=true]:border-clay-500;
+    @apply block w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-base text-ink placeholder:text-muted
+      transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-600/30
+      disabled:cursor-not-allowed disabled:bg-canvas disabled:opacity-60 aria-[invalid=true]:border-red-500;
   }
   .card {
-    @apply rounded-2xl border border-line bg-white shadow-[0_3px_16px_rgba(18,41,54,0.025)];
+    @apply rounded-2xl border border-line bg-surface;
   }
   .chip {
-    @apply inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-white px-3.5 text-sm font-semibold text-ink-soft transition
-      hover:border-brand-200 aria-pressed:border-brand-600 aria-pressed:bg-brand-50 aria-pressed:text-brand-800;
+    @apply inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 text-sm font-medium text-ink-soft transition
+      hover:border-slate-700 hover:text-ink aria-pressed:border-brand-600 aria-pressed:bg-brand-50 aria-pressed:text-brand-500;
   }
   .kasi-pattern {
     background-image:
-      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.14) 1px, transparent 0);
-    background-size: 18px 18px;
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+    background-size: 20px 20px;
   }
 }
 

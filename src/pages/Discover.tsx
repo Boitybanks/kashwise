@@ -12,7 +12,7 @@ import { GigCard } from '../components/gig/GigCard'
 import { AreaSelect } from '../components/AreaSelect'
 
 export default function Discover() {
-  const { profile, userId } = useAuth()
+  const { profile } = useAuth()
   const areaOf = useAreaLookup()
   const [areaOverride, setAreaOverride] = useState<string | null>(null)
   const [params, setParams] = useSearchParams()
@@ -35,12 +35,18 @@ export default function Discover() {
 
   return (
     <div>
-      <div className="discover-banner"><div><span className="eyebrow">MAKE ROOM FOR YOUR NEXT OPPORTUNITY</span><h1>Good work. Close to home.</h1><p>Choose a gig that fits your skills and your day. See exactly what you’ll receive before you apply.</p>{!userId && <ButtonLink className="mt-5" to="/signup?role=worker" size="sm">Create your free worker profile</ButtonLink>}</div><img src="/images/craftsperson.webp" alt="Illustrative craftsperson working on a chair" width="145" height="130" /></div>
+      <div className="mb-6 rounded-2xl border border-[#1E293B] bg-gradient-to-r from-[#141A21] via-[#141A21] to-[#0d2e2b] p-6 sm:p-8">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#0D9488]">Work Marketplace</span>
+        <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[#F1F5F9] sm:text-3xl">Find verified work near you</h1>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#94A3B8]">
+          Transparent pay before you apply. Every client-confirmed job directly builds your tamper-proof ProofScript reputation.
+        </p>
+      </div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-semibold tracking-tight">Find work near you</h2><p className="text-xs text-muted">{area ? `Closest to ${areaOf(area)?.name ?? 'your area'} first` : 'Choose an area to sort by distance'}</p></div>
 
-      {profile?.role === 'worker' && <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4"><div><h2 className="font-semibold text-brand-900">Working towards something?</h2><p className="text-sm text-brand-800">Build an income plan around your skills, time and goal.</p></div><ButtonLink to="/money/earn-goal" size="sm">Earn My Goal →</ButtonLink></div>}
+      {profile?.role === 'worker' && <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#0D9488]/30 bg-[#0D9488]/15 p-4"><div><h2 className="font-semibold text-[#F1F5F9]">Working towards an earnings target?</h2><p className="text-sm text-[#94A3B8]">Build an income plan around your skills, time and goal.</p></div><ButtonLink to="/money/earn-goal" size="sm">Earn My Goal →</ButtonLink></div>}
 
-      <div className="mb-6 space-y-4 rounded-xl border border-line bg-white p-4">
+      <div className="mb-6 space-y-4 rounded-2xl border border-[#1E293B] bg-[#141A21] p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <label htmlFor="area-filter" className="text-sm font-semibold sm:w-24">Near</label>
           <div className="sm:w-72">

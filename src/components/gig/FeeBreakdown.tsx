@@ -12,15 +12,15 @@ export function FeeBreakdown({ payoutCents, perspective, counterpart = false }: 
   const b = breakdown(payoutCents)
   if (perspective === 'worker') {
     return (
-      <div className="rounded-xl bg-brand-50 p-4 ring-1 ring-inset ring-brand-100">
-        <p className="text-sm font-semibold text-brand-800">You receive</p>
-        <p className="text-3xl font-extrabold text-brand-800">{formatRand(b.workerNet)}</p>
-        <p className="mt-1 text-xs text-brand-800/80">
+      <div className="rounded-xl bg-[#0D9488]/15 p-4 border border-[#0D9488]/30">
+        <p className="text-sm font-medium text-[#94A3B8]">You receive</p>
+        <p className="text-3xl font-extrabold tabular-nums text-[#F1F5F9]">{formatRand(b.workerNet)}</p>
+        <p className="mt-1 text-xs text-[#94A3B8]">
           After KashWise’s {FEE_RATE_PERCENT}% fee ({formatRand(b.fee)}), the only deduction. No VAT is taken from your pay.
         </p>
         {counterpart && (
-          <p className="mt-3 flex items-baseline justify-between gap-3 border-t border-brand-100 pt-3 text-sm text-brand-800">
-            <span>Clients see</span>
+          <p className="mt-3 flex items-baseline justify-between gap-3 border-t border-[#0D9488]/30 pt-3 text-sm text-[#F1F5F9]">
+            <span className="text-[#94A3B8]">Clients see</span>
             <strong className="shrink-0">{formatRand(b.price)}</strong>
           </p>
         )}
@@ -28,15 +28,15 @@ export function FeeBreakdown({ payoutCents, perspective, counterpart = false }: 
     )
   }
   return (
-    <dl className="space-y-1.5 rounded-xl bg-canvas p-4 text-sm ring-1 ring-inset ring-line" aria-label="Price breakdown">
+    <dl className="space-y-1.5 rounded-xl bg-[#141A21] p-4 text-sm border border-[#1E293B]" aria-label="Price breakdown">
       <div className="flex justify-between gap-3 text-base">
-        <dt className="font-bold">You pay <span className="block text-xs font-normal text-muted">Nothing is added on top.</span></dt>
-        <dd className="shrink-0 font-extrabold">{formatRand(b.price)}</dd>
+        <dt className="font-bold text-[#F1F5F9]">You pay <span className="block text-xs font-normal text-[#94A3B8]">Nothing is added on top.</span></dt>
+        <dd className="shrink-0 font-extrabold tabular-nums text-[#F1F5F9]">{formatRand(b.price)}</dd>
       </div>
       {counterpart && (
-        <div className="flex justify-between gap-3 border-t border-line pt-2">
-          <dt>Service providers see <span className="text-xs text-muted">(after KashWise’s {FEE_RATE_PERCENT}% fee)</span></dt>
-          <dd className="shrink-0 font-semibold">{formatRand(b.workerNet)}</dd>
+        <div className="flex justify-between gap-3 border-t border-[#1E293B] pt-2">
+          <dt className="text-[#94A3B8]">Service providers see <span className="text-xs text-[#64748B]">(after KashWise’s {FEE_RATE_PERCENT}% fee)</span></dt>
+          <dd className="shrink-0 font-semibold tabular-nums text-[#14B8A6]">{formatRand(b.workerNet)}</dd>
         </div>
       )}
     </dl>

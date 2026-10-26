@@ -175,9 +175,9 @@ export default function WorkerProfile() {
     <div className="mx-auto max-w-6xl">
       <Card className="overflow-hidden">
         <div className="flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:gap-5 sm:text-left">
-          <span className="rounded-full ring-4 ring-brand-50"><Avatar name={p.display_name} id={p.id} src={avatarUrl(p.avatar_path)} size="xl" /></span>
+          <span className="rounded-full ring-2 ring-[#0D9488]/40"><Avatar name={p.display_name} id={p.id} src={avatarUrl(p.avatar_path)} size="xl" /></span>
           <div className="min-w-0 flex-1">
-            {isWorker && <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand-600">ProofScript</p>}
+            {isWorker && <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0D9488]">ProofScript</p>}
             <div className="mt-0.5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <h1 className="text-2xl font-extrabold sm:text-3xl">{p.display_name}</h1>
               {(s?.completed ?? 0) > 0 && (
@@ -207,7 +207,7 @@ export default function WorkerProfile() {
         {isWorker && (
           <dl aria-label="Reputation" className="grid grid-cols-2 gap-px border-t border-line bg-line sm:grid-cols-4">
             {stats.map((x) => (
-              <div key={x.label} className="flex flex-col-reverse bg-white p-4 text-center sm:text-left">
+              <div key={x.label} className="flex flex-col-reverse bg-[#141A21] p-4 text-center sm:text-left">
                 <dt className="text-xs text-muted">{x.label}</dt>
                 <dd className="text-2xl font-extrabold">{x.value}</dd>
               </div>
@@ -235,7 +235,7 @@ export default function WorkerProfile() {
             <ProvenSkills stats={s} claimed={p.skills} />
             <WorkerServices workerId={p.id} first={first} isOwner={isOwner} />
             <section id="experience" aria-labelledby="records-h">
-              <h2 id="records-h" className="text-lg font-bold">Recent experience</h2>
+              <h2 id="records-h" className="text-lg font-bold text-[#F1F5F9]">ProofScript Timeline</h2>
               <p className="mb-3 text-sm text-muted">Client-confirmed work history, skills, and reviews.</p>
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
                 <ProofScriptEmptyState isOwner={isOwner} firstName={first} />

@@ -36,6 +36,7 @@ const Verify = lazy(() => import('./pages/Verify'))
 const Trust = lazy(() => import('./pages/Trust'))
 const IdentityDemo = lazy(() => import('./pages/IdentityDemo'))
 const NotFound = lazy(() => import('./pages/NotFound'))
+const WorkerHome = lazy(() => import('./pages/WorkerHome'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,7 +64,7 @@ function ProofScriptRoute() {
 function HomeRoute() {
   const { userId, profile, loading } = useAuth()
   if (loading) return <Spinner />
-  if (userId && profile) return <Navigate to={profile.role === 'customer' ? '/my-gigs' : '/discover'} replace />
+  if (userId && profile) return <Navigate to={profile.role === 'customer' ? '/my-gigs' : '/home'} replace />
   if (userId) return <Navigate to="/profile?setup=1" replace />
   // Signed-out visitors land on the splash and choose: register or sign in. The full story lives at /welcome.
   return <Splash />
@@ -102,6 +103,7 @@ export default function App() {
                   <Route path="signup" element={<Signup />} />
                   <Route path="forgot-password" element={<ForgotPassword />} />
                   <Route path="reset-password" element={<ResetPassword />} />
+                  <Route path="home" element={<RequireAuth><WorkerHome /></RequireAuth>} />
                   <Route path="discover" element={<Discover />} />
                   <Route path="workers" element={<Workers />} />
                   <Route path="gigs/new" element={<RequireAuth><PostGig /></RequireAuth>} />

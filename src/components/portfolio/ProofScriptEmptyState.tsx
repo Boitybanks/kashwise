@@ -89,3 +89,4 @@ export function ProofScriptEmptyState({ isOwner, firstName }: { isOwner: boolean
     </div>
   )
 }
+

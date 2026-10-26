@@ -18,7 +18,7 @@ function GigRow({ gig, note }: { gig: Gig; note?: string }) {
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
           <StatusPill status={gig.status} />
           <span>{formatDay(gig.scheduled_date)}</span>
-          <span className="font-semibold text-brand-700">· you receive {formatRand(workerNetCents(gig.payout_cents))}</span>
+          <span className="font-semibold text-[#14B8A6]">· you receive {formatRand(workerNetCents(gig.payout_cents))}</span>
           {note && <span>· {note}</span>}
         </div>
       </div>
@@ -50,12 +50,12 @@ export default function MyWork() {
           <Link to="/wallet" className="text-xs font-semibold text-brand-700 underline">earned · open wallet</Link>
         </Card>
         <Card className="p-4">
-          <BadgeCheck className="size-5 text-brand-600" aria-hidden />
+          <BadgeCheck className="size-5 text-[#D4A017]" aria-hidden />
           <p className="mt-2 text-xl font-extrabold sm:text-2xl">{s?.completed ?? '—'}</p>
           <p className="text-xs text-muted">verified gigs</p>
         </Card>
         <Card className="p-4">
-          <Award className="size-5 text-sun-600" aria-hidden />
+          <Award className="size-5 text-[#D4A017]" aria-hidden />
           <p className="mt-2 text-xl font-extrabold sm:text-2xl">{s?.avg_rating ?? '—'}</p>
           <p className="text-xs text-muted">average rating</p>
         </Card>

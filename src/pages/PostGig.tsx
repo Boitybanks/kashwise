@@ -77,14 +77,14 @@ export default function PostGig() {
   return (
     <div className="mx-auto max-w-2xl">
       {params.get('welcome') && (
-        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-50 p-4 text-brand-800 ring-1 ring-brand-100">
+        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-[#0D9488]/15 border border-[#0D9488]/30 p-4 text-[#F1F5F9]">
           <PartyPopper className="mt-0.5 size-5 shrink-0" aria-hidden />
           <p className="text-sm"><strong>Welcome to KashWise!</strong> Tell people nearby what you need. You choose a worker after reviewing their applications.</p>
         </div>
       )}
       <PageHeader title="Good help starts here." subtitle="Post a gig for nearby workers. You’re in control of who you hire." />
-      <ol aria-label="How hiring works" className="mb-6 grid grid-cols-3 gap-3 rounded-2xl border border-line bg-white p-4 text-sm">
-        {['Post your task', 'Choose a worker', 'Confirm a job well done'].map((step, index) => <li key={step}><span className="mb-2 grid size-6 place-items-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">{index + 1}</span><span className="font-semibold">{step}</span></li>)}
+      <ol aria-label="How hiring works" className="mb-6 grid grid-cols-3 gap-3 rounded-2xl border border-[#1E293B] bg-[#141A21] p-4 text-sm">
+        {['Post your task', 'Choose a worker', 'Confirm a job well done'].map((step, index) => <li key={step}><span className="mb-2 grid size-6 place-items-center rounded-full bg-[#0D9488]/20 text-xs font-bold text-[#14B8A6]">{index + 1}</span><span className="font-semibold">{step}</span></li>)}
       </ol>
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <Card className="space-y-4 p-5">
@@ -147,7 +147,7 @@ export default function PostGig() {
 
         <Card className="space-y-4 p-5">
           <div className="flex items-start gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><Lock className="size-4" aria-hidden /></span>
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#0D9488]/20 text-[#14B8A6]"><Lock className="size-4" aria-hidden /></span>
             <div>
               <h2 className="text-lg font-bold">4. Add private details</h2>
               <p className="text-sm text-muted">
@@ -165,7 +165,7 @@ export default function PostGig() {
 
         {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
         <p className="text-sm text-muted">After publishing, review applications on your gig page. Nothing is booked until you choose a worker. Keep phone numbers and street addresses out of the public task description.</p>
-        <Button type="submit" size="lg" block loading={busy}>Publish gig</Button>
+        <Button type="submit" size="lg" block loading={busy}>Post task</Button>
       </form>
     </div>
   )

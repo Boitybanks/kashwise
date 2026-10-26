@@ -59,7 +59,7 @@ export function PortfolioRecord({ item, isOwner, highlighted }: { item: Portfoli
       </div>
 
       {item.review && (
-        <blockquote className="mt-3 rounded-xl bg-canvas px-3 py-2 text-sm">
+        <blockquote className="mt-3 rounded-xl bg-[#0B0F14]/80 border border-[#1E293B] px-3.5 py-2.5 text-sm text-[#F1F5F9]">
           “{item.review}” <span className="font-semibold text-muted">— {item.customer_label}</span>
         </blockquote>
       )}
@@ -93,14 +93,14 @@ export function PortfolioRecord({ item, isOwner, highlighted }: { item: Portfoli
 
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-xs">
         <span className="inline-flex items-center gap-1 font-semibold text-brand-700">
-          <BadgeCheck className="size-4 text-amber-500 fill-amber-100" aria-hidden /> Client confirmed & verified
+          <BadgeCheck className="size-4 text-[#D4A017] fill-[#D4A017]/20" aria-hidden /> Client confirmed & verified
         </span>
         {item.proof_level === 'payment_confirmed' && (
           <span className="inline-flex items-center gap-1 font-semibold text-brand-700" title="The payment provider confirmed the client's payment for this job. Payments are simulated in this version.">
             <BadgeCheck className="size-4" aria-hidden /> Payment confirmed <span className="font-normal text-muted">(simulated provider)</span>
           </span>
         )}
-        <code className="rounded bg-canvas px-1.5 py-0.5 text-[11px] text-ink-soft">{item.record_code}</code>
+        <code className="rounded bg-[#0B0F14] border border-[#1E293B] px-2 py-0.5 text-[11px] font-mono text-[#94A3B8]">{item.record_code}</code>
         {item.is_demo && <DemoBadge />}
       </div>
     </article>

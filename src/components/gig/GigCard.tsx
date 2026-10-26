@@ -13,7 +13,7 @@ export function GigCard({ gig, matchesSkills }: { gig: DiscoverGig; matchesSkill
   return (
     <Link
       to={`/gigs/${gig.id}`}
-      className="card group flex flex-col gap-4 p-5 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+      className="card group flex flex-col gap-4 p-5 border border-[#1E293B] bg-[#141A21] transition-all hover:border-[#0D9488]/50 hover:bg-[#1C242E]/70"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 gap-3">
@@ -22,11 +22,11 @@ export function GigCard({ gig, matchesSkills }: { gig: DiscoverGig; matchesSkill
           </span>
           <div className="min-w-0">
             <p className="text-xs font-semibold text-muted">{categoryLabel(gig.category)}</p>
-            <h3 className="font-bold leading-snug text-ink group-hover:text-brand-700">{gig.title}</h3>
+            <h3 className="font-bold leading-snug text-ink group-hover:text-[#14B8A6]">{gig.title}</h3>
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-lg font-extrabold text-brand-700">{formatRand(workerNetCents(gig.payout_cents))}</p>
+          <p className="text-xl font-extrabold tabular-nums text-[#14B8A6]">{formatRand(workerNetCents(gig.payout_cents))}</p>
           <p className="text-[11px] font-medium text-muted">you receive</p>
         </div>
       </div>
@@ -50,9 +50,9 @@ export function GigCard({ gig, matchesSkills }: { gig: DiscoverGig; matchesSkill
         <span>
           Posted by <span className="font-semibold text-ink-soft">{gig.customer_name}</span> · {timeAgo(gig.created_at)}
         </span>
-        {matchesSkills && <span className="rounded-full bg-brand-50 px-2 py-0.5 font-semibold text-brand-800">Matches your skills</span>}
+        {matchesSkills && <span className="rounded-full bg-[#0D9488]/15 px-2.5 py-0.5 text-xs font-semibold text-[#14B8A6] border border-[#0D9488]/30">Matches your skills</span>}
         {gig.is_demo && <DemoBadge />}
-        <span className="ml-auto inline-flex items-center gap-1 font-semibold text-brand-700">View gig <ArrowUpRight size={15} aria-hidden /></span>
+        <span className="ml-auto inline-flex items-center gap-1 font-semibold text-[#0D9488] group-hover:text-[#14B8A6]">View gig <ArrowUpRight size={15} aria-hidden /></span>
       </div>
     </Link>
   )
