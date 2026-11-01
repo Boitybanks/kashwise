@@ -30,6 +30,7 @@ const Economics = lazy(() => import('./pages/Economics'))
 const IncomeStatement = lazy(() => import('./pages/IncomeStatement'))
 const Workers = lazy(() => import('./pages/Workers'))
 const WorkerProfile = lazy(() => import('./pages/WorkerProfile'))
+const ProofScriptCv = lazy(() => import('./pages/ProofScriptCv'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Impact = lazy(() => import('./pages/Impact'))
 const Verify = lazy(() => import('./pages/Verify'))
@@ -80,7 +81,7 @@ function RecoveryLinkRedirect() {
 function ConfigError() {
   return (
     <div className="mx-auto max-w-md p-8 text-center">
-      <h1 className="text-xl font-bold">KashWise is not configured</h1>
+      <h1 className="text-xl font-semibold">KashWise is not configured</h1>
       <p className="mt-2 text-muted">Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (see .env.example).</p>
     </div>
   )
@@ -120,6 +121,7 @@ export default function App() {
                   <Route path="wallet" element={<RequireAuth><Wallet /></RequireAuth>} />
                   <Route path="wallet/statement" element={<RequireAuth><IncomeStatement /></RequireAuth>} />
                   <Route path="w/:id" element={<WorkerProfile />} />
+                  <Route path="w/:id/cv" element={<ProofScriptCv />} />
                   <Route path="proofscript" element={<ProofScriptRoute />} />
                   <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
                   <Route path="impact" element={<Impact />} />

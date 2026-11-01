@@ -31,7 +31,7 @@ function MethodOption({ method, current, onPick, title, body, fee, icon }: {
       <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface text-brand-500 ring-1 ring-line">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center justify-between gap-2">
-          <span className="font-bold">{title}</span>
+          <span className="font-semibold">{title}</span>
           <span className="text-xs font-semibold text-brand-700">{fee}</span>
         </span>
         <span className="mt-0.5 block text-sm text-ink-soft">{body}</span>
@@ -55,7 +55,7 @@ function CashoutRow({ c, onSimulate }: { c: Cashout; onSimulate?: (outcome: 'set
         {c.method === 'cash' ? <Store className="size-5" /> : c.method === 'ewallet' ? <Smartphone className="size-5" /> : c.method === 'payshap' ? <Zap className="size-5" /> : <Landmark className="size-5" />}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-bold">{formatRand(c.amount_cents - c.fee_cents)} <span className="font-normal text-muted">· {c.destination}</span></span>
+        <span className="block font-semibold">{formatRand(c.amount_cents - c.fee_cents)} <span className="font-normal text-muted">· {c.destination}</span></span>
         <span className="block text-xs text-muted">
           {c.reference} · {timeAgo(c.created_at)} · {c.fee_cents ? `${formatRand(c.fee_cents)} fee` : 'free cash-out'}
         </span>
@@ -163,23 +163,22 @@ export default function Wallet() {
         subtitle="Money from confirmed jobs. Cash out to your bank, or collect cash at a shop with no bank account needed."
       />
 
-      <Card className="relative overflow-hidden rounded-2xl border border-[#24525b]/60 shadow-[0_4px_24px_rgba(0,0,0,0.25)]">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden />
-        <div className="bg-gradient-to-br from-[#0e413c] via-[#0b2f2c] to-[#0A181D] p-6 text-white">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#98e0ef]">Available to cash out</p>
-          <p className="mt-1 text-4xl font-extrabold tabular-nums tracking-tight text-white sm:text-5xl">{formatRand(w.available_cents)}</p>
-          <p className="mt-2 text-xs text-[#d4eff4]/80">
+      <Card className="relative overflow-hidden rounded-2xl border border-line">
+        <div className="bg-deep p-6 text-white">
+          <p className="text-xs font-semibold uppercase tracking-wider text-deep-ink">Available to cash out</p>
+          <p className="mt-1 text-4xl font-semibold tabular-nums tracking-tight text-white sm:text-5xl">{formatRand(w.available_cents)}</p>
+          <p className="mt-2 text-xs text-deep-ink/80">
             {w.free_cashout_available ? 'Your first cash-out this week is free.' : 'You have used this week’s free cash-out; the next one costs R3 to a bank or R20 for cash.'}
           </p>
         </div>
         <dl className="grid grid-cols-2 gap-px bg-line">
-          <div className="bg-[#141A21] p-4">
-            <dt className="text-xs text-[#94A3B8]">{ibanks ? 'Waiting for payment or on hold' : 'Waiting for clients to confirm'}</dt>
-            <dd className="mt-1 text-xl font-extrabold tabular-nums text-[#F1F5F9]">{formatRand(w.held_cents)}</dd>
+          <div className="bg-surface p-4">
+            <dt className="text-xs text-ink-soft">{ibanks ? 'Waiting for payment or on hold' : 'Waiting for clients to confirm'}</dt>
+            <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">{formatRand(w.held_cents)}</dd>
           </div>
-          <div className="bg-[#141A21] p-4">
+          <div className="bg-surface p-4">
             <dt className="text-xs text-muted">Earned on KashWise</dt>
-            <dd className="text-lg font-extrabold">{formatRand(w.earned_cents)}</dd>
+            <dd className="text-lg font-semibold">{formatRand(w.earned_cents)}</dd>
           </div>
         </dl>
       </Card>
@@ -188,7 +187,7 @@ export default function Wallet() {
         <div className="flex items-start gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><FileCheck2 className="size-5" aria-hidden /></span>
           <div className="min-w-0 flex-1">
-            <h2 className="font-bold">Proof of income</h2>
+            <h2 className="font-semibold">Proof of income</h2>
             <p className="mt-1 text-sm text-muted">
               No payslip? Get a statement of what you earned from confirmed jobs, month by month, signed by KashWise so a lender,
               landlord or employer can check it is genuine.
@@ -204,7 +203,7 @@ export default function Wallet() {
 
       {done && (
         <div role="status" className="mt-4 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100">
-          <p className="flex items-center gap-2 font-bold text-brand-800"><CheckCircle2 className="size-5" aria-hidden /> {formatRand(done.amount_cents - done.fee_cents)} on its way · {done.reference}</p>
+          <p className="flex items-center gap-2 font-semibold text-brand-800"><CheckCircle2 className="size-5" aria-hidden /> {formatRand(done.amount_cents - done.fee_cents)} on its way · {done.reference}</p>
           <p className="mt-1 text-sm text-brand-800">
             {done.method === 'cash'
               ? `In the live version you get an SMS with a voucher number. Take it to ${CASH_SHOPS}, and enter your PIN at the till to collect your cash.`
@@ -216,7 +215,7 @@ export default function Wallet() {
       {canCashOut ? (
         <form onSubmit={onSubmit} noValidate className="mt-4">
           <Card className="space-y-4 p-5">
-            <h2 className="text-lg font-bold">Cash out</h2>
+            <h2 className="text-lg font-semibold">Cash out</h2>
             <fieldset className="space-y-3">
               <legend className="mb-2 text-sm font-semibold">How do you want your money?</legend>
               <MethodOption method="cash" current={method} onPick={setMethod} icon={<Store className="size-5" aria-hidden />} title="Cash at a shop" fee={feeLabel('cash')}
@@ -255,8 +254,8 @@ export default function Wallet() {
             <Field label="Amount" htmlFor="amount" hint={`From R50 to ${formatRand(maxCents)}${method === 'cash' ? ' (cash vouchers: up to R5 000 a day)' : ''}.`}>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center font-bold text-muted">R</span>
-                  <input id="amount" type="number" inputMode="decimal" min={50} step={0.01} className="input pl-8 text-lg font-bold" placeholder="200"
+                  <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center font-semibold text-muted">R</span>
+                  <input id="amount" type="number" inputMode="decimal" min={50} step={0.01} className="input pl-8 text-lg font-semibold" placeholder="200"
                     value={amount} onChange={(e) => setAmount(e.target.value)} />
                 </div>
                 <Button variant="secondary" onClick={() => setAmount(String(maxCents / 100))}>All</Button>
@@ -281,7 +280,7 @@ export default function Wallet() {
       )}
 
       <section aria-labelledby="history-h" className="mt-6">
-        <h2 id="history-h" className="mb-3 text-lg font-bold">Recent cash-outs</h2>
+        <h2 id="history-h" className="mb-3 text-lg font-semibold">Recent cash-outs</h2>
         {w.cashouts.length === 0 ? (
           <p className="card p-4 text-sm text-muted">No cash-outs yet.</p>
         ) : (

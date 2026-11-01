@@ -88,7 +88,7 @@ export default function ServiceDetail() {
               <span className="text-xs font-semibold text-muted">{categoryLabel(service.category)}</span>
               {service.is_demo && <DemoBadge />}
             </div>
-            <h1 className="mt-1 text-2xl font-extrabold leading-tight">{service.title}</h1>
+            <h1 className="mt-1 text-2xl font-semibold leading-tight">{service.title}</h1>
           </div>
         </div>
         <p className="mt-3 flex items-center gap-2 text-sm text-ink-soft"><MapPin className="size-4 text-muted" aria-hidden />Based in {areaLabel(areaOf(service.area_slug), service.area_slug)}</p>
@@ -98,7 +98,7 @@ export default function ServiceDetail() {
           <Link to={`/w/${service.worker.id}`} className="mt-5 flex items-center gap-3 rounded-xl border border-line p-3 hover:border-brand-200">
             <Avatar name={service.worker.display_name} id={service.worker.id} src={avatarUrl(service.worker.avatar_path)} />
             <span className="min-w-0 flex-1">
-              <span className="block font-bold">{isOwner ? 'You' : service.worker.display_name} {service.worker.is_demo && <DemoBadge />}</span>
+              <span className="block font-semibold">{isOwner ? 'You' : service.worker.display_name} {service.worker.is_demo && <DemoBadge />}</span>
               {service.worker.headline && <span className="block truncate text-xs text-muted">{service.worker.headline}</span>}
             </span>
             <span className="text-sm font-semibold text-brand-700">ProofScript</span>
@@ -124,7 +124,7 @@ export default function ServiceDetail() {
         </Card>
       ) : !userId ? (
         <Card className="mt-4 space-y-3 p-5">
-          <h2 className="text-lg font-bold">Book {first}</h2>
+          <h2 className="text-lg font-semibold">Book {first}</h2>
           <p className="text-sm text-muted">Create a free account to book. You choose the date, and your address stays encrypted until {first} needs it.</p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <ButtonLink to={`/signup?role=customer&next=${encodeURIComponent(`/services/${service.id}`)}`} size="lg">Join free to book</ButtonLink>
@@ -134,7 +134,7 @@ export default function ServiceDetail() {
       ) : (
         <form onSubmit={onSubmit} noValidate className="mt-4 space-y-4">
           <Card className="space-y-4 p-5">
-            <h2 className="text-lg font-bold">Book {first}</h2>
+            <h2 className="text-lg font-semibold">Book {first}</h2>
             <Field label="Where is the job?" htmlFor="area_slug" error={errors.area_slug}>
               <AreaSelect id="area_slug" value={form.area_slug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} placeholder="Choose the area" />
             </Field>
@@ -154,7 +154,7 @@ export default function ServiceDetail() {
             <div className="flex items-start gap-3">
               <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><Lock className="size-4" aria-hidden /></span>
               <div>
-                <h2 className="text-lg font-bold">Private details</h2>
+                <h2 className="text-lg font-semibold">Private details</h2>
                 <p className="text-sm text-muted">Stored encrypted. Only you and {first} can reveal them once the booking is made.</p>
               </div>
             </div>

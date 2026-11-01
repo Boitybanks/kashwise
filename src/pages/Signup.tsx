@@ -78,7 +78,7 @@ export default function Signup() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="text-3xl font-extrabold">Join KashWise</h1>
+      <h1 className="text-3xl font-semibold">Join KashWise</h1>
       <p className="mt-1 text-muted">Your skills, your schedule. Start earning extra income or find the help you need.</p>
       {next && <p className="mt-4 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">We’ll bring you back to your chosen task after you set up your account.</p>}
       <Card className="mt-6 p-5">
@@ -96,7 +96,7 @@ export default function Signup() {
                   <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={() => set('role', r.value)} className="sr-only" />
                   <r.icon className="mt-0.5 size-5 shrink-0 text-brand-500" aria-hidden />
                   <span>
-                    <span className="block font-bold">{r.title}</span>
+                    <span className="block font-semibold">{r.title}</span>
                     <span className="block text-xs text-muted">{r.body}</span>
                   </span>
                 </label>

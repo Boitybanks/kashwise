@@ -36,24 +36,23 @@ export default function Discover() {
 
   return (
     <div>
-      <div className="relative mb-6 overflow-hidden rounded-2xl border border-[#1E293B] bg-gradient-to-r from-[#141A21] via-[#141A21] to-[#0d2e2b] p-6 sm:p-8 shadow-sm">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden />
-        <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#14B8A6]">
-          <span className="size-1.5 rounded-full bg-[#14B8A6] shadow-[0_0_8px_#14B8A6]" aria-hidden /> Work Marketplace
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-line bg-surface p-6 sm:p-8 shadow-sm">
+        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand-500">
+          <span className="size-1.5 rounded-full bg-brand-600" aria-hidden /> Work Marketplace
         </span>
-        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#F1F5F9] sm:text-4xl [&>em]:font-normal [&>em]:text-[#2dd4bf]">
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-4xl [&>em]:font-normal [&>em]:text-brand-500">
           Find verified work <em>close to home.</em>
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#94A3B8] sm:text-base">
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">
           Transparent pay before you apply. Every client-confirmed job directly builds your tamper-proof ProofScript reputation.
         </p>
       </div>
 
       {profile?.role === 'worker' && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#0D9488]/30 bg-gradient-to-r from-[#0D9488]/15 to-[#0D9488]/5 p-4 sm:p-5">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4 sm:p-5">
           <div>
-            <h2 className="font-bold text-[#F1F5F9]">Working towards an earnings target?</h2>
-            <p className="text-sm text-[#94A3B8]">Build an income plan around your skills, time and goal.</p>
+            <h2 className="font-semibold text-ink">Working towards an earnings target?</h2>
+            <p className="text-sm text-ink-soft">Build an income plan around your skills, time and goal.</p>
           </div>
           <ButtonLink to="/money/earn-goal" size="sm">
             Earn My Goal →
@@ -61,21 +60,20 @@ export default function Discover() {
         </div>
       )}
 
-      <div className="relative mb-6 overflow-hidden rounded-2xl border border-[#24525b]/80 bg-[#1b3e45] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.25)] space-y-4">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden />
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-deep-soft bg-deep p-5 space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <label htmlFor="area-filter" className="text-xs font-bold uppercase tracking-wider text-[#d4eff4] sm:w-20">
+            <label htmlFor="area-filter" className="text-xs font-semibold uppercase tracking-wider text-deep-ink sm:w-20">
               Location
             </label>
             <div className="sm:w-72">
               <AreaSelect id="area-filter" value={area} onChange={(v) => setAreaOverride(v)} placeholder="Anywhere in South Africa" />
             </div>
             {hasSkills && (
-              <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-xs font-semibold text-[#d4eff4] sm:ml-3">
+              <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-xs font-semibold text-deep-ink sm:ml-3">
                 <input
                   type="checkbox"
-                  className="size-4 accent-[#0D9488] rounded"
+                  className="size-4 accent-brand-600 rounded"
                   checked={skillsOnly}
                   onChange={(e) => setSkillsOnly(e.target.checked)}
                 />
@@ -83,7 +81,7 @@ export default function Discover() {
               </label>
             )}
           </div>
-          <p className="text-xs text-[#d4eff4]/80">{area ? `Sorted closest to ${areaOf(area)?.name ?? 'your area'}` : 'Choose an area to sort by proximity'}</p>
+          <p className="text-xs text-deep-ink/80">{area ? `Sorted closest to ${areaOf(area)?.name ?? 'your area'}` : 'Choose an area to sort by proximity'}</p>
         </div>
 
         <div className="-mx-5 overflow-x-auto px-5 pb-1 no-scrollbar" role="group" aria-label="Filter by category">
@@ -92,8 +90,8 @@ export default function Discover() {
               type="button"
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                 category === null
-                  ? 'bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white shadow-[0_4px_12px_rgba(13,148,136,0.35)]'
-                  : 'bg-[#0B0F14]/50 border border-white/10 text-[#d4eff4] hover:bg-[#0B0F14]/80 hover:text-white hover:border-[#14B8A6]/40'
+                  ? 'bg-canvas text-deep font-semibold'
+                  : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
               }`}
               aria-pressed={category === null}
               onClick={() => setCategory(null)}
@@ -108,8 +106,8 @@ export default function Discover() {
                   type="button"
                   className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white shadow-[0_4px_12px_rgba(13,148,136,0.35)]'
-                      : 'bg-[#0B0F14]/50 border border-white/10 text-[#d4eff4] hover:bg-[#0B0F14]/80 hover:text-white hover:border-[#14B8A6]/40'
+                      ? 'bg-canvas text-deep font-semibold'
+                      : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
                   }`}
                   aria-pressed={active}
                   onClick={() => setCategory(active ? null : c.slug)}
@@ -144,12 +142,12 @@ export default function Discover() {
         </EmptyState>
       ) : (
         <>
-          <div className="mb-4 flex items-center justify-between text-xs text-[#94A3B8]">
+          <div className="mb-4 flex items-center justify-between text-xs text-ink-soft">
             <p className="inline-flex items-center gap-1.5 font-medium" aria-live="polite">
-              <Compass className="size-3.5 text-[#14B8A6]" aria-hidden />
-              Showing <strong className="text-[#F1F5F9]">{gigs.length}{query.hasNextPage ? '+' : ''}</strong> open gig{gigs.length === 1 ? '' : 's'}
+              <Compass className="size-3.5 text-brand-500" aria-hidden />
+              Showing <strong className="text-ink">{gigs.length}{query.hasNextPage ? '+' : ''}</strong> open gig{gigs.length === 1 ? '' : 's'}
             </p>
-            <span className="hidden sm:inline-block text-[11px] text-[#64748B]">Direct payout upon customer confirmation</span>
+            <span className="hidden sm:inline-block text-[11px] text-muted">Direct payout upon customer confirmation</span>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {gigs.map((g) => (

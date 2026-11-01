@@ -34,11 +34,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role={t.kind === 'error' ? 'alert' : 'status'}
             className={`pointer-events-auto flex w-full max-w-md items-start gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium shadow-2xl backdrop-blur ${
               t.kind === 'error'
-                ? 'border-red-900/60 bg-[#1e0e11] text-red-200'
-                : 'border-[#1E293B] bg-[#141A21] text-[#F1F5F9]'
+                ? 'border-clay-100 bg-clay-50 text-clay-700'
+                : 'border-line bg-surface text-ink'
             }`}
           >
-            {t.kind === 'error' ? <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-400" aria-hidden /> : <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#14B8A6]" aria-hidden />}
+            {t.kind === 'error' ? <AlertCircle className="mt-0.5 size-4 shrink-0 text-clay-700" aria-hidden /> : <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-500" aria-hidden />}
             <span className="flex-1">{t.message}</span>
             <button type="button" onClick={() => dismiss(t.id)} aria-label="Dismiss" className="opacity-80 hover:opacity-100">
               <X className="size-4" aria-hidden />

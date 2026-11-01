@@ -14,7 +14,7 @@ export function LifecycleStepper({ status }: { status: GigStatus }) {
         return (
           <li key={s} className="flex flex-col items-center gap-1 text-center" aria-current={active ? 'step' : undefined}>
             <span
-              className={`grid size-8 place-items-center rounded-full text-xs font-bold ring-2 ${
+              className={`grid size-8 place-items-center rounded-full text-xs font-semibold ring-2 ${
                 done ? 'bg-brand-600 text-white ring-brand-600' : active ? 'bg-sun-400 text-ink ring-sun-400' : 'bg-surface text-muted ring-line'
               }`}
             >

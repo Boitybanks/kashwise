@@ -105,7 +105,7 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
   if (!genuine || !p) {
     return (
       <Card className="p-5">
-        <h2 className="flex items-center gap-2 text-lg font-bold"><Sparkles className="size-5 text-brand-600" aria-hidden /> Your skills profile</h2>
+        <h2 className="flex items-center gap-2 text-lg font-semibold"><Sparkles className="size-5 text-brand-600" aria-hidden /> Your skills profile</h2>
         <p className="mt-1 text-sm text-muted">
           {p
             ? 'Your saved profile could not be verified. Write it again to get a signed copy.'
@@ -120,7 +120,7 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
     <Card className="scroll-mt-24 p-5">
       <section id="skills-profile" aria-labelledby="skills-profile-h">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 id="skills-profile-h" className="text-lg font-bold">Skills profile</h2>
+          <h2 id="skills-profile-h" className="text-lg font-semibold">Skills profile</h2>
           <Badge tone={p.written_by === 'ai' ? 'sun' : 'brand'}>{p.written_by === 'ai' ? 'Written by KashWise AI' : 'Summarised by KashWise'}</Badge>
           {p.demo_data && <DemoBadge />}
         </div>
@@ -130,7 +130,7 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
           {p.skills.map((s) => (
             <li key={s.name} className="rounded-xl border border-line p-3">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="font-bold">{s.name}</p>
+                <p className="font-semibold">{s.name}</p>
                 <p className="shrink-0 text-xs font-semibold text-brand-700">{s.jobs} confirmed {s.jobs === 1 ? 'job' : 'jobs'}</p>
               </div>
               <p className="mt-0.5 text-sm text-muted">
@@ -147,7 +147,7 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
 
         {p.habits.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-bold">What customers say</h3>
+            <h3 className="text-sm font-semibold">What customers say</h3>
             <ul className="mt-2 space-y-2">
               {p.habits.map((h) => (
                 <li key={h.label} className="flex gap-2 text-sm">

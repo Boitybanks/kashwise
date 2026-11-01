@@ -26,7 +26,7 @@ export function ContactReveal({ gigId, onRevealed }: { gigId: string; onRevealed
 
   return (
     <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4">
-      <p className="flex items-center gap-2 font-bold text-brand-800">
+      <p className="flex items-center gap-2 font-semibold text-brand-800">
         <ShieldCheck className="size-5" aria-hidden /> Private contact details
       </p>
       <p className="mt-1 text-xs text-brand-800/80">

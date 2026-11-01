@@ -10,11 +10,11 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'sun'
 type Size = 'sm' | 'md' | 'lg'
 
 const variantClass: Record<Variant, string> = {
-  primary: 'bg-[#0D9488] text-white hover:bg-[#14B8A6] active:scale-[0.99] transition-all font-semibold shadow-none',
-  secondary: 'bg-[#141A21] text-[#F1F5F9] border border-[#1E293B] hover:border-slate-700 hover:bg-[#1C242E] active:scale-[0.99] transition-all font-medium',
-  ghost: 'text-[#14B8A6] hover:bg-[#0D9488]/10 hover:text-white transition-all font-medium',
-  danger: 'bg-[#141A21] text-red-400 border border-red-900/40 hover:bg-red-950/20 active:scale-[0.99] transition-all font-medium',
-  sun: 'bg-[#D4A017] text-[#0B0F14] hover:bg-[#E5B025] active:scale-[0.99] transition-all font-bold shadow-none',
+  primary: 'bg-brand-600 text-white hover:bg-brand-800 active:scale-[0.99] transition-all font-semibold',
+  secondary: 'bg-surface text-ink border border-line hover:border-brand-200 hover:bg-surface-elevated active:scale-[0.99] transition-all font-medium',
+  ghost: 'text-brand-700 hover:bg-brand-50 hover:text-brand-800 transition-all font-medium',
+  danger: 'bg-surface text-clay-700 border border-clay-100 hover:bg-clay-50 active:scale-[0.99] transition-all font-medium',
+  sun: 'bg-gold-500 text-ink hover:bg-gold-400 active:scale-[0.99] transition-all font-semibold',
 }
 const sizeClass: Record<Size, string> = {
   sm: 'min-h-10 px-3.5 text-sm rounded-xl',
@@ -69,11 +69,11 @@ export function Card({ className = '', children }: { className?: string; childre
 
 type Tone = 'brand' | 'sun' | 'clay' | 'blue' | 'gray'
 const toneClass: Record<Tone, string> = {
-  brand: 'bg-[#0D9488]/15 text-[#14B8A6] ring-1 ring-[#0D9488]/30',
-  sun: 'bg-[#D4A017]/15 text-[#E5B025] ring-1 ring-[#D4A017]/30',
-  clay: 'bg-red-950/40 text-red-400 ring-1 ring-red-800/40',
-  blue: 'bg-sky-950/40 text-sky-400 ring-1 ring-sky-800/40',
-  gray: 'bg-slate-800/60 text-slate-300 ring-1 ring-slate-700/50',
+  brand: 'bg-brand-50 text-brand-800 ring-brand-200',
+  sun: 'bg-sun-50 text-sun-700 ring-sun-300',
+  clay: 'bg-clay-50 text-clay-700 ring-clay-100',
+  blue: 'bg-sky-50 text-sky-800 ring-sky-200',
+  gray: 'bg-surface-elevated text-ink-soft ring-line',
 }
 
 export function Badge({ tone = 'gray', children, className = '' }: { tone?: Tone; children: ReactNode; className?: string }) {
@@ -119,14 +119,14 @@ export function Spinner({ label = 'Loading…' }: { label?: string }) {
 }
 
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div aria-hidden className={`animate-pulse rounded-xl bg-[#1C242E] ${className}`} />
+  return <div aria-hidden className={`animate-pulse rounded-xl bg-surface-elevated ${className}`} />
 }
 
 export function EmptyState({ icon, title, children, action }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
   return (
     <div className="card flex flex-col items-center px-6 py-10 text-center">
-      {icon && <div className="mb-3 grid size-12 place-items-center rounded-full bg-[#0D9488]/20 text-[#14B8A6]">{icon}</div>}
-      <h3 className="text-lg font-bold">{title}</h3>
+      {icon && <div className="mb-3 grid size-12 place-items-center rounded-full bg-brand-50 text-brand-500">{icon}</div>}
+      <h3 className="text-lg font-semibold">{title}</h3>
       {children && <div className="mt-1 max-w-sm text-sm text-muted">{children}</div>}
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -179,14 +179,14 @@ export function Field({
   )
 }
 
-const avatarColors = ['bg-brand-600', 'bg-clay-500', 'bg-sky-700', 'bg-sun-600', 'bg-brand-800', 'bg-clay-700']
+const avatarColors = ['bg-brand-600', 'bg-clay-500', 'bg-sky-700', 'bg-sun-700', 'bg-brand-800', 'bg-clay-700']
 
 export function Avatar({ name, id, size = 'md', src }: { name: string; id?: string; size?: 'sm' | 'md' | 'lg' | 'xl'; src?: string | null }) {
   const seed = (id ?? name).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   const dims = { sm: 'size-8 text-xs', md: 'size-11 text-sm', lg: 'size-14 text-lg', xl: 'size-20 text-2xl' }[size]
   if (src) return <img src={src} alt="" aria-hidden className={`shrink-0 rounded-full bg-line object-cover ${dims}`} />
   return (
-    <span aria-hidden className={`grid shrink-0 place-items-center rounded-full font-bold text-white ${avatarColors[seed % avatarColors.length]} ${dims}`}>
+    <span aria-hidden className={`grid shrink-0 place-items-center rounded-full font-semibold text-white ${avatarColors[seed % avatarColors.length]} ${dims}`}>
       {initials(name)}
     </span>
   )
@@ -221,15 +221,15 @@ export function PageHeader({
     <div className={`mb-6 flex flex-wrap items-end justify-between gap-4 ${className}`}>
       <div className="max-w-2xl">
         {eyebrow && (
-          <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#14B8A6]">
-            <span className="size-1.5 rounded-full bg-[#14B8A6] shadow-[0_0_8px_#14B8A6]" aria-hidden />
+          <div className="mb-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.12em] text-brand-700">
+            <span className="size-1.5 rounded-full bg-brand-600" aria-hidden />
             {eyebrow}
           </div>
         )}
-        <h1 className="text-2xl font-extrabold tracking-tight text-[#F1F5F9] sm:text-3xl md:text-4xl [&>em]:font-normal [&>em]:text-[#2dd4bf]">
+        <h1 className="text-[28px] font-medium leading-[1.1] tracking-[-.035em] text-ink sm:text-4xl md:text-[42px] [&>em]:font-normal [&>em]:text-brand-700">
           {title}
         </h1>
-        {subtitle && <p className="mt-2 text-sm leading-relaxed text-[#94A3B8] sm:text-base">{subtitle}</p>}
+        {subtitle && <p className="mt-2 text-sm leading-relaxed text-ink-soft sm:text-base">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

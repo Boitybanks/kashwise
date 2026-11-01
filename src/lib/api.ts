@@ -2,6 +2,7 @@
 import { supabase, AVATAR_BUCKET, DOCUMENT_BUCKET, EVIDENCE_BUCKET } from './supabase'
 import { gigAad, homeAddressAad, identityAad, phoneAad } from './pq/aad'
 import type { SignedCredential, SignedDocument } from './pq/credential'
+import type { DictationKind, DictationResult } from './dictation'
 import type { IncomeStatement } from './income-statement'
 import type { SkillsProfile } from './skills-profile'
 import type {
@@ -554,6 +555,15 @@ async function bearer(): Promise<Record<string, string>> {
   const token = data.session?.access_token
   if (!token) throw new Error('Please sign in again.')
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+}
+
+// ── Dictation: speak it, KashWise writes it ────────────────────────────────
+export async function requestDictation<K extends DictationKind>(kind: K, transcript: string, useAi: boolean): Promise<DictationResult<K>> {
+  return callFunction<DictationResult<K>>('/api/dictate', {
+    method: 'POST',
+    headers: await bearer(),
+    body: JSON.stringify({ kind, transcript, useAi }),
+  })
 }
 
 // ── Proof of income and skills profile (signed by KashWise) ────────────────

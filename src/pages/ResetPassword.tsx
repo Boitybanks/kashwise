@@ -94,7 +94,7 @@ export default function ResetPassword() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="text-3xl font-extrabold">Choose a new password</h1>
+      <h1 className="text-3xl font-semibold">Choose a new password</h1>
       <Card className="mt-6 p-5">
         {phase === 'checking' && <Spinner label="Checking your reset link…" />}
         {phase === 'invalid' && (

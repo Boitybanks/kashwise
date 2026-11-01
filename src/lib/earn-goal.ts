@@ -44,6 +44,27 @@ const integerSum = (values: number[]) => {
   return sum
 }
 
+const rand = (cents: number) => `R${Math.round(cents / 100).toLocaleString('en-ZA')}`
+
+/** The plan in one plain paragraph, built only from its figures. It never promises work: suggested jobs still need a hire. */
+export function goalBrief(plan: GoalPlan, now = new Date()): string {
+  const { goal, progress: p, suggestions, candidates_count } = plan
+  const daysLeft = Math.round((Date.parse(`${goal.deadline}T00:00:00Z`) - Date.parse(`${southAfricaToday(now)}T00:00:00Z`)) / 86_400_000)
+  if (p.remaining_cents === 0) return `You have reached your ${rand(goal.target_cents)} goal. Set a new one when you are ready.`
+  if (daysLeft < 0) return `This goal has ended ${rand(p.remaining_cents)} short. Choose a new target and deadline to go again.`
+  const time = daysLeft === 0 ? 'today' : daysLeft === 1 ? 'by tomorrow' : `in the next ${daysLeft} days`
+  const need = `You need ${rand(p.remaining_cents)} more ${time}.`
+  const booked = p.booked_cents > 0 ? ` Booked work could bring ${rand(p.booked_cents)}.` : ''
+  if (suggestions.length === 0) {
+    return `${need}${booked} ${p.remaining_cents > p.booked_cents ? 'No open job fits your choices right now, so try a wider area, more days or another skill.' : 'That would cover it once the work is done and paid.'}`
+  }
+  const jobs = `${suggestions.length} open ${suggestions.length === 1 ? 'job fits' : 'jobs fit'} your skills, area and free time, worth ${rand(p.planned_cents)} to you after the fee`
+  const outcome = p.remaining_after_plan_cents > 0
+    ? `That would leave you ${rand(p.remaining_after_plan_cents)} short${candidates_count > suggestions.length ? `, and ${candidates_count - suggestions.length} more ${candidates_count - suggestions.length === 1 ? 'job also fits' : 'jobs also fit'}` : ', so a wider area or more days would help'}.`
+    : 'That would cover your goal if you are hired and the work is confirmed.'
+  return `${need}${booked} ${jobs}. ${outcome} Start with “${suggestions[0].title}”.`
+}
+
 /** SQL is authoritative for eligibility and money. AI never fabricates or ranks jobs. */
 export function buildGoalPlan(context: GoalContext, memory: GoalMemory, now = new Date()): GoalPlan {
   const { goal } = context

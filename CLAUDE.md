@@ -38,6 +38,12 @@ Netlify hosting + Functions (`netlify/functions`, site `sidegigs-codecraft`).
   saves it via `save_skills_profile`. Pages show it only if the signature verifies. With the worker's consent and
   `ANTHROPIC_API_KEY`, Claude (`claude-opus-5`) phrases it; `bindToEvidence` drops any skill without record codes and any
   quote that isn't a review verbatim. No consent or key → a factual summary labelled "Summarised by SideGigs", never "AI".
+- Dictation (`src/lib/dictation.ts`, `netlify/functions/dictate.mts`, `DictatePanel`): speech to a draft bio, job post or earnings goal.
+  It only returns a draft; the normal forms and RPCs save it. Claude (`claude-opus-5-5`) phrases it with the person's consent and
+  `ANTHROPIC_API_KEY`; `finalize*` rejects any number or credential the person did not say and strips contact details. No consent or
+  key → the rules write it, labelled "Tidied up by KashWise", never "AI". A suggested price states its source: said, market or estimate.
+- ProofScript CV (`/w/:id/cv`): renders from the signed work history and only after its signature verifies in the browser. The person's
+  own headline and bio appear only in the labelled "own words" panel, never as verified fact.
 - Portfolio records are created only by `confirm_completion`. "Verified" means customer-confirmed, never ID-verified.
 - Addresses/phones are X-Wing (ML-KEM-768+X25519) → AES-256-GCM envelopes encrypted in the browser; decrypted only in
   `netlify/functions/reveal-contact.mts` using the caller's JWT so RLS decides access. No service-role key anywhere.

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpRight, CalendarDays, Check, Clock3, MapPin, RotateCcw, ShieldCheck, Sparkles, Target, Trash2 } from 'lucide-react'
+import { goalBrief } from '../lib/earn-goal'
 import { fetchEarnGoal, forgetEarnGoalMemory, planEarnGoal } from '../lib/earn-goal-api'
 import type { GoalInput, GoalMemory, GoalPlan, GoalResponse, GoalSuggestion, GoalWindow } from '../lib/earn-goal-types'
 import { useAuth } from '../lib/auth'
@@ -15,6 +16,7 @@ import { formatRand } from '../lib/money'
 import { addDays, todayInSA } from '../lib/validation'
 import type { Profile } from '../lib/types'
 import { AreaSelect } from '../components/AreaSelect'
+import { DictatePanel } from '../components/DictatePanel'
 import { Badge, Button, ButtonLink, Card, DemoBadge, EmptyState, ErrorState, Field, PageHeader, SimulationNote, Spinner } from '../components/ui'
 
 const DAYS = [{ n: 1, label: 'Mon' }, { n: 2, label: 'Tue' }, { n: 3, label: 'Wed' }, { n: 4, label: 'Thu' }, { n: 5, label: 'Fri' }, { n: 6, label: 'Sat' }, { n: 0, label: 'Sun' }]
@@ -43,10 +45,10 @@ function Opportunity({ gig }: { gig: GoalSuggestion }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted">{categoryLabel(gig.category)}</p>
-          <h3 className="mt-1 text-lg font-bold leading-snug">{gig.title}</h3>
+          <h3 className="mt-1 text-lg font-semibold leading-snug">{gig.title}</h3>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-xl font-extrabold text-brand-500">{formatRand(gig.worker_net_cents)}</p>
+          <p className="text-xl font-semibold text-brand-500">{formatRand(gig.worker_net_cents)}</p>
           <p className="text-xs text-muted">after platform fee</p>
         </div>
       </div>
@@ -75,15 +77,16 @@ function Progress({ plan }: { plan: GoalPlan }) {
   return (
     <Card className="overflow-hidden p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div><p className="text-xs font-bold uppercase tracking-wider text-brand-700">Your earnings goal</p><h2 className="mt-1 text-2xl font-extrabold">{formatRand(plan.goal.target_cents)} by {formatDay(plan.goal.deadline)}</h2></div>
+        <div><p className="text-xs font-semibold uppercase tracking-wider text-brand-700">Your earnings goal</p><h2 className="mt-1 text-2xl font-semibold">{formatRand(plan.goal.target_cents)} by {formatDay(plan.goal.deadline)}</h2></div>
         <Badge tone={plan.simulation ? 'sun' : 'brand'}>{plan.simulation ? 'Simulation' : 'KashWise records'}</Badge>
       </div>
+      <p className="mt-3 rounded-md bg-brand-50 px-3 py-2.5 text-sm text-brand-800"><strong>iBanks read-out.</strong> {goalBrief(plan)}</p>
       <p className="mt-3 text-sm"><strong>{formatRand(p.settled_cents)}</strong> in settled net earnings since {formatDate(plan.goal.started_at)}.</p>
       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-brand-50" role="progressbar" aria-label="Settled earnings toward your goal" aria-valuenow={Math.round(percent)} aria-valuemin={0} aria-valuemax={100} aria-valuetext={`${formatRand(p.settled_cents)} settled of ${formatRand(plan.goal.target_cents)} target`}><span className="block h-full rounded-full bg-brand-600 transition-all" style={{ width: `${percent}%` }} /></div>
       <dl className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl bg-brand-50 p-3"><dt className="text-xs font-semibold text-brand-800">Settled earnings</dt><dd className="mt-1 text-xl font-extrabold">{formatRand(p.settled_cents)}</dd><dd className="mt-1 text-xs text-muted">After fees and refunds; not necessarily paid out.</dd></div>
-        <div className="rounded-xl bg-canvas p-3"><dt className="text-xs font-semibold text-muted">Booked work</dt><dd className="mt-1 text-xl font-extrabold">{formatRand(p.booked_cents)}</dd><dd className="mt-1 text-xs text-muted">Expected from booked work. Not earned yet.</dd></div>
-        <div className="rounded-xl bg-canvas p-3"><dt className="text-xs font-semibold text-muted">Suggested opportunities</dt><dd className="mt-1 text-xl font-extrabold">{formatRand(p.planned_cents)}</dd><dd className="mt-1 text-xs text-muted">Potential only. You still need to be hired.</dd></div>
+        <div className="rounded-xl bg-brand-50 p-3"><dt className="text-xs font-semibold text-brand-800">Settled earnings</dt><dd className="mt-1 text-xl font-semibold">{formatRand(p.settled_cents)}</dd><dd className="mt-1 text-xs text-muted">After fees and refunds; not necessarily paid out.</dd></div>
+        <div className="rounded-xl bg-canvas p-3"><dt className="text-xs font-semibold text-muted">Booked work</dt><dd className="mt-1 text-xl font-semibold">{formatRand(p.booked_cents)}</dd><dd className="mt-1 text-xs text-muted">Expected from booked work. Not earned yet.</dd></div>
+        <div className="rounded-xl bg-canvas p-3"><dt className="text-xs font-semibold text-muted">Suggested opportunities</dt><dd className="mt-1 text-xl font-semibold">{formatRand(p.planned_cents)}</dd><dd className="mt-1 text-xs text-muted">Potential only. You still need to be hired.</dd></div>
       </dl>
       <p className="mt-4 text-sm">{p.remaining_after_plan_cents > 0 ? <>Even with the booked and suggested work, you would still need <strong>{formatRand(p.remaining_after_plan_cents)}</strong> toward this goal.</> : p.remaining_cents === 0 ? 'Your settled earnings have reached this goal.' : 'Booked and suggested work could cover the remaining goal if completed and paid.'}</p>
       <p className="mt-2 text-xs text-muted">All figures are before your travel, materials and other work costs. Opportunities and payment are not guaranteed.</p>
@@ -162,8 +165,31 @@ function GoalWorkspace({ profile, data }: { profile: Profile; data: GoalResponse
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <form onSubmit={submit} noValidate className="space-y-4">
+        <DictatePanel
+          kind="goal"
+          title="Say what you want to make"
+          subtitle="iBanks reads your goal into the form below, then matches it to open jobs."
+          placeholder="e.g. I want to make R900 this week. I can do painting and small repairs, mornings, on weekdays."
+          action="Read my goal"
+          onDraft={(draft) => {
+            const before = form
+            setForm((f) => ({
+              ...f,
+              target_rands: draft.target_rands != null ? String(draft.target_rands) : f.target_rands,
+              deadline: draft.deadline ?? f.deadline,
+              skills: draft.skills.length ? draft.skills : f.skills,
+              weekdays: draft.weekdays.length ? draft.weekdays : f.weekdays,
+              time_windows: draft.time_windows.length ? draft.time_windows : f.time_windows,
+              radius_km: draft.radius_km ?? f.radius_km,
+            }))
+            setErrors({})
+            return () => setForm(before)
+          }}
+          readBack={(draft) => `Your goal is ${draft.target_rands ?? 'not clear yet'} rand${draft.deadline ? ` by ${formatDay(draft.deadline)}` : ''}.`}
+          afterDraft={() => 'Check the form, then build your plan.'}
+        />
         <Card className="p-5 sm:p-6">
-          <h2 className="text-lg font-extrabold">Make room for your next goal.</h2>
+          <h2 className="text-lg font-semibold">Make room for your next goal.</h2>
           <p className="mt-1 text-sm text-muted">Tell iBanks what you want to earn and when you can work.</p>
           <fieldset disabled={save.isPending || forget.isPending} className="mt-5 space-y-5">
             <legend className="sr-only">Your goal and availability</legend>
@@ -194,10 +220,10 @@ function GoalWorkspace({ profile, data }: { profile: Profile; data: GoalResponse
         {changed && data.plan && <p className="rounded-xl bg-sun-50 p-3 text-sm text-sun-700" role="status">Your choices have changed. Update your plan to see new matches. The results below still use your last saved choices.</p>}
         {data.plan ? <>
           <Progress plan={data.plan} />
-          <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-extrabold">Your next opportunities</h2><Badge tone="brand">{data.plan.suggestions.length} suggested</Badge></div>
+          <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-semibold">Your next opportunities</h2><Badge tone="brand">{data.plan.suggestions.length} suggested</Badge></div>
           {data.plan.suggestions.length > 0 ? <><p className="text-sm text-muted">A shortlist that fits your choices. These are potential earnings, not bookings.</p>{data.plan.suggestions.map((gig) => <Opportunity key={gig.id} gig={gig} />)}</> : <EmptyState icon={<Target className="size-5" aria-hidden />} title="No suitable opportunities right now" action={<ButtonLink to="/discover" variant="secondary" size="sm">Browse all work</ButtonLink>}>Try a wider area, another available day or another skill. Your goal stays here while new jobs are posted.</EmptyState>}
-          {data.plan.notes.length > 0 && <Card className="p-4"><h3 className="text-sm font-bold">Keep in mind</h3><ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted">{data.plan.notes.map((note) => <li key={note}>{note}</li>)}</ul></Card>}
-        </> : <Card className="flex min-h-96 flex-col items-center justify-center p-8 text-center"><span className="grid size-16 place-items-center rounded-2xl bg-brand-50 text-brand-700"><Target className="size-8" aria-hidden /></span><h2 className="mt-5 max-w-xs text-2xl font-extrabold">A little extra income. A practical next step.</h2><p className="mt-3 max-w-sm text-sm text-muted">Set a goal to find current opportunities that fit your skills, area and availability. Each suggestion explains why it fits and what you would receive after the fee.</p><ol className="mt-6 grid w-full grid-cols-3 gap-3 text-xs font-semibold text-brand-800"><li>1. Set your goal</li><li>2. Review matches</li><li>3. Choose to apply</li></ol></Card>}
+          {data.plan.notes.length > 0 && <Card className="p-4"><h3 className="text-sm font-semibold">Keep in mind</h3><ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted">{data.plan.notes.map((note) => <li key={note}>{note}</li>)}</ul></Card>}
+        </> : <Card className="flex min-h-96 flex-col items-center justify-center p-8 text-center"><span className="grid size-16 place-items-center rounded-2xl bg-brand-50 text-brand-700"><Target className="size-8" aria-hidden /></span><h2 className="mt-5 max-w-xs text-2xl font-semibold">A little extra income. A practical next step.</h2><p className="mt-3 max-w-sm text-sm text-muted">Set a goal to find current opportunities that fit your skills, area and availability. Each suggestion explains why it fits and what you would receive after the fee.</p><ol className="mt-6 grid w-full grid-cols-3 gap-3 text-xs font-semibold text-brand-800"><li>1. Set your goal</li><li>2. Review matches</li><li>3. Choose to apply</li></ol></Card>}
       </section>
     </div>
   )

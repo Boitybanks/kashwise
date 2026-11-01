@@ -49,7 +49,7 @@ export function Applicants({ applications, gigArea, totalCents, onSelect }: Prop
               <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-bold">{w.display_name}</p>
+                  <p className="font-semibold">{w.display_name}</p>
                   {w.is_demo && <DemoBadge />}
                 </div>
                 {w.headline && <p className="text-sm text-muted">{w.headline}</p>}
@@ -62,15 +62,15 @@ export function Applicants({ applications, gigArea, totalCents, onSelect }: Prop
             <dl className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-canvas p-3 text-center">
               <div>
                 <dt className="text-[11px] text-muted">Verified gigs</dt>
-                <dd className="flex items-center justify-center gap-1 font-extrabold"><BadgeCheck className="size-4 text-brand-600" aria-hidden />{s ? s.completed : '…'}</dd>
+                <dd className="flex items-center justify-center gap-1 font-semibold"><BadgeCheck className="size-4 text-brand-600" aria-hidden />{s ? s.completed : '…'}</dd>
               </div>
               <div>
                 <dt className="text-[11px] text-muted">Rating</dt>
-                <dd className="flex items-center justify-center gap-1 font-extrabold"><Star className="size-4 fill-sun-400 text-sun-400" aria-hidden />{s ? (s.avg_rating ?? 'New') : '…'}</dd>
+                <dd className="flex items-center justify-center gap-1 font-semibold"><Star className="size-4 fill-sun-400 text-sun-400" aria-hidden />{s ? (s.avg_rating ?? 'New') : '…'}</dd>
               </div>
               <div>
                 <dt className="text-[11px] text-muted">Repeat clients</dt>
-                <dd className="font-extrabold">{s ? s.repeat_customers : '…'}</dd>
+                <dd className="font-semibold">{s ? s.repeat_customers : '…'}</dd>
               </div>
             </dl>
             {w.skills.length > 0 && (

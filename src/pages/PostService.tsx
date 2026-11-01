@@ -13,6 +13,7 @@ import { AreaSelect } from '../components/AreaSelect'
 import { FeeBreakdown } from '../components/gig/FeeBreakdown'
 import { useToast } from '../components/ui/toast'
 import NotFound from './NotFound'
+import { CategoryIcon } from '../components/CategoryIcon'
 
 /** /services/new and /services/:id/edit. The provider types what they take home; clients see the price that pays it. */
 export default function PostService() {
@@ -81,7 +82,7 @@ function ServiceForm({ existing }: { existing?: Service }) {
       />
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <Card className="space-y-4 p-5">
-          <h2 className="text-lg font-bold">1. What do you offer?</h2>
+          <h2 className="text-lg font-semibold">1. What do you offer?</h2>
           <Field label="Service title" htmlFor="title" error={errors.title} hint="e.g. “Paint one interior room” or “One-hour maths lesson”">
             <input id="title" className="input" maxLength={80} value={form.title} onChange={(e) => set('title', e.target.value)} {...invalid('title')} />
           </Field>
@@ -90,7 +91,7 @@ function ServiceForm({ existing }: { existing?: Service }) {
             <div className="flex flex-wrap gap-2" id="category" tabIndex={-1}>
               {CATEGORIES.map((c) => (
                 <button key={c.slug} type="button" className="chip" aria-pressed={form.category === c.slug} onClick={() => set('category', c.slug)}>
-                  <span aria-hidden>{c.emoji}</span> {c.label}
+                  <CategoryIcon category={c.slug} className="size-4" /> {c.label}
                 </button>
               ))}
             </div>
@@ -105,11 +106,11 @@ function ServiceForm({ existing }: { existing?: Service }) {
         </Card>
 
         <Card className="space-y-4 p-5">
-          <h2 className="text-lg font-bold">2. Set your price</h2>
+          <h2 className="text-lg font-semibold">2. Set your price</h2>
           <Field label="What do you want to receive?" htmlFor="take-home" error={errors.take_home_cents} hint="Between R45 and R45 000 — the amount that reaches you. Clients are shown the price that pays you this after KashWise’s 10% fee. No VAT is taken.">
             <div className="relative">
-              <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center font-bold text-muted">R</span>
-              <input id="take-home" type="number" inputMode="decimal" min={45} max={45000} step={0.01} className="input pl-8 text-lg font-bold"
+              <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center font-semibold text-muted">R</span>
+              <input id="take-home" type="number" inputMode="decimal" min={45} max={45000} step={0.01} className="input pl-8 text-lg font-semibold"
                 placeholder="450" value={form.take_home_rands} onChange={(e) => set('take_home_rands', e.target.value)} {...invalid('take_home_cents')} />
             </div>
           </Field>

@@ -35,7 +35,7 @@ function ServiceRow({ service }: { service: Service }) {
       <Link to={`/services/${service.id}`} className="flex min-w-0 flex-1 items-center gap-3">
         <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl bg-canvas text-xl"><CategoryIcon category={service.category} /></span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-bold">{service.title}</span>
+          <span className="block truncate font-semibold">{service.title}</span>
           <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
             {service.is_active ? <Badge tone="brand">Live</Badge> : <Badge tone="gray">Paused</Badge>}
             <span className="font-semibold text-brand-700">you receive {formatRand(service.take_home_cents)}</span>

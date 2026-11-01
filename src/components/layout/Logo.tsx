@@ -15,7 +15,7 @@ export function Logo({ to = '/' }: { to?: string }) {
   return (
     <Link to={to} className="flex items-center gap-2 rounded-lg" aria-label="KashWise home">
       <LogoMark />
-      <span className="text-[23px] font-extrabold tracking-[-.06em] text-ink">
+      <span className="text-[23px] font-semibold tracking-[-.06em] text-ink">
         Kash<span className="text-brand-600">Wise</span>
       </span>
     </Link>

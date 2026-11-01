@@ -35,13 +35,13 @@ export default function ForgotPassword() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="text-3xl font-extrabold">Reset your password</h1>
+      <h1 className="text-3xl font-semibold">Reset your password</h1>
       <p className="mt-1 text-muted">Enter the email you signed up with and we’ll send you a link to choose a new password.</p>
       <Card className="mt-6 p-5">
         {sentTo ? (
           <div role="status">
             <MailCheck className="size-8 text-brand-600" aria-hidden />
-            <h2 className="mt-3 text-lg font-bold">Check your email</h2>
+            <h2 className="mt-3 text-lg font-semibold">Check your email</h2>
             <p className="mt-1 text-sm text-ink-soft">
               If there’s a KashWise account for <strong>{sentTo}</strong>, a reset link is on its way. It works once and expires soon — check your
               spam folder if you can’t see it.

@@ -95,7 +95,7 @@ export function DocumentsManager({ userId, readOnly }: { userId: string; readOnl
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><FileText className="size-4" aria-hidden /></span>
         <div>
-          <h2 className="font-bold">Documents (PDF)</h2>
+          <h2 className="font-semibold">Documents (PDF)</h2>
           <p className="text-sm text-muted">
             Qualifications, certificates, your ID or other paperwork. KashWise doesn’t check documents — anything you share is shown as uploaded by you.
           </p>
@@ -188,7 +188,7 @@ export function SharedDocuments({ ownerId, firstName }: { ownerId: string; first
   if (!docs.length) return null
   return (
     <Card className="mt-4 p-5">
-      <h2 className="font-bold">Qualifications & documents</h2>
+      <h2 className="font-semibold">Qualifications & documents</h2>
       <p className="text-xs text-muted">Uploaded by {firstName}. KashWise has not checked these documents.</p>
       <ul className="mt-3 space-y-2">
         {docs.map((d) => (

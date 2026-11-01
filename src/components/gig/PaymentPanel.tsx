@@ -14,14 +14,14 @@ export function PaymentPanel({ txn, perspective }: { txn: Transaction; perspecti
   return (
     <div className="rounded-xl border border-line p-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="flex items-center gap-2 font-bold">
+        <p className="flex items-center gap-2 font-semibold">
           <ShieldCheck className="size-5 text-brand-600" aria-hidden /> KashWise protection
         </p>
         <Badge tone={s.tone}>{s.label}</Badge>
       </div>
       {perspective === 'customer' ? (
         <dl className="mt-3 space-y-1 text-sm">
-          <div className="flex justify-between"><dt className="font-bold">You pay</dt><dd className="font-extrabold">{formatRand(txn.total_cents)}</dd></div>
+          <div className="flex justify-between"><dt className="font-semibold">You pay</dt><dd className="font-semibold">{formatRand(txn.total_cents)}</dd></div>
         </dl>
       ) : (
         <p className="mt-3 text-sm">

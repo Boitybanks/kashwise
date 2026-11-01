@@ -48,7 +48,7 @@ export function ReportButton({ gigId, userId, label = 'Report' }: { gigId?: stri
   }
   return (
     <form onSubmit={submit} className="card mt-2 space-y-3 p-4" aria-label="Report">
-      <p className="font-bold">What’s wrong?</p>
+      <p className="font-semibold">What’s wrong?</p>
       <label htmlFor="report-reason" className="sr-only">Reason</label>
       <select id="report-reason" className="input" value={reason} onChange={(e) => setReason(e.target.value)}>
         {reasons.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}

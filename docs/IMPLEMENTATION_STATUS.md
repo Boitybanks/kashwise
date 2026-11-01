@@ -1,6 +1,6 @@
 # KashWise / iBanks — implementation status
 
-Updated 9 Oct 2026. Statuses: **WORKING** (demonstrated by the tests or commands listed) · **PARTIAL** · **SIMULATED** ·
+Updated 1 Nov 2026. Statuses: **WORKING** (demonstrated by the tests or commands listed) · **PARTIAL** · **SIMULATED** ·
 **NOT STARTED** · **BLOCKED**. "Local DB" = every migration running in PGlite (`tests/helpers/local-db.ts`), never the
 live Supabase project. Repo: `kashwise-main` (own Git repo since 8 Oct, no commits yet), imported from `GK_SideGIGS`
 with attribution (`NOTICE.md`).
@@ -49,6 +49,17 @@ Parallel thread workers time out on OneDrive ("Failed to start threads worker");
 | ProofScript evidence level "payment confirmed" | WORKING (local DB) | pipeline test; badge in `PortfolioRecord.tsx` |
 | Insight feedback (helpful / not / dismiss) | WORKING (code, pre-existing RPC) | not separately tested this round |
 | User-declared obligations (cash-flow gaps) | NOT STARTED | |
+
+## Voice, AI drafting and the verified CV (1 Nov 2026)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Dictated bio, job post and earnings goal (`/api/dictate`, `DictatePanel`) | PARTIAL | Rules and checks: `dictation.test.ts`. Built and run in the browser with scripted speech input. **Real microphone not tested on a phone. The Claude path has never run against the API**: no `ANTHROPIC_API_KEY` was available. Run `tests/dictation-prompt-eval.mts` once a key exists |
+| isiZulu, isiXhosa, Afrikaans, Sesotho, Setswana speech | PARTIAL | Depends on the browser's speech service; an unsupported language shows a message and typing still works |
+| Price suggestion: said → similar KashWise jobs → labelled AI estimate | WORKING (rules) | `dictation.test.ts` |
+| iBanks read-out on Earn My Goal | WORKING | `proofscript-cv.test.tsx` |
+| ProofScript CV `/w/:id/cv`, PDF through print | WORKING | `proofscript-cv.test.tsx`; rendered against the live demo worker at 360 px, desktop and A4 |
+| Editorial light theme across all screens | WORKING | Every route screenshotted at 360 and 1280 px as visitor, worker and customer with an automated contrast and overflow check |
 
 ## Product, business, presentation
 

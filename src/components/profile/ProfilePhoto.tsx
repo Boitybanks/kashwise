@@ -37,7 +37,7 @@ export function ProfilePhoto({ profile, readOnly, onChanged }: { profile: Profil
     <Card className="mb-5 flex items-center gap-4 p-5">
       <Avatar name={profile.display_name} id={profile.id} src={avatarUrl(profile.avatar_path)} size="xl" />
       <div className="min-w-0 flex-1">
-        <h2 className="font-bold">Profile photo</h2>
+        <h2 className="font-semibold">Profile photo</h2>
         <p className="text-sm text-muted">
           A clear photo of your face helps {profile.role === 'worker' ? 'customers' : 'workers'} recognise you when you meet. It’s cropped to a
           square and location data is removed.

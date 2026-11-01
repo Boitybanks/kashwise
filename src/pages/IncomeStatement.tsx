@@ -61,7 +61,7 @@ export default function IncomeStatement() {
           <div role="note" className="mb-6 flex gap-3 rounded-xl border-2 border-clay-500 bg-clay-50 p-4 text-clay-700">
             <TriangleAlert className="size-6 shrink-0" aria-hidden />
             <div>
-              <p className="font-extrabold uppercase tracking-wide">Simulated payments: not valid proof of income</p>
+              <p className="font-semibold uppercase tracking-wide">Simulated payments: not valid proof of income</p>
               <p className="text-sm">In this version of KashWise no real money moves. When payments go live through a licensed payment partner, this statement will show real earnings.</p>
             </div>
           </div>
@@ -72,11 +72,11 @@ export default function IncomeStatement() {
             <LogoMark className="size-10" />
             <div>
               <p className="text-sm font-semibold text-muted">KashWise</p>
-              <h1 id="statement-h" className="text-2xl font-extrabold">Income statement</h1>
+              <h1 id="statement-h" className="text-2xl font-semibold">Income statement</h1>
             </div>
           </div>
           <dl className="text-right text-sm">
-            <dt className="sr-only">Reference</dt><dd className="font-mono font-bold">{s.reference}</dd>
+            <dt className="sr-only">Reference</dt><dd className="font-mono font-semibold">{s.reference}</dd>
             <dt className="sr-only">Issued</dt><dd className="text-muted">Issued {formatDate(s.issued_at)}</dd>
           </dl>
         </header>
@@ -84,12 +84,12 @@ export default function IncomeStatement() {
         <section className="mt-5 grid gap-4 sm:grid-cols-2" aria-label="Worker and period">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Service provider</p>
-            <p className="flex flex-wrap items-center gap-2 text-lg font-bold">{s.worker.name} {s.demo_data && <DemoBadge />}</p>
+            <p className="flex flex-wrap items-center gap-2 text-lg font-semibold">{s.worker.name} {s.demo_data && <DemoBadge />}</p>
             <p className="text-sm text-muted">{s.worker.area} · on KashWise since {formatDate(s.worker.member_since)}</p>
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Period</p>
-            <p className="text-lg font-bold">{period}</p>
+            <p className="text-lg font-semibold">{period}</p>
             <p className="text-sm text-muted">{s.period.months} months</p>
           </div>
         </section>
@@ -103,13 +103,13 @@ export default function IncomeStatement() {
           ].map(([label, value]) => (
             <div key={label} className="flex flex-col-reverse bg-surface p-4">
               <dt className="text-xs text-muted">{label}</dt>
-              <dd className="text-xl font-extrabold tabular-nums">{value}</dd>
+              <dd className="text-xl font-semibold tabular-nums">{value}</dd>
             </div>
           ))}
         </dl>
 
         <section className="mt-6" aria-labelledby="monthly-h">
-          <h2 id="monthly-h" className="font-bold">Month by month</h2>
+          <h2 id="monthly-h" className="font-semibold">Month by month</h2>
           <div className="mt-2 overflow-x-auto">
             <table className="w-full min-w-[480px] text-sm tabular-nums">
               <thead className="text-left text-xs text-muted">
@@ -128,12 +128,12 @@ export default function IncomeStatement() {
                     <td className="py-2 text-right">{m.jobs}</td>
                     <td className="py-2 text-right">{formatRand(m.client_paid_cents)}</td>
                     <td className="py-2 text-right">{formatRand(m.fee_cents)}</td>
-                    <td className="py-2 text-right font-bold">{formatRand(m.net_cents)}</td>
+                    <td className="py-2 text-right font-semibold">{formatRand(m.net_cents)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="font-extrabold">
+                <tr className="font-semibold">
                   <td className="py-2">Total</td>
                   <td className="py-2 text-right">{s.totals.jobs}</td>
                   <td className="py-2 text-right">{formatRand(s.totals.client_paid_cents)}</td>
@@ -146,7 +146,7 @@ export default function IncomeStatement() {
         </section>
 
         <section className="mt-6" aria-labelledby="jobs-h">
-          <h2 id="jobs-h" className="font-bold">Confirmed jobs in this period</h2>
+          <h2 id="jobs-h" className="font-semibold">Confirmed jobs in this period</h2>
           {s.lines.length === 0 ? (
             <p className="mt-2 text-sm text-muted">No confirmed jobs were paid out in this period.</p>
           ) : (
@@ -169,7 +169,7 @@ export default function IncomeStatement() {
                         <p className="text-xs text-muted">{categoryLabel(l.category)} · {l.area}{l.record ? ` · record ${l.record}` : ''}</p>
                       </td>
                       <td className="py-2">{l.customer ?? '—'}</td>
-                      <td className="py-2 text-right font-bold tabular-nums">{formatRand(l.net_cents)}</td>
+                      <td className="py-2 text-right font-semibold tabular-nums">{formatRand(l.net_cents)}</td>
                     </tr>
                   ))}
                 </tbody>

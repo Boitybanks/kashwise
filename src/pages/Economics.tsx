@@ -36,7 +36,7 @@ export default function Economics() {
   const row = (label: string, cents: number, strong = false) => (
     <div className="flex justify-between border-t border-line py-1.5 text-sm">
       <dt>{label}</dt>
-      <dd className={strong ? 'font-extrabold' : 'font-semibold'}>{formatRand(cents)}</dd>
+      <dd className={strong ? 'font-semibold' : 'font-semibold'}>{formatRand(cents)}</dd>
     </div>
   )
 
@@ -55,7 +55,7 @@ export default function Economics() {
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="space-y-3 p-4">
-          <h2 className="font-extrabold">Assumptions</h2>
+          <h2 className="font-semibold">Assumptions</h2>
           {FIELDS.map((f) => (
             <label key={f.key} className="block text-sm">
               <span className="flex justify-between font-semibold"><span>{f.label}</span><span className="text-xs font-normal text-muted">{f.hint}</span></span>
@@ -76,7 +76,7 @@ export default function Economics() {
           ))}
         </Card>
         <Card className="p-4">
-          <div className="flex items-center justify-between gap-2"><h2 className="font-extrabold">Per month</h2><Badge tone="gray">Scenario, not a result</Badge></div>
+          <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Per month</h2><Badge tone="gray">Scenario, not a result</Badge></div>
           {error && <p className="mt-2 text-sm text-clay-700">{error}</p>}
           {r && (
             <>

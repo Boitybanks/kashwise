@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Lock, LogOut, PartyPopper } from 'lucide-react'
+import { Lock, LogOut } from 'lucide-react'
 import { createProfile, hasSavedPhone, removePhone, savePhone, updateProfile } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORIES } from '../lib/categories'
@@ -10,6 +10,8 @@ import type { Role } from '../lib/types'
 import { firstError, phoneSchema, profileSchema } from '../lib/validation'
 import { Button, ButtonLink, Card, Field, PageHeader } from '../components/ui'
 import { AreaSelect } from '../components/AreaSelect'
+import { CategoryIcon } from '../components/CategoryIcon'
+import { DictatePanel } from '../components/DictatePanel'
 import { useToast } from '../components/ui/toast'
 import { ProfilePhoto } from '../components/profile/ProfilePhoto'
 import { DocumentsManager } from '../components/profile/Documents'
@@ -100,7 +102,6 @@ function ProfileForm() {
     <div className="mx-auto max-w-2xl">
       {params.get('welcome') && (
         <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-50 p-4 text-brand-800 ring-1 ring-brand-100">
-          <PartyPopper className="mt-0.5 size-5 shrink-0" aria-hidden />
           <p className="text-sm"><strong>Your account is ready.</strong> Add a short introduction and your skills so customers know why to choose you. {next ? 'Then continue to your chosen task.' : 'Then find your first gig.'}</p>
         </div>
       )}
@@ -111,7 +112,21 @@ function ProfileForm() {
       )}
       <PageHeader title={isSetup ? 'Set up your profile' : 'Your profile'} subtitle="This is what customers and workers see." action={!isSetup && userId ? <ButtonLink to={`/w/${userId}`} variant="secondary" size="sm">View ProofScript</ButtonLink> : undefined} />
       {profile && <ProfilePhoto profile={profile} readOnly={readOnly} onChanged={refreshProfile} />}
-      <form onSubmit={onSubmit} noValidate className="space-y-5">
+      <DictatePanel
+        kind="bio"
+        title="Say who you are and what you do"
+        subtitle="Talk the way you talk. KashWise writes your profile formally, using only what you said."
+        placeholder="e.g. I paint houses in Soweto. I have been doing it for six years, I am never late and I clean up after."
+        action="Write my profile"
+        onDraft={(draft) => {
+          const before = form
+          setForm((f) => ({ ...f, headline: draft.headline || f.headline, bio: draft.bio, skills: f.skills.length ? f.skills : draft.skills }))
+          return () => setForm(before)
+        }}
+        readBack={(draft) => `${draft.headline}. ${draft.bio}`}
+        afterDraft={() => readOnly ? 'This shared demo account can’t save it. Your own account can.' : 'Press save below to keep it.'}
+      />
+      <form onSubmit={onSubmit} noValidate className="mt-5 space-y-5">
         <fieldset disabled={readOnly} className="space-y-5 disabled:opacity-70">
         <Card className="space-y-4 p-5">
           <fieldset>
@@ -138,12 +153,12 @@ function ProfileForm() {
 
         <Card className="p-5">
           <fieldset>
-            <legend className="font-bold">Your skills</legend>
+            <legend className="font-semibold">Your skills</legend>
             <p className="mb-3 text-sm text-muted">Pick the work you can confidently do. Customers see these skills when you apply.</p>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((c) => (
                 <button key={c.slug} type="button" className="chip" aria-pressed={form.skills.includes(c.slug)} onClick={() => toggleSkill(c.slug)}>
-                  <span aria-hidden>{c.emoji}</span> {c.label}
+                  <CategoryIcon category={c.slug} className="size-4" /> {c.label}
                 </button>
               ))}
             </div>
@@ -158,13 +173,13 @@ function ProfileForm() {
           <div className="flex items-start gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><Lock className="size-4" aria-hidden /></span>
             <div>
-              <h2 className="font-bold">Phone number (private)</h2>
+              <h2 className="font-semibold">Phone number (private)</h2>
               <p className="text-sm text-muted">
                 Stored encrypted and shared through the gig’s contact panel only after you are matched. Your phone number is never shown on your public profile.
               </p>
             </div>
           </div>
-          <p className="mt-3 text-sm font-semibold">{phoneQ.data ? '✅ A phone number is saved (encrypted).' : 'No phone number saved yet.'}</p>
+          <p className="mt-3 text-sm font-semibold">{phoneQ.data ? 'A phone number is saved (encrypted).' : 'No phone number saved yet.'}</p>
           <form onSubmit={onSavePhone} noValidate className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start">
             <div className="flex-1">
               <label htmlFor="phone" className="sr-only">Phone number</label>

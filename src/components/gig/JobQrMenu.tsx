@@ -31,14 +31,14 @@ export function JobQrMenu({ gig, workerName }: { gig: Pick<Gig, 'id' | 'status' 
 
   return (
     <div className="rounded-xl border border-line p-4">
-      <p className="flex items-center gap-2 font-bold"><QrIcon className="size-5 text-brand-600" aria-hidden /> On-site Handover PIN & QR</p>
+      <p className="flex items-center gap-2 font-semibold"><QrIcon className="size-5 text-brand-600" aria-hidden /> On-site Handover PIN & QR</p>
       <p className="mt-1 text-xs text-muted">Show this PIN or QR code to {workerName} on site to confirm handover and verify completion.</p>
       <div className="relative mt-3">
         <Button variant="secondary" aria-expanded={open} aria-controls={menuId} onClick={() => setOpen((o) => !o)}>
           Show a QR code (or on-site PIN) <ChevronDown className={`size-4 transition ${open ? 'rotate-180' : ''}`} aria-hidden />
         </Button>
         {open && (
-          <ul id={menuId} className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-[#1E293B] bg-[#141A21] p-1 shadow-lg">
+          <ul id={menuId} className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-line bg-surface p-1 shadow-lg">
             {(['start', 'finish'] as HandshakeStep[]).map((s) => (
               <li key={s}>
                 <button type="button" disabled={!ready[s]} onClick={() => { setShown(s); setOpen(false) }}
@@ -57,7 +57,7 @@ export function JobQrMenu({ gig, workerName }: { gig: Pick<Gig, 'id' | 'status' 
         <div className="mt-4 text-center">
           <QrCode value={handshakeUrl(window.location.origin, gig.id, shown, visible.code)} label={`${LABEL[shown]} for ${workerName} to scan`}
             className="mx-auto size-56 rounded-xl ring-1 ring-line" />
-          <p className="mt-3 font-mono text-3xl font-extrabold tracking-[0.2em]" aria-label={`Code ${visible.code.split('').join(' ')}`}>{formatHandshakeCode(visible.code)}</p>
+          <p className="mt-3 font-mono text-3xl font-semibold tracking-[0.2em]" aria-label={`Code ${visible.code.split('').join(' ')}`}>{formatHandshakeCode(visible.code)}</p>
           <p className="mt-1 text-sm text-muted">
             Show this to {workerName} {shown === 'start' ? 'when they arrive' : 'once the work is done'}. They scan it, or type the code.
           </p>

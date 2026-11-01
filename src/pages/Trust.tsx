@@ -68,7 +68,7 @@ export default function Trust() {
           <Card key={s.title} className="flex gap-4 p-5">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><s.icon className="size-5" aria-hidden /></span>
             <div>
-              <h2 className="font-bold">{s.title}</h2>
+              <h2 className="font-semibold">{s.title}</h2>
               <p className="mt-1 text-sm text-ink-soft">{s.body}</p>
             </div>
           </Card>

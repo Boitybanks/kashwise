@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query'
 import { ChevronRight, ClipboardList, Plus, Store, Users } from 'lucide-react'
 import { fetchPostedGigs } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { categoryEmoji } from '../lib/categories'
 import { formatDay } from '../lib/format'
 import { formatRand } from '../lib/money'
 import { ButtonLink, EmptyState, ErrorState, PageHeader, Skeleton, StatusPill } from '../components/ui'
+import { CategoryIcon } from '../components/CategoryIcon'
 
 export default function MyGigs() {
   const { userId, profile } = useAuth()
@@ -33,7 +33,7 @@ export default function MyGigs() {
           </div>
         }
       />
-      <div role="tablist" aria-label="Gig list" className="mb-6 inline-flex rounded-2xl bg-[#141A21] p-1.5 border border-[#1E293B]">
+      <div role="tablist" aria-label="Gig list" className="mb-6 inline-flex rounded-2xl bg-surface p-1.5 border border-line">
         {(['active', 'past'] as const).map((t) => (
           <button
             key={t}
@@ -41,8 +41,8 @@ export default function MyGigs() {
             type="button"
             aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className={`min-h-10 rounded-xl px-4 text-xs font-bold transition-all ${
-              tab === t ? 'bg-[#0D9488] text-white shadow-sm' : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+            className={`min-h-10 rounded-xl px-4 text-xs font-semibold transition-all ${
+              tab === t ? 'bg-brand-600 text-white shadow-sm' : 'text-ink-soft hover:text-ink'
             }`}
           >
             {t === 'active' ? `Active (${active.length})` : `Past (${past.length})`}
@@ -63,24 +63,24 @@ export default function MyGigs() {
         <ul className="space-y-3">
           {shown.map((g) => (
             <li key={g.id}>
-              <Link to={`/gigs/${g.id}`} className="group flex items-center gap-4 rounded-2xl border border-[#1E293B] bg-[#141A21] p-4 transition-all hover:border-[#0D9488]/40 hover:bg-[#18232d] shadow-sm">
-                <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#0B0F14] border border-[#24525b]/50 text-xl">{categoryEmoji(g.category)}</span>
+              <Link to={`/gigs/${g.id}`} className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-all hover:border-brand-200 hover:bg-surface-elevated shadow-sm">
+                <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas border border-line text-xl"><CategoryIcon category={g.category} className="size-5 text-brand-700" /></span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-[#F1F5F9] transition-colors group-hover:text-white">{g.title}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#94A3B8]">
+                  <p className="truncate font-semibold text-ink transition-colors group-hover:text-brand-700">{g.title}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-soft">
                     <StatusPill status={g.status} />
                     <span>{formatDay(g.scheduled_date)}</span>
                     <span className="tabular-nums">· you pay {formatRand(g.total_cents)}</span>
-                    {g.service_id && <span className="font-semibold text-[#14B8A6]">· Booked service</span>}
+                    {g.service_id && <span className="font-semibold text-brand-500">· Booked service</span>}
                     {g.status === 'open' && (
-                      <span className={`inline-flex items-center gap-1 font-semibold ${g.applicant_count ? 'text-[#D4A017]' : ''}`}>
+                      <span className={`inline-flex items-center gap-1 font-semibold ${g.applicant_count ? 'text-gold-600' : ''}`}>
                         <Users className="size-3.5" aria-hidden /> {g.applicant_count} applied
                       </span>
                     )}
-                    {g.status === 'in_progress' && g.worker_done_at && <span className="font-semibold text-[#14B8A6]">Worker says it’s done — confirm</span>}
+                    {g.status === 'in_progress' && g.worker_done_at && <span className="font-semibold text-brand-500">Worker says it’s done — confirm</span>}
                   </div>
                 </div>
-                <ChevronRight className="size-5 text-[#64748B] transition-transform group-hover:translate-x-0.5 group-hover:text-white" aria-hidden />
+                <ChevronRight className="size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700" aria-hidden />
               </Link>
             </li>
           ))}

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, BadgeCheck, CalendarDays, CheckCircle2, Clock, MapPin, ScanLine, Share2 } from 'lucide-react'
 import * as api from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { categoryEmoji, categoryLabel } from '../lib/categories'
+import { categoryLabel } from '../lib/categories'
 import { friendlyError } from '../lib/errors'
 import { formatDay, formatPostedAt, timeAgo } from '../lib/format'
 import { distanceKm, formatDistance } from '../lib/geo'
@@ -25,6 +25,7 @@ import { Applicants } from '../components/gig/Applicants'
 import { ReviewForm } from '../components/gig/ReviewForm'
 import { ReportButton } from '../components/ReportButton'
 import NotFound from './NotFound'
+import { CategoryIcon } from '../components/CategoryIcon'
 
 function ConfirmAction({ label, confirmText, variant = 'primary', icon, onConfirm }: {
   label: string
@@ -193,18 +194,18 @@ export default function GigDetail() {
 
       <Card className="p-5">
         <div className="flex items-start gap-3">
-          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas text-2xl">{categoryEmoji(gig.category)}</span>
+          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas text-2xl"><CategoryIcon category={gig.category} className="size-5 text-brand-700" /></span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill status={gig.status} />
               <span className="text-xs font-semibold text-muted">{categoryLabel(gig.category)}</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#1b3e45]/80 px-2.5 py-0.5 text-xs font-semibold text-[#2dd4bf] border border-[#24525b]/60">
-                <Clock className="size-3 text-[#14B8A6]" aria-hidden />
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-800 border border-line">
+                <Clock className="size-3 text-brand-500" aria-hidden />
                 {formatPostedAt(gig.created_at, gig.is_demo)}
               </span>
               {gig.is_demo && <DemoBadge />}
             </div>
-            <h1 className="mt-1 text-2xl font-extrabold leading-tight">{gig.title}</h1>
+            <h1 className="mt-1 text-2xl font-semibold leading-tight">{gig.title}</h1>
           </div>
           <button type="button" onClick={share} className="grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink" aria-label="Share this gig">
             <Share2 className="size-5" aria-hidden />
@@ -218,7 +219,7 @@ export default function GigDetail() {
         <p className="mt-4 whitespace-pre-line">{gig.description}</p>
         <p className="mt-4 text-xs text-muted">
           {gig.service_id ? 'Booked' : 'Posted'} by <strong className="text-ink-soft">{gig.customer?.display_name ?? 'a customer'}</strong>
-          {gig.service_id && gig.worker && <> from {viewer === 'assigned_worker' ? 'your' : `${gig.worker.display_name.split(' ')[0]}’s`} listed service</>} · <span className="font-semibold text-[#14B8A6]">{formatPostedAt(gig.created_at, gig.is_demo)}</span>
+          {gig.service_id && gig.worker && <> from {viewer === 'assigned_worker' ? 'your' : `${gig.worker.display_name.split(' ')[0]}’s`} listed service</>} · <span className="font-semibold text-brand-500">{formatPostedAt(gig.created_at, gig.is_demo)}</span>
         </p>
 
         <div className="mt-5">
@@ -228,7 +229,7 @@ export default function GigDetail() {
 
       <Card className="mt-4 space-y-4 p-5">
         <LifecycleStepper status={gig.status} />
-        <p className="rounded-xl bg-[#0B0F14]/70 border border-[#1E293B] px-4 py-3 font-medium text-[#F1F5F9]" aria-live="polite">{viewer === 'other_worker' && myApp?.status === 'pending' && gig.status === 'open' ? 'Application sent. The customer will review your profile and choose a worker. Track this gig in My work.' : nextStepText(gig, viewer)}</p>
+        <p className="rounded-xl bg-canvas border border-line px-4 py-3 font-medium text-ink" aria-live="polite">{viewer === 'other_worker' && myApp?.status === 'pending' && gig.status === 'open' ? 'Application sent. The customer will review your profile and choose a worker. Track this gig in My work.' : nextStepText(gig, viewer)}</p>
 
         {/* ── Guest ── */}
         {viewer === 'guest' && gig.status === 'open' && (
@@ -261,8 +262,8 @@ export default function GigDetail() {
           </form>
         )}
         {viewer === 'other_worker' && myApp?.status === 'pending' && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#0D9488]/15 border border-[#0D9488]/30 p-4">
-            <p className="flex items-center gap-2 font-semibold text-[#14B8A6]"><CheckCircle2 className="size-5" aria-hidden /> You applied {timeAgo(myApp.created_at)}. Waiting for the customer to choose.</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-50 border border-brand-200 p-4">
+            <p className="flex items-center gap-2 font-semibold text-brand-500"><CheckCircle2 className="size-5" aria-hidden /> You applied {timeAgo(myApp.created_at)}. Waiting for the customer to choose.</p>
             <div className="flex flex-wrap gap-2"><ButtonLink to="/my-work" variant="secondary" size="sm">Track in My work</ButtonLink><ConfirmAction variant="danger" label="Withdraw application" confirmText="Withdraw your application? You can apply again while this gig is still open." onConfirm={() => run(() => api.withdrawApplication(gig.id), 'Application withdrawn.')} /></div>
           </div>
         )}
@@ -299,7 +300,7 @@ export default function GigDetail() {
         {/* ── Customer ── */}
         {viewer === 'customer' && gig.status === 'open' && (
           <div>
-            <h2 className="mb-3 text-lg font-bold">People who applied</h2>
+            <h2 className="mb-3 text-lg font-semibold">People who applied</h2>
             {appsQ.isPending ? <Spinner label="Loading applicants…" /> : appsQ.isError ? <ErrorState error={appsQ.error} onRetry={() => appsQ.refetch()} /> : (
               <Applicants
                 applications={appsQ.data ?? []}
@@ -314,7 +315,7 @@ export default function GigDetail() {
           <div className="flex items-center gap-3 rounded-xl border border-line p-3">
             <Avatar name={gig.worker.display_name} id={gig.worker.id} src={avatarUrl(gig.worker.avatar_path)} />
             <div className="flex-1">
-              <p className="font-bold">{gig.worker.display_name} {gig.worker.is_demo && <DemoBadge />}</p>
+              <p className="font-semibold">{gig.worker.display_name} {gig.worker.is_demo && <DemoBadge />}</p>
               <p className="text-xs text-muted">{gig.worker.headline}</p>
             </div>
             <Link to={`/w/${gig.worker.id}`} className="text-sm font-semibold text-brand-700 hover:underline">Portfolio</Link>
@@ -355,7 +356,7 @@ export default function GigDetail() {
           <Link to={`/w/${gig.worker.id}#${recordQ.data.record_code}`} className="flex items-center gap-3 rounded-xl bg-brand-600 p-4 text-white hover:bg-brand-700">
             <BadgeCheck className="size-6 shrink-0" aria-hidden />
             <span className="flex-1">
-              <span className="block font-bold">Verified record {recordQ.data.record_code}</span>
+              <span className="block font-semibold">Verified record {recordQ.data.record_code}</span>
               <span className="block text-sm text-brand-50">{viewer === 'assigned_worker' ? 'Now on your portfolio — tap to see and share it.' : `Added to ${workerFirst}’s portfolio.`}</span>
             </span>
           </Link>
@@ -405,7 +406,7 @@ export default function GigDetail() {
 
       {isParticipant && eventsQ.data && (
         <Card className="mt-4 p-5">
-          <h2 className="mb-3 font-bold">Timeline</h2>
+          <h2 className="mb-3 font-semibold">Timeline</h2>
           <Timeline events={eventsQ.data} names={names} />
         </Card>
       )}

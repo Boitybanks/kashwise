@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { BadgeCheck, CalendarCheck, Copy, Download, Eye, EyeOff, MapPin, QrCode as QrIcon, Share2, ShieldCheck, Star } from 'lucide-react'
+import { BadgeCheck, CalendarCheck, Copy, Download, Eye, EyeOff, FileBadge, MapPin, QrCode as QrIcon, Share2, ShieldCheck, Star } from 'lucide-react'
 import { fetchPortfolio, fetchProfile, fetchWorkCredential, fetchWorkerStats } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { categoryEmoji, categoryLabel } from '../lib/categories'
+import { categoryLabel } from '../lib/categories'
 import { friendlyError } from '../lib/errors'
 import { formatMonthYear } from '../lib/format'
 import { useAreaLookup } from '../lib/hooks'
@@ -21,6 +21,7 @@ import { SkillsProfile } from '../components/portfolio/SkillsProfile'
 import { WorkerServices } from '../components/service/WorkerServices'
 import { ReportButton } from '../components/ReportButton'
 import NotFound from './NotFound'
+import { CategoryIcon } from '../components/CategoryIcon'
 
 function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; claimed: string[] }) {
   const proven = [...(stats?.categories ?? [])].sort((a, b) => b.count - a.count)
@@ -28,13 +29,13 @@ function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; clai
   const alsoOffers = claimed.filter((c) => !proven.some((p) => p.category === c))
   return (
     <Card className="p-5">
-      <h2 className="text-lg font-bold">Proven skills</h2>
+      <h2 className="text-lg font-semibold">Proven skills</h2>
       <p className="text-xs text-muted">Counted from gigs that customers confirmed as done.</p>
       {proven.length > 0 ? (
         <ul className="mt-4 space-y-3">
           {proven.map((c) => (
             <li key={c.category} className="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-3 text-sm">
-              <span className="truncate font-medium"><span aria-hidden>{categoryEmoji(c.category)}</span> {categoryLabel(c.category)}</span>
+              <span className="truncate font-medium"><span aria-hidden><CategoryIcon category={c.category} className="size-5 text-brand-700" /></span> {categoryLabel(c.category)}</span>
               <span aria-hidden className="h-2 overflow-hidden rounded-full bg-line">
                 <span className="block h-full rounded-full bg-brand-600" style={{ width: `${Math.max(8, (c.count / max) * 100)}%` }} />
               </span>
@@ -47,11 +48,11 @@ function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; clai
       )}
       {alsoOffers.length > 0 && (
         <div className="mt-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Also offers</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">Also offers</h3>
           <ul className="mt-2 flex flex-wrap gap-2">
             {alsoOffers.map((sk) => (
               <li key={sk} className="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800">
-                <span aria-hidden>{categoryEmoji(sk)}</span> {categoryLabel(sk)}
+                <span aria-hidden><CategoryIcon category={sk} className="size-5 text-brand-700" /></span> {categoryLabel(sk)}
               </li>
             ))}
           </ul>
@@ -64,7 +65,7 @@ function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; clai
 function PassportQr({ url, first, onCopy }: { url: string; first: string; onCopy: () => void }) {
   return (
     <Card className="p-5 text-center">
-      <h2 className="font-bold">ProofScript QR</h2>
+      <h2 className="font-semibold">ProofScript QR</h2>
       <QrCode value={url} label={`QR code that opens ${first}’s ProofScript`} className="mx-auto mt-3 size-44 rounded-lg ring-1 ring-line" />
       <p className="mt-3 text-sm text-muted">Scan to view {first}’s verified experience.</p>
       <Button variant="secondary" size="sm" className="mt-3" onClick={onCopy}><Copy className="size-4" aria-hidden /> Copy link</Button>
@@ -110,7 +111,7 @@ export default function WorkerProfile() {
   const stats: { value: ReactNode; label: string }[] = [
     { value: s?.completed ?? '—', label: 'Completed gigs' },
     {
-      value: s?.avg_rating ? <span className="inline-flex items-center gap-1">{s.avg_rating}<Star className="size-5 fill-amber-400 text-amber-400" aria-hidden /></span> : 'New',
+      value: s?.avg_rating ? <span className="inline-flex items-center gap-1">{s.avg_rating}<Star className="size-5 fill-gold-500 text-gold-500" aria-hidden /></span> : 'New',
       label: s ? `Rating · ${s.review_count} review${s.review_count === 1 ? '' : 's'}` : 'Rating',
     },
     { value: decided ? `${Math.round((s!.completed / decided) * 100)}%` : '—', label: 'Completion rate' },
@@ -175,14 +176,14 @@ export default function WorkerProfile() {
     <div className="mx-auto max-w-6xl">
       <Card className="overflow-hidden">
         <div className="flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:gap-5 sm:text-left">
-          <span className="rounded-full ring-2 ring-[#0D9488]/40"><Avatar name={p.display_name} id={p.id} src={avatarUrl(p.avatar_path)} size="xl" /></span>
+          <span className="rounded-full ring-2 ring-brand-200"><Avatar name={p.display_name} id={p.id} src={avatarUrl(p.avatar_path)} size="xl" /></span>
           <div className="min-w-0 flex-1">
-            {isWorker && <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0D9488]">ProofScript</p>}
+            {isWorker && <p className="text-xs font-semibold uppercase tracking-[.18em] text-brand-500">ProofScript</p>}
             <div className="mt-0.5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <h1 className="text-2xl font-extrabold sm:text-3xl">{p.display_name}</h1>
+              <h1 className="text-2xl font-semibold sm:text-3xl">{p.display_name}</h1>
               {(s?.completed ?? 0) > 0 && (
-                <span className="text-[#D4A017]" title="Has customer-confirmed gigs">
-                  <BadgeCheck className="size-6 fill-[#D4A017]/20 text-[#D4A017]" aria-hidden /><span className="sr-only">Has customer-confirmed gigs</span>
+                <span className="text-gold-600" title="Has customer-confirmed gigs">
+                  <BadgeCheck className="size-6 fill-gold-500/20 text-gold-600" aria-hidden /><span className="sr-only">Has customer-confirmed gigs</span>
                 </span>
               )}
               {p.is_demo && <DemoBadge />}
@@ -195,7 +196,8 @@ export default function WorkerProfile() {
             </p>
           </div>
           <div className="flex w-full flex-wrap justify-center gap-2 sm:w-auto sm:flex-col sm:items-stretch">
-            <Button onClick={share}><Share2 className="size-4" aria-hidden /> Share ProofScript</Button>
+            {isWorker && <ButtonLink to={`/w/${p.id}/cv`}><FileBadge className="size-4" aria-hidden /> View verified CV</ButtonLink>}
+            <Button variant="secondary" onClick={share}><Share2 className="size-4" aria-hidden /> Share ProofScript</Button>
             {isWorker && (
               <Button variant="sun" className="lg:hidden" aria-expanded={showQr} aria-controls="passport-qr" onClick={() => setShowQr((v) => !v)}>
                 <QrIcon className="size-4" aria-hidden /> {showQr ? 'Hide QR code' : 'Show QR code'}
@@ -207,9 +209,9 @@ export default function WorkerProfile() {
         {isWorker && (
           <dl aria-label="Reputation" className="grid grid-cols-2 gap-px border-t border-line bg-line sm:grid-cols-4">
             {stats.map((x) => (
-              <div key={x.label} className="flex flex-col-reverse bg-[#141A21] p-4 text-center sm:text-left">
+              <div key={x.label} className="flex flex-col-reverse bg-surface p-4 text-center sm:text-left">
                 <dt className="text-xs text-muted">{x.label}</dt>
-                <dd className="text-2xl font-extrabold">{x.value}</dd>
+                <dd className="text-2xl font-semibold">{x.value}</dd>
               </div>
             ))}
           </dl>
@@ -227,7 +229,7 @@ export default function WorkerProfile() {
           <div className="flex min-w-0 flex-col gap-4">
             {p.bio && (
               <Card className="p-5">
-                <h2 className="text-lg font-bold">About {first}</h2>
+                <h2 className="text-lg font-semibold">About {first}</h2>
                 <p className="mt-1 whitespace-pre-line text-ink-soft">{p.bio}</p>
               </Card>
             )}
@@ -235,7 +237,7 @@ export default function WorkerProfile() {
             <ProvenSkills stats={s} claimed={p.skills} />
             <WorkerServices workerId={p.id} first={first} isOwner={isOwner} />
             <section id="experience" aria-labelledby="records-h">
-              <h2 id="records-h" className="text-lg font-bold text-[#F1F5F9]">ProofScript Timeline</h2>
+              <h2 id="records-h" className="text-lg font-semibold text-ink">ProofScript Timeline</h2>
               <p className="mb-3 text-sm text-muted">Client-confirmed work history, skills, and reviews.</p>
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
                 <ProofScriptEmptyState isOwner={isOwner} firstName={first} />
@@ -253,7 +255,7 @@ export default function WorkerProfile() {
           <aside className="flex flex-col gap-4 [&>.card]:mt-0" aria-label="Verification">
             <div className="hidden lg:block"><PassportQr url={url} first={first} onCopy={copyLink} /></div>
             <Card className="p-5">
-              <p className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5 text-brand-600" aria-hidden /> ProofScript Transcript</p>
+              <p className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5 text-brand-600" aria-hidden /> ProofScript Transcript</p>
               <p className="mt-1 text-sm text-muted">
                 Customer-confirmed work history with verifiable cryptographic proof. Check anytime at{' '}
                 <Link to="/verify" className="font-semibold text-brand-700 underline">KashWise Verify</Link>.

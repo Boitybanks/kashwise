@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import { BadgeCheck, CalendarCheck, ChevronLeft, ChevronRight, MapPin, Pause, Play, Sparkles, Star } from 'lucide-react'
+import { BadgeCheck, CalendarCheck, ChevronLeft, ChevronRight, MapPin, Pause, Play, Star } from 'lucide-react'
 import { CategoryIcon } from '../CategoryIcon'
+import { DemoBadge } from '../ui'
 
 export interface CommunityActivityItem {
   id: string
@@ -114,8 +115,8 @@ const DEFAULT_ACTIVITY: CommunityActivityItem[] = [
 ]
 
 export function LiveJobsActivitySlider({
-  title = 'Live Activity Nearby',
-  subtitle = 'Recent jobs booked & completed with verified customer feedback',
+  title = 'Community activity',
+  subtitle = 'Sample data, showing how jobs booked and confirmed nearby will appear.',
   items = DEFAULT_ACTIVITY,
   className = '',
 }: {
@@ -138,20 +139,14 @@ export function LiveJobsActivitySlider({
 
   return (
     <section aria-label={title} className={`relative my-6 ${className}`}>
-      {/* ── Top Header Row with Live Pulse Indicator ── */}
+      {/* ── Top Header Row ── */}
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 px-1">
         <div>
           <div className="flex items-center gap-2">
-            <span className="relative flex size-2.5" aria-hidden>
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#14B8A6] opacity-75" />
-              <span className="relative inline-flex size-2.5 rounded-full bg-[#14B8A6]" />
-            </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#F1F5F9]">{title}</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#0D9488]/15 px-2 py-0.5 text-[10px] font-semibold text-[#14B8A6] border border-[#0D9488]/30">
-              <Sparkles className="size-3" aria-hidden /> Community pulse
-            </span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink">{title}</span>
+            <DemoBadge />
           </div>
-          <p className="mt-1 text-xs text-[#94A3B8]">{subtitle}</p>
+          <p className="mt-1 text-xs text-ink-soft">{subtitle}</p>
         </div>
 
         {/* ── Manual Slide & Pause Controls ── */}
@@ -159,7 +154,7 @@ export function LiveJobsActivitySlider({
           <button
             type="button"
             onClick={() => setPaused(!paused)}
-            className="grid size-8 place-items-center rounded-lg border border-[#1E293B] bg-[#141A21] text-[#94A3B8] transition-colors hover:border-[#0D9488]/50 hover:text-white"
+            className="grid size-8 place-items-center rounded-lg border border-line bg-surface text-ink-soft transition-colors hover:border-brand-200 hover:text-ink"
             aria-label={paused ? 'Resume sliding' : 'Pause sliding'}
             title={paused ? 'Resume sliding' : 'Pause sliding'}
           >
@@ -168,7 +163,7 @@ export function LiveJobsActivitySlider({
           <button
             type="button"
             onClick={() => scroll('left')}
-            className="grid size-8 place-items-center rounded-lg border border-[#1E293B] bg-[#141A21] text-[#94A3B8] transition-colors hover:border-[#0D9488]/50 hover:text-white"
+            className="grid size-8 place-items-center rounded-lg border border-line bg-surface text-ink-soft transition-colors hover:border-brand-200 hover:text-ink"
             aria-label="Previous comments"
           >
             <ChevronLeft className="size-4" />
@@ -176,7 +171,7 @@ export function LiveJobsActivitySlider({
           <button
             type="button"
             onClick={() => scroll('right')}
-            className="grid size-8 place-items-center rounded-lg border border-[#1E293B] bg-[#141A21] text-[#94A3B8] transition-colors hover:border-[#0D9488]/50 hover:text-white"
+            className="grid size-8 place-items-center rounded-lg border border-line bg-surface text-ink-soft transition-colors hover:border-brand-200 hover:text-ink"
             aria-label="Next comments"
           >
             <ChevronRight className="size-4" />
@@ -185,10 +180,10 @@ export function LiveJobsActivitySlider({
       </div>
 
       {/* ── Sliding Track with Edge Gradients ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-[#1E293B] bg-[#0E141B] py-3.5">
+      <div className="relative overflow-hidden rounded-2xl border border-line bg-surface-elevated py-3.5">
         {/* Soft edge blur gradients */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#0E141B] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#0E141B] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-linear-to-r from-surface-elevated to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-linear-to-l from-surface-elevated to-transparent" />
 
         {/* Scrolling container */}
         <div
@@ -203,7 +198,7 @@ export function LiveJobsActivitySlider({
               return (
                 <div
                   key={`${item.id}-${idx}`}
-                  className="flex w-[290px] shrink-0 flex-col justify-between rounded-xl border border-[#1E293B] bg-[#141A21] p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0D9488]/50 hover:bg-[#18232d]"
+                  className="flex w-[290px] shrink-0 flex-col justify-between rounded-xl border border-line bg-surface p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-surface-elevated"
                 >
                   <div>
                     {/* Top Status & Timestamp */}
@@ -211,34 +206,34 @@ export function LiveJobsActivitySlider({
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
                           isCompleted
-                            ? 'bg-[#D4A017]/10 text-[#D4A017] border-[#D4A017]/30'
-                            : 'bg-[#0D9488]/15 text-[#14B8A6] border-[#0D9488]/30'
+                            ? 'bg-sun-50 text-gold-600 border-sun-300'
+                            : 'bg-brand-50 text-brand-500 border-brand-200'
                         }`}
                       >
                         {isCompleted ? (
                           <>
-                            <BadgeCheck className="size-3 fill-[#D4A017]/20 text-[#D4A017]" aria-hidden />
+                            <BadgeCheck className="size-3 fill-gold-500/20 text-gold-600" aria-hidden />
                             Verified Complete
                           </>
                         ) : (
                           <>
-                            <CalendarCheck className="size-3 text-[#14B8A6]" aria-hidden />
+                            <CalendarCheck className="size-3 text-brand-500" aria-hidden />
                             Job Booked
                           </>
                         )}
                       </span>
-                      <span className="text-[10px] text-[#64748B] tabular-nums">{item.timeAgo}</span>
+                      <span className="text-[10px] text-muted tabular-nums">{item.timeAgo}</span>
                     </div>
 
                     {/* Job Title & Category icon */}
                     <div className="mt-2.5 flex items-start gap-2.5">
-                      <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[#0B0F14] border border-[#24525b]/50 text-sm text-[#14B8A6]">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-canvas border border-line text-sm text-brand-500">
                         <CategoryIcon category={item.category} className="size-3.5" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-bold text-[#F1F5F9]">{item.title}</p>
-                        <p className="flex items-center gap-1 text-[11px] text-[#94A3B8]">
-                          <MapPin className="size-3 text-[#64748B]" aria-hidden />
+                        <p className="truncate text-xs font-semibold text-ink">{item.title}</p>
+                        <p className="flex items-center gap-1 text-[11px] text-ink-soft">
+                          <MapPin className="size-3 text-muted" aria-hidden />
                           {item.areaName}
                         </p>
                       </div>
@@ -246,21 +241,21 @@ export function LiveJobsActivitySlider({
 
                     {/* Customer Comment Quote */}
                     {item.comment && (
-                      <p className="mt-2.5 rounded-lg bg-[#0B0F14]/70 border border-[#1E293B]/70 p-2.5 text-xs italic leading-relaxed text-[#CBD5E1] line-clamp-3">
+                      <p className="mt-2.5 rounded-lg bg-canvas border border-line/70 p-2.5 text-xs italic leading-relaxed text-ink-soft line-clamp-3">
                         “{item.comment}”
                       </p>
                     )}
                   </div>
 
                   {/* Worker & Customer Attribution */}
-                  <div className="mt-3 flex items-center justify-between border-t border-[#1E293B] pt-2.5 text-[11px] text-[#94A3B8]">
+                  <div className="mt-3 flex items-center justify-between border-t border-line pt-2.5 text-[11px] text-ink-soft">
                     <span className="truncate">
-                      <span className="text-[#F1F5F9] font-medium">{item.customerName}</span> →{' '}
-                      <span className="text-[#14B8A6] font-semibold">{item.workerName}</span>
+                      <span className="text-ink font-medium">{item.customerName}</span> →{' '}
+                      <span className="text-brand-500 font-semibold">{item.workerName}</span>
                     </span>
                     {item.rating && (
-                      <span className="inline-flex items-center gap-0.5 shrink-0 text-[#D4A017] font-bold">
-                        <Star className="size-3 fill-[#D4A017]" aria-hidden />
+                      <span className="inline-flex items-center gap-0.5 shrink-0 text-gold-600 font-semibold">
+                        <Star className="size-3 fill-gold-500" aria-hidden />
                         {item.rating}.0
                       </span>
                     )}

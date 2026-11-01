@@ -3,10 +3,11 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BadgeCheck, Clock, HandCoins, Repeat, Star, Users } from 'lucide-react'
 import { fetchImpact } from '../lib/api'
-import { categoryEmoji, categoryLabel } from '../lib/categories'
+import { categoryLabel } from '../lib/categories'
 import { percent } from '../lib/format'
 import { formatRand } from '../lib/money'
 import { Card, ErrorState, PageHeader, Skeleton } from '../components/ui'
+import { CategoryIcon } from '../components/CategoryIcon'
 
 export default function Impact() {
   const [includeDemo, setIncludeDemo] = useState(true)
@@ -53,8 +54,8 @@ export default function Impact() {
           <Card className="kasi-pattern mb-4 bg-brand-700 p-6 text-white">
             <p className="text-sm font-semibold text-brand-100">North Star — people who earned money because KashWise connected them to work</p>
             <div className="mt-2 flex flex-wrap items-end gap-x-8 gap-y-2">
-              <p><span className="text-5xl font-extrabold">{m.people_earned}</span> <span className="text-brand-100">people earned</span></p>
-              <p><span className="text-5xl font-extrabold text-sun-400">{formatRand(m.income_earned_cents)}</span> <span className="text-brand-100">paid to workers</span></p>
+              <p><span className="text-5xl font-semibold">{m.people_earned}</span> <span className="text-brand-100">people earned</span></p>
+              <p><span className="text-5xl font-semibold text-sun-400">{formatRand(m.income_earned_cents)}</span> <span className="text-brand-100">paid to workers</span></p>
             </div>
           </Card>
 
@@ -71,7 +72,7 @@ export default function Impact() {
             ].map((x) => (
               <Card key={x.label} className="p-4">
                 <x.icon className="size-5 text-brand-600" aria-hidden />
-                <p className="mt-2 text-2xl font-extrabold">{x.value}</p>
+                <p className="mt-2 text-2xl font-semibold">{x.value}</p>
                 <p className="text-sm font-semibold">{x.label}</p>
                 <p className="text-xs text-muted">{x.sub}</p>
               </Card>
@@ -80,11 +81,11 @@ export default function Impact() {
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <Card className="p-5">
-              <h2 className="font-bold">Marketplace funnel</h2>
+              <h2 className="font-semibold">Marketplace funnel</h2>
               <ul className="mt-4 space-y-3">
                 {funnel.map((f) => (
                   <li key={f.label}>
-                    <div className="flex justify-between text-sm"><span>{f.label}</span><span className="font-bold">{f.value}</span></div>
+                    <div className="flex justify-between text-sm"><span>{f.label}</span><span className="font-semibold">{f.value}</span></div>
                     <div className="mt-1 h-3 rounded-full bg-canvas">
                       <div className="h-3 rounded-full bg-brand-600" style={{ width: `${(f.value / max) * 100}%` }} />
                     </div>
@@ -94,15 +95,15 @@ export default function Impact() {
               <p className="mt-4 text-xs text-muted">{m.gigs_open} gigs are open right now · {m.workers} workers · {m.customers} customers</p>
             </Card>
             <Card className="p-5">
-              <h2 className="font-bold">Most completed work</h2>
+              <h2 className="font-semibold">Most completed work</h2>
               {m.top_categories.length === 0 ? (
                 <p className="mt-3 text-sm text-muted">No completed gigs yet.</p>
               ) : (
                 <ul className="mt-3 space-y-2">
                   {m.top_categories.map((c) => (
                     <li key={c.category} className="flex items-center justify-between rounded-lg bg-canvas px-3 py-2 text-sm">
-                      <span><span aria-hidden>{categoryEmoji(c.category)}</span> {categoryLabel(c.category)}</span>
-                      <span className="font-bold">{c.count}</span>
+                      <span><span aria-hidden><CategoryIcon category={c.category} className="size-5 text-brand-700" /></span> {categoryLabel(c.category)}</span>
+                      <span className="font-semibold">{c.count}</span>
                     </li>
                   ))}
                 </ul>

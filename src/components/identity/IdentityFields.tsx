@@ -71,7 +71,7 @@ export function MismatchPrompt({ warnings, busy, confirmLabel, onEdit, onConfirm
 }) {
   return (
     <div role="alert" className="rounded-xl bg-sun-50 p-4 text-sm ring-1 ring-inset ring-sun-100">
-      <p className="flex items-center gap-2 font-bold text-sun-700"><AlertTriangle className="size-4 shrink-0" aria-hidden /> Please check your details</p>
+      <p className="flex items-center gap-2 font-semibold text-sun-700"><AlertTriangle className="size-4 shrink-0" aria-hidden /> Please check your details</p>
       <ul className="mt-2 list-disc space-y-1 pl-5 text-ink">
         {warnings.map((w) => <li key={w}>{w}</li>)}
       </ul>

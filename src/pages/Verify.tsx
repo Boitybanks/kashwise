@@ -74,7 +74,7 @@ export default function Verify() {
       {result && !result.ok && (
         <div role="alert" className="mt-4 flex gap-3 rounded-2xl bg-clay-50 p-5 text-clay-700 ring-1 ring-clay-100">
           <ShieldAlert className="size-6 shrink-0" aria-hidden />
-          <div><p className="font-bold">Not verified</p><p className="text-sm">{result.reason}</p></div>
+          <div><p className="font-semibold">Not verified</p><p className="text-sm">{result.reason}</p></div>
         </div>
       )}
 
@@ -82,7 +82,7 @@ export default function Verify() {
         <div className="mt-4 flex gap-3 rounded-2xl bg-brand-600 p-5 text-white" role="status">
           <ShieldCheck className="size-7 shrink-0" aria-hidden />
           <div>
-            <p className="text-lg font-bold">Genuine KashWise {st ? 'income statement' : sp ? 'skills profile' : 'record'}</p>
+            <p className="text-lg font-semibold">Genuine KashWise {st ? 'income statement' : sp ? 'skills profile' : 'record'}</p>
             <p className="text-sm text-brand-50">Signature valid · issued {formatDate(doc.issued_at)} · unchanged since signing.</p>
           </div>
         </div>
@@ -91,12 +91,12 @@ export default function Verify() {
       {st && (
         <Card className="mt-3 p-5">
           {st.payments_simulated && (
-            <p role="note" className="mb-3 rounded-lg bg-clay-50 px-3 py-2 text-sm font-bold text-clay-700 ring-1 ring-clay-100">
+            <p role="note" className="mb-3 rounded-lg bg-clay-50 px-3 py-2 text-sm font-semibold text-clay-700 ring-1 ring-clay-100">
               Simulated payments: this statement is not valid proof of income.
             </p>
           )}
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-extrabold">{st.worker.name}</h2>
+            <h2 className="text-xl font-semibold">{st.worker.name}</h2>
             {st.demo_data && <DemoBadge />}
           </div>
           <p className="text-sm text-muted">{st.worker.area} · statement {st.reference} · {formatDate(st.period.from)} to {formatDate(st.period.to)}</p>
@@ -115,7 +115,7 @@ export default function Verify() {
       {sp && (
         <Card className="mt-3 p-5">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-extrabold">{sp.worker.name}</h2>
+            <h2 className="text-xl font-semibold">{sp.worker.name}</h2>
             {sp.demo_data && <DemoBadge />}
           </div>
           <p className="text-sm text-muted">{sp.worker.area} · from {sp.based_on.records} customer-confirmed jobs · {sp.written_by === 'ai' ? 'written by KashWise AI' : 'summarised by KashWise'}</p>
@@ -131,7 +131,7 @@ export default function Verify() {
         <div className="mt-3 space-y-3">
           <Card className="p-5">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-extrabold">{c.worker.name}</h2>
+              <h2 className="text-xl font-semibold">{c.worker.name}</h2>
               {c.demo_data && <DemoBadge />}
             </div>
             <p className="text-sm text-muted">{c.worker.area} · on KashWise since {formatDate(c.worker.member_since)}</p>

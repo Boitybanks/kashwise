@@ -36,8 +36,8 @@ export function WorkIdCard({ gigId, gigTitle, myName, partnerName, perspective }
 
   return (
     <div className="rounded-xl border border-line p-4">
-      <p className="flex items-center gap-2 font-bold"><Fingerprint className="size-5 text-brand-600" aria-hidden /> Work ID</p>
-      <p className="mt-2 select-all font-mono text-2xl font-extrabold tracking-wider" aria-label={`Work ID ${workId.split('').join(' ')}`}>{workId}</p>
+      <p className="flex items-center gap-2 font-semibold"><Fingerprint className="size-5 text-brand-600" aria-hidden /> Work ID</p>
+      <p className="mt-2 select-all font-mono text-2xl font-semibold tracking-wider" aria-label={`Work ID ${workId.split('').join(' ')}`}>{workId}</p>
       <p className="mt-1 text-xs text-muted">
         Only you and {partnerName} can see this. Quote it whenever you message or call each other. If someone contacting you about this job
         can’t give it, don’t share your address or send money.

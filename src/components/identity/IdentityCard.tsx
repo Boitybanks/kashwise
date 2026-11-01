@@ -58,7 +58,7 @@ export function IdentityCard({ userId, displayName, readOnly }: { userId: string
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><IdCard className="size-4" aria-hidden /></span>
         <div>
-          <h2 className="font-bold">Identity details (private)</h2>
+          <h2 className="font-semibold">Identity details (private)</h2>
           <p className="text-sm text-muted">Your SA ID number, legal name, gender and home address. Encrypted, and never shown on your profile.</p>
         </div>
       </div>

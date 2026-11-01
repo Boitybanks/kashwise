@@ -39,7 +39,7 @@ function Stat({ label, cents, hint, icon, prov = 'system_verified' }: { label: s
         <Prov kind={prov} />
       </div>
       <p className="mt-3 text-sm font-semibold text-muted">{label}</p>
-      <p className="text-2xl font-extrabold">{formatRand(cents)}</p>
+      <p className="text-2xl font-semibold">{formatRand(cents)}</p>
       <p className="mt-1 text-xs text-muted">{hint}</p>
     </Card>
   )
@@ -57,7 +57,7 @@ function InsightCard({ insight, onFeedback }: { insight: Insight & { id?: string
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-bold">{insight.title}</p>
+            <p className="font-semibold">{insight.title}</p>
             <Badge tone={severityTone[insight.severity]}>{risk ? 'Protection' : 'Update'}</Badge>
           </div>
           <p className="mt-1 text-sm">{insight.body}</p>
@@ -90,7 +90,7 @@ function AskIbanks() {
   const a: AskIbanksResponse | undefined = ask.data
   return (
     <Card className="p-4">
-      <h2 className="flex items-center gap-2 text-lg font-extrabold"><Sparkles className="size-5 text-brand-600" aria-hidden /> Ask iBanks</h2>
+      <h2 className="flex items-center gap-2 text-lg font-semibold"><Sparkles className="size-5 text-brand-600" aria-hidden /> Ask iBanks</h2>
       <p className="text-sm text-muted">Answers come from your verified KashWise records. iBanks explains; it cannot move money.</p>
       <form className="mt-3 flex gap-2" onSubmit={(e: FormEvent) => { e.preventDefault(); submit(question) }}>
         <label htmlFor="ask" className="sr-only">Your question</label>
@@ -155,7 +155,7 @@ function Earnings({ intel }: { intel: EarningsIntelligence }) {
       </div>
 
       <Card className="p-4">
-        <h2 className="font-extrabold">Weekly net earnings</h2>
+        <h2 className="font-semibold">Weekly net earnings</h2>
         <p className="text-xs text-muted">Weeks run Monday to Sunday, South African time. Weeks with no settled jobs count as R0.</p>
         {intel.weeks.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No settled earnings yet.</p>
@@ -176,7 +176,7 @@ function Earnings({ intel }: { intel: EarningsIntelligence }) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Card className="p-4">
-          <h2 className="font-extrabold">Best-paying work</h2>
+          <h2 className="font-semibold">Best-paying work</h2>
           {intel.by_category.length === 0 ? <p className="mt-2 text-sm text-muted">Nothing settled yet.</p> : (
             <ul className="mt-2 space-y-1 text-sm">
               {intel.by_category.map((c) => (
@@ -196,7 +196,7 @@ function Outlook({ intel }: { intel: EarningsIntelligence }) {
   const o = intel.outlook
   return (
     <Card className="p-4">
-      <div className="flex items-center justify-between gap-2"><h2 className="font-extrabold">Looking ahead</h2><Prov kind="estimated" /></div>
+      <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Looking ahead</h2><Prov kind="estimated" /></div>
       {o.kind === 'insufficient_history' ? (
         <p className="mt-2 text-sm">
           <strong>Not enough data to forecast reliably.</strong> You have {o.complete_weeks} of the {o.needed_weeks} complete weeks iBanks needs. It shows what is known instead of guessing.
@@ -206,12 +206,12 @@ function Outlook({ intel }: { intel: EarningsIntelligence }) {
           <dl className="grid grid-cols-2 gap-2">
             <div className="rounded-xl bg-canvas p-3">
               <dt className="text-xs text-muted">Next 7 days</dt>
-              <dd className="font-extrabold">{formatRand(o.next_7_days.low_cents)} – {formatRand(o.next_7_days.high_cents)}</dd>
+              <dd className="font-semibold">{formatRand(o.next_7_days.low_cents)} – {formatRand(o.next_7_days.high_cents)}</dd>
               <dd className="text-xs text-muted">about {formatRand(o.next_7_days.central_cents)}</dd>
             </div>
             <div className="rounded-xl bg-canvas p-3">
               <dt className="text-xs text-muted">Next 30 days</dt>
-              <dd className="font-extrabold">{formatRand(o.next_30_days.low_cents)} – {formatRand(o.next_30_days.high_cents)}</dd>
+              <dd className="font-semibold">{formatRand(o.next_30_days.low_cents)} – {formatRand(o.next_30_days.high_cents)}</dd>
               <dd className="text-xs text-muted">about {formatRand(o.next_30_days.central_cents)}</dd>
             </div>
           </dl>
@@ -234,7 +234,7 @@ function Patterns({ intel }: { intel: EarningsIntelligence }) {
   const s = p.suggestion
   return (
     <Card className="p-4">
-      <div className="flex items-center justify-between gap-2"><h2 className="font-extrabold">Earning power</h2><Prov kind="system_verified" /></div>
+      <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Earning power</h2><Prov kind="system_verified" /></div>
       {s.kind === 'too_early' ? (
         <p className="mt-2 text-sm">Too early to see a pattern: {s.paid_jobs} of the {s.needed_jobs} paid jobs iBanks needs.</p>
       ) : (
@@ -267,7 +267,7 @@ function Diagnostics() {
     <Card className="p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-extrabold">How iBanks decided</h2>
+          <h2 className="font-semibold">How iBanks decided</h2>
           <p className="text-xs text-muted">Read-only audit of the events, rules and policy checks behind your insights. Only your own records.</p>
         </div>
         <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)} aria-expanded={open}>{open ? 'Hide' : 'Show audit trail'}</Button>
@@ -321,14 +321,14 @@ function Goals({ net, paidOut, prefs }: { net: number; paidOut: number; prefs: M
   return (
     <div className="space-y-4">
       <Card className="space-y-4 p-4">
-        <div className="flex items-center justify-between gap-2"><h2 className="font-extrabold">Savings scenario</h2><Prov kind="simulated" /></div>
+        <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Savings scenario</h2><Prov kind="simulated" /></div>
         <p className="text-sm text-muted">Explore setting aside part of your net earnings. <strong>This is a simulation: no money is moved or deducted.</strong></p>
         {slider('sav', 'Emergency savings (easy to reach)', savings, setSavings)}
         {slider('ret', 'Retirement goal (long-term)', retire, setRetire)}
         <dl className="grid grid-cols-3 gap-2 rounded-xl bg-canvas p-3 text-center text-sm">
-          <div><dt className="text-muted">Savings</dt><dd className="text-lg font-extrabold">{formatRand(s.savings_cents)}</dd></div>
-          <div><dt className="text-muted">Retirement</dt><dd className="text-lg font-extrabold">{formatRand(s.retirement_cents)}</dd></div>
-          <div><dt className="text-muted">Left for you</dt><dd className="text-lg font-extrabold">{formatRand(s.remainder_cents)}</dd></div>
+          <div><dt className="text-muted">Savings</dt><dd className="text-lg font-semibold">{formatRand(s.savings_cents)}</dd></div>
+          <div><dt className="text-muted">Retirement</dt><dd className="text-lg font-semibold">{formatRand(s.retirement_cents)}</dd></div>
+          <div><dt className="text-muted">Left for you</dt><dd className="text-lg font-semibold">{formatRand(s.remainder_cents)}</dd></div>
         </dl>
         <p className="text-xs text-muted">From {formatRand(s.base_net_cents)} settled net earnings. {s.warnings.join(' ')} iBanks does not know your bills, so check them first.</p>
         <p className="text-xs text-muted">

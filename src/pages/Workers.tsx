@@ -9,6 +9,7 @@ import { formatDistance } from '../lib/geo'
 import { Avatar, Button, DemoBadge, EmptyState, ErrorState, PageHeader, Skeleton } from '../components/ui'
 import { avatarUrl } from '../lib/supabase'
 import { AreaSelect } from '../components/AreaSelect'
+import { CategoryIcon } from '../components/CategoryIcon'
 
 export default function Workers() {
   const { profile } = useAuth()
@@ -32,18 +33,17 @@ export default function Workers() {
         subtitle="Every rating and verified count comes from a customer-confirmed KashWise job."
       />
 
-      <div className="relative mb-6 overflow-hidden rounded-2xl border border-[#24525b]/80 bg-[#1b3e45] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.25)] space-y-4">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden />
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-deep-soft bg-deep p-5 space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <label htmlFor="w-area" className="text-xs font-bold uppercase tracking-wider text-[#d4eff4] sm:w-20">
+            <label htmlFor="w-area" className="text-xs font-semibold uppercase tracking-wider text-deep-ink sm:w-20">
               Location
             </label>
             <div className="sm:w-72">
               <AreaSelect id="w-area" value={area} onChange={setAreaOverride} placeholder="Anywhere in South Africa" />
             </div>
           </div>
-          <p className="text-xs text-[#d4eff4]/80">{area ? `Sorted closest to ${area}` : 'Choose an area to sort by proximity'}</p>
+          <p className="text-xs text-deep-ink/80">{area ? `Sorted closest to ${area}` : 'Choose an area to sort by proximity'}</p>
         </div>
 
         <div className="-mx-5 overflow-x-auto px-5 pb-1 no-scrollbar" role="group" aria-label="Filter by skill">
@@ -52,8 +52,8 @@ export default function Workers() {
               type="button"
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                 skill === null
-                  ? 'bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white shadow-[0_4px_12px_rgba(13,148,136,0.35)]'
-                  : 'bg-[#0B0F14]/50 border border-white/10 text-[#d4eff4] hover:bg-[#0B0F14]/80 hover:text-white hover:border-[#14B8A6]/40'
+                  ? 'bg-canvas text-deep font-semibold'
+                  : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
               }`}
               aria-pressed={skill === null}
               onClick={() => setSkill(null)}
@@ -68,13 +68,13 @@ export default function Workers() {
                   type="button"
                   className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white shadow-[0_4px_12px_rgba(13,148,136,0.35)]'
-                      : 'bg-[#0B0F14]/50 border border-white/10 text-[#d4eff4] hover:bg-[#0B0F14]/80 hover:text-white hover:border-[#14B8A6]/40'
+                      ? 'bg-canvas text-deep font-semibold'
+                      : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
                   }`}
                   aria-pressed={active}
                   onClick={() => setSkill(active ? null : c.slug)}
                 >
-                  <span aria-hidden>{c.emoji}</span> {c.label}
+                  <CategoryIcon category={c.slug} className="size-4" /> {c.label}
                 </button>
               )
             })}
@@ -92,47 +92,47 @@ export default function Workers() {
         </EmptyState>
       ) : (
         <>
-          <div className="mb-4 flex items-center justify-between text-xs text-[#94A3B8]">
+          <div className="mb-4 flex items-center justify-between text-xs text-ink-soft">
             <p className="inline-flex items-center gap-1.5 font-medium" aria-live="polite">
-              <Users className="size-3.5 text-[#14B8A6]" aria-hidden />
-              Showing <strong className="text-[#F1F5F9]">{workers.length}{q.hasNextPage ? '+' : ''}</strong> verified profile{workers.length === 1 ? '' : 's'}
+              <Users className="size-3.5 text-brand-500" aria-hidden />
+              Showing <strong className="text-ink">{workers.length}{q.hasNextPage ? '+' : ''}</strong> verified profile{workers.length === 1 ? '' : 's'}
             </p>
-            <span className="hidden sm:inline-block text-[11px] text-[#64748B]">Customer-confirmed ProofScripts</span>
+            <span className="hidden sm:inline-block text-[11px] text-muted">Customer-confirmed ProofScripts</span>
           </div>
           <ul className="grid gap-4 md:grid-cols-2">
             {workers.map((w) => (
-              <li key={w.id}>
+              <li key={w.id} className="min-w-0">
                 <Link
                   to={`/w/${w.id}`}
-                  className="group relative flex gap-4 rounded-2xl border border-[#1E293B] bg-[#141A21] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-[#0D9488]/50 hover:bg-[#18232d] hover:shadow-[0_12px_28px_rgba(0,0,0,0.4)]"
+                  className="group relative flex gap-4 rounded-2xl border border-line bg-surface p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:bg-surface-elevated hover:shadow-[0_12px_28px_rgba(0,0,0,0.4)]"
                 >
                   <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} size="lg" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-[#F1F5F9] transition-colors group-hover:text-white">{w.display_name}</p>
+                      <p className="font-semibold text-ink transition-colors group-hover:text-brand-700">{w.display_name}</p>
                       {w.is_demo && <DemoBadge />}
                     </div>
-                    {w.headline && <p className="truncate text-sm text-[#94A3B8]">{w.headline}</p>}
-                    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-[#94A3B8]">
+                    {w.headline && <p className="truncate text-sm text-ink-soft">{w.headline}</p>}
+                    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-soft">
                       <span className="inline-flex items-center gap-1">
-                        <MapPin className="size-3.5 text-[#64748B]" aria-hidden />
+                        <MapPin className="size-3.5 text-muted" aria-hidden />
                         {w.area_name}{w.distance_km !== null && ` · ${formatDistance(w.distance_km)}`}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#D4A017]/10 px-2 py-0.5 font-semibold text-[#D4A017] border border-[#D4A017]/25">
-                        <BadgeCheck className="size-3.5 fill-[#D4A017]/20 text-[#D4A017]" aria-hidden />
+                      <span className="inline-flex items-center gap-1 rounded-full bg-sun-50 px-2 py-0.5 font-semibold text-gold-600 border border-sun-300">
+                        <BadgeCheck className="size-3.5 fill-gold-500/20 text-gold-600" aria-hidden />
                         {w.completed} verified
                       </span>
                       {w.avg_rating && (
-                        <span className="inline-flex items-center gap-1 font-semibold text-[#F1F5F9]">
-                          <Star className="size-3.5 fill-[#D4A017] text-[#D4A017]" aria-hidden />
-                          {w.avg_rating} <span className="text-[#64748B]">({w.review_count})</span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                          <Star className="size-3.5 fill-gold-500 text-gold-600" aria-hidden />
+                          {w.avg_rating} <span className="text-muted">({w.review_count})</span>
                         </span>
                       )}
                     </p>
                     {w.skills.length > 0 && (
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {w.skills.map((s) => (
-                          <span key={s} className="rounded-md bg-[#0B0F14] border border-[#1E293B] px-2 py-0.5 text-[11px] font-medium text-[#94A3B8]">
+                          <span key={s} className="rounded-md bg-canvas border border-line px-2 py-0.5 text-[11px] font-medium text-ink-soft">
                             {categoryLabel(s)}
                           </span>
                         ))}

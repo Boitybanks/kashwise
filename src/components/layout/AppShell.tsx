@@ -51,7 +51,7 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-[#141A21] focus:text-[#F1F5F9] focus:px-3 focus:py-2">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:text-ink focus:px-3 focus:py-2">
         Skip to content
       </a>
       <header className="sticky top-0 z-30 border-b border-line/80 bg-canvas/95 backdrop-blur">
@@ -64,7 +64,7 @@ export function AppShell() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `rounded-lg px-3 py-2 text-xs font-semibold transition ${isActive ? 'bg-[#0D9488]/15 text-[#14B8A6]' : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#141A21]'}`
+                  `rounded-lg px-3 py-2 text-xs font-semibold transition ${isActive ? 'bg-brand-50 text-brand-500' : 'text-ink-soft hover:text-ink hover:bg-surface'}`
                 }
               >
                 {item.label}
@@ -102,7 +102,7 @@ export function AppShell() {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[#0B0F14]/95 border-[#1E293B] pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas border-line pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
         <ul className="mx-auto grid max-w-lg grid-cols-5">
           {items.map((item) => (
@@ -112,13 +112,13 @@ export function AppShell() {
                 end={item.end}
                 className={({ isActive }) =>
                   `flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
-                    isActive ? 'text-[#14B8A6]' : 'text-[#64748B]'
+                    isActive ? 'text-brand-500' : 'text-muted'
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <span className={`grid h-7 w-12 place-items-center rounded-full ${isActive ? 'bg-[#0D9488]/20 text-[#14B8A6]' : ''}`}>
+                    <span className={`grid h-7 w-12 place-items-center rounded-full ${isActive ? 'bg-brand-50 text-brand-500' : ''}`}>
                       <item.icon className="size-5" aria-hidden />
                     </span>
                     {item.label}
