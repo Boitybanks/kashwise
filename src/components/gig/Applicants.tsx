@@ -80,7 +80,7 @@ export function Applicants({ applications, gigArea, totalCents, onSelect }: Prop
             {confirming === app.id ? (
               <div className="mt-3 rounded-xl bg-brand-50 p-3">
                 <p className="text-sm">
-                  Choose <strong>{first}</strong>? The payment provider will hold <strong>{formatRand(totalCents)}</strong> (simulated) until you confirm the job is done. Other applicants will be notified the gig is filled.
+                  Choose <strong>{first}</strong>? The payment provider will hold <strong>{formatRand(totalCents)}</strong> until you confirm the job is done. Other applicants will be notified the gig is filled.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button
@@ -104,7 +104,7 @@ export function Applicants({ applications, gigArea, totalCents, onSelect }: Prop
             ) : (
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => setConfirming(app.id)}>Choose {first}</Button>
-                <Link to={`/w/${w.id}`} className="inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-semibold text-brand-700 hover:bg-brand-50">
+                <Link to={`/w/${w.id}`} className="inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-semibold text-brand-500 hover:bg-brand-50">
                   View portfolio
                 </Link>
               </div>

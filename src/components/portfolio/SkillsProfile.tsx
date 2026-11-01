@@ -131,13 +131,13 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
             <li key={s.name} className="rounded-xl border border-line p-3">
               <div className="flex items-baseline justify-between gap-2">
                 <p className="font-semibold">{s.name}</p>
-                <p className="shrink-0 text-xs font-semibold text-brand-700">{s.jobs} confirmed {s.jobs === 1 ? 'job' : 'jobs'}</p>
+                <p className="shrink-0 text-xs font-semibold text-brand-500">{s.jobs} confirmed {s.jobs === 1 ? 'job' : 'jobs'}</p>
               </div>
               <p className="mt-0.5 text-sm text-muted">
                 {s.evidence.slice(0, 3).map((code, i) => (
                   <span key={code}>
                     {i > 0 && ' · '}
-                    <a href={`#${code}`} className="underline decoration-line underline-offset-2 hover:text-brand-700">{s.examples[i] ?? code}</a>
+                    <a href={`#${code}`} className="underline decoration-line underline-offset-2 hover:text-brand-400">{s.examples[i] ?? code}</a>
                   </span>
                 ))}
               </p>

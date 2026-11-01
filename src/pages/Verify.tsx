@@ -64,7 +64,7 @@ export default function Verify() {
           await run(t)
         }} />
         <details className="mt-3">
-          <summary className="cursor-pointer text-sm font-semibold text-brand-700">Or paste the record</summary>
+          <summary className="cursor-pointer text-sm font-semibold text-brand-500">Or paste the record</summary>
           <label htmlFor="record-text" className="sr-only">Record JSON</label>
           <textarea id="record-text" rows={6} className="input mt-2 font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} />
           <Button className="mt-2" size="sm" loading={busy} disabled={!text.trim()} onClick={() => run(text)}>Verify</Button>
@@ -123,7 +123,7 @@ export default function Verify() {
           <ul className="mt-3 space-y-1 text-sm">
             {sp.skills.map((k) => <li key={k.name} className="rounded-lg bg-canvas px-3 py-2"><strong>{k.name}</strong> · {k.jobs} confirmed {k.jobs === 1 ? 'job' : 'jobs'}</li>)}
           </ul>
-          <Link to={sp.profile_url.replace(/^https?:\/\/[^/]+/, '')} className="mt-2 inline-block text-sm font-semibold text-brand-700 underline">See live profile</Link>
+          <Link to={sp.profile_url.replace(/^https?:\/\/[^/]+/, '')} className="mt-2 inline-block text-sm font-semibold text-brand-500 underline">See live profile</Link>
         </Card>
       )}
 
@@ -138,7 +138,7 @@ export default function Verify() {
             <p className="mt-2 text-sm">
               <strong>{c.summary.completed_gigs}</strong> verified gigs · average rating <strong>{c.summary.average_rating ?? '—'}</strong> from {c.summary.reviews} reviews · <strong>{c.summary.repeat_customers}</strong> repeat customers
             </p>
-            <Link to={c.profile_url.replace(/^https?:\/\/[^/]+/, '')} className="mt-2 inline-block text-sm font-semibold text-brand-700 underline">See live profile</Link>
+            <Link to={c.profile_url.replace(/^https?:\/\/[^/]+/, '')} className="mt-2 inline-block text-sm font-semibold text-brand-500 underline">See live profile</Link>
             <ul className="mt-4 space-y-2">
               {c.records.map((r) => (
                 <li key={r.code} className="rounded-xl bg-canvas p-3 text-sm">

@@ -25,13 +25,13 @@ export function PaymentPanel({ txn, perspective }: { txn: Transaction; perspecti
         </dl>
       ) : (
         <p className="mt-3 text-sm">
-          You receive <strong className="text-brand-700">{formatRand(txn.payout_cents)}</strong> after the {formatRand(txn.fee_cents)} KashWise fee
+          You receive <strong className="text-brand-500">{formatRand(txn.payout_cents)}</strong>
           {txn.status === 'held' && ' — earned once the customer confirms the job and the payment provider settles the payment.'}
           {txn.status === 'released' && ' — settled and earned. It is paid out to you when you cash out and the provider confirms the payout.'}
           {txn.status === 'refunded' && ' — the gig was cancelled.'}
         </p>
       )}
-      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-sun-700">Simulation — no real money moves in this version</p>
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-sun-700">Simulated for now. No real money moves.</p>
     </div>
   )
 }

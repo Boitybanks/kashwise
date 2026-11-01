@@ -37,13 +37,13 @@ export default function Splash() {
         <Logo to="/" />
         <p className="eyebrow mt-8">EARN IT. PROVE IT. GROW IT.</p>
         <h1 className="mt-3 text-[40px] font-medium leading-[1.05] tracking-[-.045em] sm:text-5xl">
-          Good work deserves <em className="text-brand-700">a record.</em>
+          Good work deserves <em className="text-brand-400">a record.</em>
         </h1>
         <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">
           Find local work by speaking, get paid through the app, and turn every confirmed job into a verified CV that opens doors.
         </p>
 
-        <Link to="/signup" className="mt-7 flex min-h-13 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-base font-semibold text-white transition hover:bg-brand-800">
+        <Link to="/signup" className="mt-7 flex min-h-13 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-base font-semibold text-white transition hover:bg-brand-700">
           Get started <ArrowRight className="size-5" aria-hidden />
         </Link>
         <Link to="/login" className="mt-2 flex min-h-12 w-full items-center justify-center rounded-xl border border-line bg-surface text-[15px] font-medium text-ink hover:border-brand-200">
@@ -51,7 +51,7 @@ export default function Splash() {
         </Link>
 
         <div className="mt-6 border-t border-line pt-5">
-          <p className="text-xs text-ink-soft">Just looking? Explore with a labelled demo account.</p>
+          <p className="text-xs text-ink-soft">Just looking?</p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {(['customer', 'worker'] as Role[]).map((role) => (
               <button
@@ -64,13 +64,13 @@ export default function Splash() {
               >
                 {busy === role ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : null}
                 <span>Try as {DEMO_ACCOUNTS[role].name}</span>
-                <span className="text-xs font-normal text-muted">demo {role}</span>
+                <span className="text-xs font-normal text-muted">{role === 'customer' ? 'client' : 'worker'}</span>
               </button>
             ))}
           </div>
         </div>
         <p className="mt-5 text-sm">
-          <Link to="/welcome" className="text-brand-700 underline underline-offset-4">See how KashWise works</Link>
+          <Link to="/welcome" className="text-brand-500 underline underline-offset-4">See how KashWise works</Link>
         </p>
       </div>
     </main>

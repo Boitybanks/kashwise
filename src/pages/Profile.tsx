@@ -77,6 +77,15 @@ function ProfileForm() {
     }
   }
 
+  async function toggleOpen() {
+    try {
+      await updateProfile(userId!, { open_to_work: profile?.open_to_work === false })
+      await refreshProfile()
+    } catch (err) {
+      toast.show(friendlyError(err), 'error')
+    }
+  }
+
   async function onSavePhone(e: FormEvent) {
     e.preventDefault()
     const parsed = phoneSchema.safeParse(phone)
@@ -101,22 +110,20 @@ function ProfileForm() {
   return (
     <div className="mx-auto max-w-2xl">
       {params.get('welcome') && (
-        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-50 p-4 text-brand-800 ring-1 ring-brand-100">
-          <p className="text-sm"><strong>Your account is ready.</strong> Add a short introduction and your skills so customers know why to choose you. {next ? 'Then continue to your chosen task.' : 'Then find your first gig.'}</p>
+        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-50 p-4 text-brand-300 ring-1 ring-brand-100">
+          <p className="text-sm"><strong>Your account is ready.</strong></p>
         </div>
       )}
       {readOnly && (
         <p className="mb-5 rounded-2xl bg-sun-50 p-4 text-sm text-sun-700 ring-1 ring-sun-100">
-          <strong>Shared demo account.</strong> Editing and phone numbers are switched off so every judge sees the same demo. Create your own free account to try profile editing.
-        </p>
+          Editing is off on this shared account.</p>
       )}
-      <PageHeader title={isSetup ? 'Set up your profile' : 'Your profile'} subtitle="This is what customers and workers see." action={!isSetup && userId ? <ButtonLink to={`/w/${userId}`} variant="secondary" size="sm">View ProofScript</ButtonLink> : undefined} />
+      <PageHeader title={isSetup ? 'Set up your profile' : 'Your profile'} action={!isSetup && userId ? <ButtonLink to={`/w/${userId}`} variant="secondary" size="sm">View ProofScript</ButtonLink> : undefined} />
       {profile && <ProfilePhoto profile={profile} readOnly={readOnly} onChanged={refreshProfile} />}
       <DictatePanel
         kind="bio"
         title="Say who you are and what you do"
-        subtitle="Talk the way you talk. KashWise writes your profile formally, using only what you said."
-        placeholder="e.g. I paint houses in Soweto. I have been doing it for six years, I am never late and I clean up after."
+        placeholder="I paint houses in Soweto. I have been doing it for six years, I am never late and I clean up after."
         action="Write my profile"
         onDraft={(draft) => {
           const before = form
@@ -124,7 +131,6 @@ function ProfileForm() {
           return () => setForm(before)
         }}
         readBack={(draft) => `${draft.headline}. ${draft.bio}`}
-        afterDraft={() => readOnly ? 'This shared demo account can’t save it. Your own account can.' : 'Press save below to keep it.'}
       />
       <form onSubmit={onSubmit} noValidate className="mt-5 space-y-5">
         <fieldset disabled={readOnly} className="space-y-5 disabled:opacity-70">
@@ -143,7 +149,7 @@ function ProfileForm() {
           <Field label="Area" htmlFor="area_slug" error={errors.area_slug} hint="Only your area is public.">
             <AreaSelect id="area_slug" value={form.area_slug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} />
           </Field>
-          <Field label="Headline" htmlFor="headline" error={errors.headline} optional hint="One line about you, e.g. “Painter & handyman — 6 years in Soweto”">
+          <Field label="Headline" htmlFor="headline" error={errors.headline} optional>
             <input id="headline" className="input" maxLength={80} value={form.headline} onChange={(e) => set('headline', e.target.value)} />
           </Field>
           <Field label="About you" htmlFor="bio" error={errors.bio} optional>
@@ -151,10 +157,23 @@ function ProfileForm() {
           </Field>
         </Card>
 
+        {form.role === 'worker' && !isSetup && (
+          <Card className="flex items-center justify-between gap-4 p-5">
+            <div>
+              <p className="font-semibold">Open to work</p>
+              <p className="text-sm text-muted">{profile?.open_to_work === false ? 'Clients won’t find you in the workers list.' : 'Clients can find you in the workers list.'}</p>
+            </div>
+            <button type="button" role="switch" aria-checked={profile?.open_to_work !== false} aria-label="Open to work" onClick={toggleOpen}
+              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${profile?.open_to_work === false ? 'bg-surface-elevated ring-1 ring-line' : 'bg-brand-600'}`}>
+              <span className={`absolute top-1 size-5 rounded-full bg-white transition-all ${profile?.open_to_work === false ? 'left-1' : 'left-6'}`} />
+            </button>
+          </Card>
+        )}
+
         <Card className="p-5">
           <fieldset>
             <legend className="font-semibold">Your skills</legend>
-            <p className="mb-3 text-sm text-muted">Pick the work you can confidently do. Customers see these skills when you apply.</p>
+            <div className="mb-3" />
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((c) => (
                 <button key={c.slug} type="button" className="chip" aria-pressed={form.skills.includes(c.slug)} onClick={() => toggleSkill(c.slug)}>
@@ -171,7 +190,7 @@ function ProfileForm() {
       {!isSetup && !readOnly && (
         <Card className="mt-6 p-5">
           <div className="flex items-start gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><Lock className="size-4" aria-hidden /></span>
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
             <div>
               <h2 className="font-semibold">Phone number (private)</h2>
               <p className="text-sm text-muted">
@@ -201,12 +220,6 @@ function ProfileForm() {
 
       {!isSetup && userId && profile && <IdentityCard userId={userId} displayName={profile.display_name} readOnly={readOnly} />}
       {!isSetup && userId && <DocumentsManager userId={userId} readOnly={readOnly} />}
-
-      <Card className="mt-6 p-5">
-        <h2 className="font-semibold">Explore the ID format & selfie demo</h2>
-        <p className="mt-2 text-sm text-muted">Optional, device-only and simulated. It does not verify your identity, save your details or add a badge to your profile. Use sample details to try it.</p>
-        <ButtonLink to="/identity-demo" variant="secondary" className="mt-4">Try the identity demo</ButtonLink>
-      </Card>
       <div className="mt-6 flex justify-center">
         <Button variant="ghost" onClick={async () => { await signOut(); navigate('/') }}><LogOut className="size-4" aria-hidden /> Sign out</Button>
       </div>

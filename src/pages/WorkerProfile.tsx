@@ -1,17 +1,16 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { BadgeCheck, CalendarCheck, Copy, Download, Eye, EyeOff, FileBadge, MapPin, QrCode as QrIcon, Share2, ShieldCheck, Star } from 'lucide-react'
-import { fetchPortfolio, fetchProfile, fetchWorkCredential, fetchWorkerStats } from '../lib/api'
+import { BadgeCheck, CalendarCheck, Copy, Eye, EyeOff, FileBadge, MapPin, QrCode as QrIcon, Share2, Star } from 'lucide-react'
+import { fetchPortfolio, fetchProfile, fetchWorkerStats } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryLabel } from '../lib/categories'
-import { friendlyError } from '../lib/errors'
 import { formatMonthYear } from '../lib/format'
 import { useAreaLookup } from '../lib/hooks'
 import { formatRand } from '../lib/money'
 import { avatarUrl } from '../lib/supabase'
 import type { WorkerStats } from '../lib/types'
-import { Avatar, Button, ButtonLink, Card, DemoBadge, ErrorState, Spinner } from '../components/ui'
+import { Avatar, Button, ButtonLink, Card, ErrorState, Spinner } from '../components/ui'
 import { QrCode } from '../components/ui/QrCode'
 import { useToast } from '../components/ui/toast'
 import { SharedDocuments } from '../components/profile/Documents'
@@ -30,12 +29,12 @@ function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; clai
   return (
     <Card className="p-5">
       <h2 className="text-lg font-semibold">Proven skills</h2>
-      <p className="text-xs text-muted">Counted from gigs that customers confirmed as done.</p>
+      
       {proven.length > 0 ? (
         <ul className="mt-4 space-y-3">
           {proven.map((c) => (
             <li key={c.category} className="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-3 text-sm">
-              <span className="truncate font-medium"><span aria-hidden><CategoryIcon category={c.category} className="size-5 text-brand-700" /></span> {categoryLabel(c.category)}</span>
+              <span className="truncate font-medium"><span aria-hidden><CategoryIcon category={c.category} className="size-5 text-brand-500" /></span> {categoryLabel(c.category)}</span>
               <span aria-hidden className="h-2 overflow-hidden rounded-full bg-line">
                 <span className="block h-full rounded-full bg-brand-600" style={{ width: `${Math.max(8, (c.count / max) * 100)}%` }} />
               </span>
@@ -51,8 +50,8 @@ function ProvenSkills({ stats, claimed }: { stats: WorkerStats | undefined; clai
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">Also offers</h3>
           <ul className="mt-2 flex flex-wrap gap-2">
             {alsoOffers.map((sk) => (
-              <li key={sk} className="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800">
-                <span aria-hidden><CategoryIcon category={sk} className="size-5 text-brand-700" /></span> {categoryLabel(sk)}
+              <li key={sk} className="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-300">
+                <span aria-hidden><CategoryIcon category={sk} className="size-5 text-brand-500" /></span> {categoryLabel(sk)}
               </li>
             ))}
           </ul>
@@ -80,7 +79,6 @@ export default function WorkerProfile() {
   const { userId } = useAuth()
   const toast = useToast()
   const areaOf = useAreaLookup()
-  const [downloading, setDownloading] = useState(false)
   const [showQr, setShowQr] = useState(false)
   const [hideEarnings, setHideEarnings] = useState(false)
   const isOwner = userId === id
@@ -154,24 +152,6 @@ export default function WorkerProfile() {
     }
   }
 
-  async function downloadRecord() {
-    setDownloading(true)
-    try {
-      const signed = await fetchWorkCredential(p!.id)
-      const blob = new Blob([JSON.stringify(signed, null, 2)], { type: 'application/json' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `kashwise-proofscript-${p!.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`
-      a.click()
-      URL.revokeObjectURL(a.href)
-      toast.show('ProofScript downloaded. Verify anytime at KashWise → Verify.')
-    } catch (e) {
-      toast.show(friendlyError(e), 'error')
-    } finally {
-      setDownloading(false)
-    }
-  }
-
   return (
     <div className="mx-auto max-w-6xl">
       <Card className="overflow-hidden">
@@ -186,9 +166,7 @@ export default function WorkerProfile() {
                   <BadgeCheck className="size-6 fill-gold-500/20 text-gold-600" aria-hidden /><span className="sr-only">Has customer-confirmed gigs</span>
                 </span>
               )}
-              {p.is_demo && <DemoBadge />}
             </div>
-            {isWorker && <p className="mt-1 text-sm text-muted">Your skills. Your work. Your proof.</p>}
             {tagline && <p className="mt-0.5 text-ink-soft">{tagline}</p>}
             <p className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted sm:justify-start">
               <span className="inline-flex items-center gap-1"><MapPin className="size-4" aria-hidden />{area ? `${area.name}, ${area.city}` : p.area_slug}</span>
@@ -237,8 +215,8 @@ export default function WorkerProfile() {
             <ProvenSkills stats={s} claimed={p.skills} />
             <WorkerServices workerId={p.id} first={first} isOwner={isOwner} />
             <section id="experience" aria-labelledby="records-h">
-              <h2 id="records-h" className="text-lg font-semibold text-ink">ProofScript Timeline</h2>
-              <p className="mb-3 text-sm text-muted">Client-confirmed work history, skills, and reviews.</p>
+              <h2 id="records-h" className="text-lg font-semibold text-ink">Work gallery</h2>
+              <div className="mb-3" />
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
                 <ProofScriptEmptyState isOwner={isOwner} firstName={first} />
 
@@ -254,14 +232,6 @@ export default function WorkerProfile() {
 
           <aside className="flex flex-col gap-4 [&>.card]:mt-0" aria-label="Verification">
             <div className="hidden lg:block"><PassportQr url={url} first={first} onCopy={copyLink} /></div>
-            <Card className="p-5">
-              <p className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5 text-brand-600" aria-hidden /> ProofScript Transcript</p>
-              <p className="mt-1 text-sm text-muted">
-                Customer-confirmed work history with verifiable cryptographic proof. Check anytime at{' '}
-                <Link to="/verify" className="font-semibold text-brand-700 underline">KashWise Verify</Link>.
-              </p>
-              <Button variant="secondary" size="sm" className="mt-3" loading={downloading} onClick={downloadRecord}><Download className="size-4" aria-hidden /> Download ProofScript</Button>
-            </Card>
             <SharedDocuments ownerId={p.id} firstName={first} />
             {!isOwner && <div className="flex justify-end"><ReportButton userId={p.id} label={`Report ${first}`} /></div>}
           </aside>

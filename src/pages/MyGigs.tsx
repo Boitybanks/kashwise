@@ -64,9 +64,9 @@ export default function MyGigs() {
           {shown.map((g) => (
             <li key={g.id}>
               <Link to={`/gigs/${g.id}`} className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-all hover:border-brand-200 hover:bg-surface-elevated shadow-sm">
-                <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas border border-line text-xl"><CategoryIcon category={g.category} className="size-5 text-brand-700" /></span>
+                <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas border border-line text-xl"><CategoryIcon category={g.category} className="size-5 text-brand-500" /></span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-ink transition-colors group-hover:text-brand-700">{g.title}</p>
+                  <p className="truncate font-semibold text-ink transition-colors group-hover:text-brand-400">{g.title}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-soft">
                     <StatusPill status={g.status} />
                     <span>{formatDay(g.scheduled_date)}</span>
@@ -80,7 +80,7 @@ export default function MyGigs() {
                     {g.status === 'in_progress' && g.worker_done_at && <span className="font-semibold text-brand-500">Worker says it’s done — confirm</span>}
                   </div>
                 </div>
-                <ChevronRight className="size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700" aria-hidden />
+                <ChevronRight className="size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-400" aria-hidden />
               </Link>
             </li>
           ))}

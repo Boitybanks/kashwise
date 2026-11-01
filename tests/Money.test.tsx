@@ -62,7 +62,7 @@ describe('<Money />', () => {
     expect(within(screen.getByText('Paid out to you').closest('.card') as HTMLElement).getByText('R0')).toBeInTheDocument()
     expect(within(screen.getByText('Earned, not yet paid out').closest('.card') as HTMLElement).getByText('R900')).toBeInTheDocument()
     expect(screen.getAllByText('System-verified').length).toBeGreaterThan(0)
-    expect(screen.getByText(/No real money moves, and no bank is connected/)).toBeInTheDocument()
+    expect(screen.getByText(/Payments are simulated for now/)).toBeInTheDocument()
     expect(screen.getByText(/Based on your KashWise activity only/)).toBeInTheDocument()
   })
 

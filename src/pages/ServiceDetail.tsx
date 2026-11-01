@@ -11,7 +11,7 @@ import { areaLabel, useAreaLookup } from '../lib/hooks'
 import { formatRand } from '../lib/money'
 import { avatarUrl } from '../lib/supabase'
 import { addDays, bookingSchema, firstError, todayInSA } from '../lib/validation'
-import { Avatar, Button, ButtonLink, Card, DemoBadge, ErrorState, Field, SimulationNote, Spinner } from '../components/ui'
+import { Avatar, Button, ButtonLink, Card, DemoBadge, ErrorState, Field, Spinner } from '../components/ui'
 import { AreaSelect } from '../components/AreaSelect'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { FeeBreakdown } from '../components/gig/FeeBreakdown'
@@ -65,7 +65,7 @@ export default function ServiceDetail() {
     try {
       const gigId = await bookService(service!.id, parsed.data)
       await queryClient.invalidateQueries({ queryKey: ['posted'] })
-      toast.show(`Booked! ${first} has been notified and the payment provider is holding the payment (simulation).`)
+      toast.show(`Booked! ${first} has been notified and the payment provider is holding the payment.`)
       navigate(`/gigs/${gigId}`)
     } catch (err) {
       setFormError(friendlyError(err))
@@ -101,7 +101,7 @@ export default function ServiceDetail() {
               <span className="block font-semibold">{isOwner ? 'You' : service.worker.display_name} {service.worker.is_demo && <DemoBadge />}</span>
               {service.worker.headline && <span className="block truncate text-xs text-muted">{service.worker.headline}</span>}
             </span>
-            <span className="text-sm font-semibold text-brand-700">ProofScript</span>
+            <span className="text-sm font-semibold text-brand-500">ProofScript</span>
           </Link>
         )}
 
@@ -152,7 +152,7 @@ export default function ServiceDetail() {
 
           <Card className="space-y-4 p-5">
             <div className="flex items-start gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><Lock className="size-4" aria-hidden /></span>
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
               <div>
                 <h2 className="text-lg font-semibold">Private details</h2>
                 <p className="text-sm text-muted">Stored encrypted. Only you and {first} can reveal them once the booking is made.</p>
@@ -165,8 +165,6 @@ export default function ServiceDetail() {
               <input id="access_notes" className="input" maxLength={300} value={form.access_notes} onChange={(e) => set('access_notes', e.target.value)} {...invalid('access_notes')} />
             </Field>
           </Card>
-
-          <SimulationNote>You won’t be charged. Booking simulates the payment provider holding the price until you confirm the job is done.</SimulationNote>
           {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
           <Button type="submit" size="lg" block loading={busy}>Book for {formatRand(service.price_cents)}</Button>
           <p className="text-sm text-muted">{first} can decline if the date doesn’t work, and you can cancel before the job starts. Either way the held payment is refunded.</p>

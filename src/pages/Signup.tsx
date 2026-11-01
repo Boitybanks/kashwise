@@ -80,7 +80,7 @@ export default function Signup() {
     <div className="mx-auto max-w-lg">
       <h1 className="text-3xl font-semibold">Join KashWise</h1>
       <p className="mt-1 text-muted">Your skills, your schedule. Start earning extra income or find the help you need.</p>
-      {next && <p className="mt-4 rounded-xl bg-brand-50 p-3 text-sm text-brand-800">We’ll bring you back to your chosen task after you set up your account.</p>}
+      {next && <p className="mt-4 rounded-xl bg-brand-50 p-3 text-sm text-brand-300">We’ll bring you back to your chosen task after you set up your account.</p>}
       <Card className="mt-6 p-5">
         <form onSubmit={onSubmit} noValidate className="space-y-5">
           <fieldset>
@@ -127,7 +127,7 @@ export default function Signup() {
           <Button type="submit" block size="lg" loading={busy && !warnings.length}>Create my free account</Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted">
-          Already have an account? <Link to={`/login${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-brand-700 hover:underline">Sign in</Link>
+          Already have an account? <Link to={`/login${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-brand-500 hover:underline">Sign in</Link>
         </p>
       </Card>
     </div>

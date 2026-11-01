@@ -15,7 +15,7 @@ export function LifecycleStepper({ status }: { status: GigStatus }) {
           <li key={s} className="flex flex-col items-center gap-1 text-center" aria-current={active ? 'step' : undefined}>
             <span
               className={`grid size-8 place-items-center rounded-full text-xs font-semibold ring-2 ${
-                done ? 'bg-brand-600 text-white ring-brand-600' : active ? 'bg-sun-400 text-ink ring-sun-400' : 'bg-surface text-muted ring-line'
+                done ? 'bg-brand-600 text-white ring-brand-600' : active ? 'bg-sun-400 text-night ring-sun-400' : 'bg-surface text-muted ring-line'
               }`}
             >
               {done ? <Check className="size-4" aria-hidden /> : i + 1}
@@ -37,15 +37,15 @@ function describe(e: GigEvent, names: Record<string, string>): string {
     case 'matched': return `${who} chose ${e.detail ?? 'a worker'}`
     case 'booked': return e.detail ? `${who} booked ${e.detail}’s service` : `${who} booked a service`
     case 'booking_declined': return `${who} declined the booking`
-    case 'payment_held': return 'Payment held by the payment provider (simulation)'
+    case 'payment_held': return 'Payment held by the payment provider'
     case 'started': return `${who} started the work${e.detail === 'qr' ? ' (start QR scanned on site)' : ''}`
     case 'worker_done': return `${who} marked the job as done${e.detail === 'qr' ? ' (finish QR scanned on site)' : ''}`
     case 'completed': return `${who} confirmed the job is complete`
-    case 'payment_released': return 'Payment released to the worker (simulation)'
+    case 'payment_released': return 'Payment released to the worker'
     case 'portfolio_record': return `Verified record ${e.detail ?? ''} added to the worker’s portfolio`
     case 'reviewed': return `${who} left a ${e.detail ?? ''}★ review`
     case 'cancelled': return `${who} cancelled the gig`
-    case 'payment_refunded': return 'Payment refunded to the customer (simulation)'
+    case 'payment_refunded': return 'Payment refunded to the customer'
     case 'contact_revealed': return `Encrypted contact details opened by ${e.detail ?? who}`
     default: return e.kind
   }

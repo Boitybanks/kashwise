@@ -21,7 +21,7 @@ export function DemoSwitcher() {
     setBusy(true)
     try {
       await signInDemo(other)
-      toast.show(`You are now ${DEMO_ACCOUNTS[other].name} (demo ${other}).`)
+      toast.show(`You are now ${DEMO_ACCOUNTS[other].name}.`)
       navigate(other === 'customer' ? '/my-gigs' : '/discover')
     } catch (e) {
       toast.show(friendlyError(e), 'error')
@@ -34,7 +34,7 @@ export function DemoSwitcher() {
     <div className="border-b border-sun-300 bg-sun-50 print:hidden">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 text-sm">
         <p className="text-gold-600">
-          <strong>Demo mode:</strong> you are {profile.display_name.split(' ')[0]} ({profile.role}).
+          Viewing as {profile.display_name.split(' ')[0]}
         </p>
         <button
           type="button"

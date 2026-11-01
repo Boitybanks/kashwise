@@ -1,18 +1,20 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useRef, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { Lock } from 'lucide-react'
-import { createGig } from '../lib/api'
+import { addGigPhoto, createGig } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORIES } from '../lib/categories'
+import { baselineFloor } from '../lib/dictation'
 import { friendlyError } from '../lib/errors'
 import { randsToCents } from '../lib/money'
 import { addDays, firstError, gigSchema, todayInSA } from '../lib/validation'
-import { Button, Card, Field, PageHeader, SimulationNote } from '../components/ui'
+import { Button, Card, Field, PageHeader } from '../components/ui'
 import { AreaSelect } from '../components/AreaSelect'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { DictatePanel } from '../components/DictatePanel'
 import { FeeBreakdown } from '../components/gig/FeeBreakdown'
+import { JobPhotoPicker } from '../components/gig/JobPhotoPicker'
 import { useToast } from '../components/ui/toast'
 
 const windows = [
@@ -23,8 +25,7 @@ const windows = [
 ] as const
 
 export default function PostGig() {
-  const { profile } = useAuth()
-  const [params] = useSearchParams()
+  const { profile, userId } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -42,10 +43,15 @@ export default function PostGig() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState('')
-  const [priceNote, setPriceNote] = useState('')
+  const [draftFloor, setDraftFloor] = useState<number | null>(null)
+  const [drafted, setDrafted] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [photos, setPhotos] = useState<File[]>([])
+  const preview = useRef<HTMLDivElement>(null)
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }))
   const payoutCents = form.payout_rands === '' ? 0 : randsToCents(Number(form.payout_rands))
+  // Clients may offer more than the market rate for the work, not less.
+  const floor = draftFloor ?? (form.category ? baselineFloor(form.category) : 0)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -60,13 +66,20 @@ export default function PostGig() {
       document.getElementById(Object.keys(errs)[0] === 'payout_cents' ? 'payout' : Object.keys(errs)[0])?.focus()
       return
     }
+    if (parsed.data.payout_cents < floor * 100) {
+      setErrors({ payout_cents: `The market rate for this work starts at R${floor}.` })
+      document.getElementById('payout')?.focus()
+      return
+    }
     setErrors({})
     setBusy(true)
     try {
       const id = await createGig(parsed.data)
+      const uploads = await Promise.allSettled(photos.map((file) => addGigPhoto(id, userId!, file)))
+      if (uploads.some((u) => u.status === 'rejected')) toast.show('Your gig is live, but a photo did not upload.', 'error')
       await queryClient.invalidateQueries({ queryKey: ['posted'] })
       await queryClient.invalidateQueries({ queryKey: ['discover'] })
-      toast.show('Your gig is live! Workers nearby can now apply.')
+      toast.show('Your gig is live.')
       navigate(`/gigs/${id}`)
     } catch (err) {
       setFormError(friendlyError(err))
@@ -77,23 +90,50 @@ export default function PostGig() {
 
   const invalid = (k: string) => (errors[k] ? { 'aria-invalid': true as const, 'aria-describedby': `${k === 'payout_cents' ? 'payout' : k}-error` } : {})
 
+  const taskFields = (
+    <>
+      <Field label="What do you need done?" htmlFor="title" error={errors.title}>
+        <input id="title" className="input" maxLength={80} value={form.title} onChange={(e) => set('title', e.target.value)} {...invalid('title')} />
+      </Field>
+      <fieldset>
+        <legend className="mb-2 text-sm font-semibold">Category</legend>
+        <div className="flex flex-wrap gap-2" id="category" tabIndex={-1}>
+          {CATEGORIES.map((c) => (
+            <button key={c.slug} type="button" className="chip" aria-pressed={form.category === c.slug} onClick={() => { set('category', c.slug); setDraftFloor(null) }}>
+              <CategoryIcon category={c.slug} className="size-4" /> {c.label}
+            </button>
+          ))}
+        </div>
+        {errors.category && <p id="category-error" className="mt-1 text-sm font-medium text-clay-700">{errors.category}</p>}
+      </fieldset>
+      <Field label="Describe the work" htmlFor="description" error={errors.description}>
+        <textarea id="description" rows={4} className="input" maxLength={1000} value={form.description} onChange={(e) => set('description', e.target.value)} {...invalid('description')} />
+      </Field>
+      <JobPhotoPicker files={photos} onChange={setPhotos} />
+    </>
+  )
+
+  const budgetFields = (
+    <>
+      <Field label="Labour cost" htmlFor="payout" error={errors.payout_cents} hint={floor ? `Market rate from R${floor}. You can offer more, not less.` : undefined}>
+        <div className="relative">
+          <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center font-semibold text-muted">R</span>
+          <input id="payout" type="number" inputMode="decimal" min={floor || 50} max={50000} step={0.01} className="input pl-8 text-lg font-semibold"
+            placeholder={floor ? String(floor) : '500'} value={form.payout_rands} onChange={(e) => set('payout_rands', e.target.value)} {...invalid('payout_cents')} />
+        </div>
+      </Field>
+      <FeeBreakdown payoutCents={payoutCents > 0 ? payoutCents : 0} perspective="customer" counterpart />
+    </>
+  )
+
   return (
     <div className="mx-auto max-w-2xl">
-      {params.get('welcome') && (
-        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-50 border border-brand-200 p-4 text-ink">
-          <p className="text-sm"><strong>Welcome to KashWise!</strong> Tell people nearby what you need. You choose a worker after reviewing their applications.</p>
-        </div>
-      )}
-      <PageHeader title="Good help starts here." subtitle="Post a gig for nearby workers. You’re in control of who you hire." />
-      <ol aria-label="How hiring works" className="mb-6 grid grid-cols-3 gap-3 rounded-2xl border border-line bg-surface p-4 text-sm">
-        {['Post your task', 'Choose a worker', 'Confirm a job well done'].map((step, index) => <li key={step}><span className="mb-2 grid size-6 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-500">{index + 1}</span><span className="font-semibold">{step}</span></li>)}
-      </ol>
+      <PageHeader title="Post a gig" />
       <div className="mb-5">
         <DictatePanel
           kind="job"
-          title="Just say what you need"
-          subtitle="KashWise writes a formal job post and suggests a price. You check everything before it goes live."
-          placeholder="e.g. Today I need someone who can help me with my leaking roof in the morning."
+          title="Say what you need"
+          placeholder="Today I need someone to fix my leaking roof, in the morning if possible."
           action="Write my job post"
           onDraft={(draft) => {
             const before = form
@@ -106,38 +146,37 @@ export default function PostGig() {
               scheduled_date: draft.scheduled_date ?? f.scheduled_date,
               payout_rands: draft.price_rands != null ? String(draft.price_rands) : f.payout_rands,
             }))
-            setPriceNote(draft.price_note)
-            return () => { setForm(before); setPriceNote('') }
+            setDraftFloor(draft.market_floor_rands)
+            setDrafted(true)
+            setErrors({})
+            setTimeout(() => preview.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+            return () => { setForm(before); setDraftFloor(null) }
           }}
-          readBack={(draft) => `${draft.title}. ${draft.description}${draft.price_rands != null ? ` Suggested price: ${draft.price_rands} rand.` : ''}`}
-          afterDraft={() => 'Add your area and private details, then post it.'}
+          onUndo={() => setDrafted(false)}
+          readBack={(draft) => `${draft.title}. ${draft.description}${draft.price_rands != null ? ` Labour cost: ${draft.price_rands} rand.` : ''}`}
         />
       </div>
       <form onSubmit={onSubmit} noValidate className="space-y-5">
-        <Card className="space-y-4 p-5">
-          <h2 className="text-lg font-semibold">1. Tell us about the task</h2>
-          <Field label="What do you need done?" htmlFor="title" error={errors.title} hint="e.g. “Paint my front wall” or “Grade 10 maths tutoring”">
-            <input id="title" className="input" maxLength={80} value={form.title} onChange={(e) => set('title', e.target.value)} {...invalid('title')} />
-          </Field>
-          <fieldset>
-            <legend className="mb-2 text-sm font-semibold">Category</legend>
-            <div className="flex flex-wrap gap-2" id="category" tabIndex={-1}>
-              {CATEGORIES.map((c) => (
-                <button key={c.slug} type="button" className="chip" aria-pressed={form.category === c.slug} onClick={() => set('category', c.slug)}>
-                  <CategoryIcon category={c.slug} className="size-4" /> {c.label}
-                </button>
-              ))}
-            </div>
-            {errors.category && <p id="category-error" className="mt-1 text-sm font-medium text-clay-700">{errors.category}</p>}
-          </fieldset>
-          <Field label="Describe the work" htmlFor="description" error={errors.description} hint={`${form.description.trim().length}/1000 · What should the worker bring? How big is the job?`}>
-            <textarea id="description" rows={4} className="input" maxLength={1000} value={form.description} onChange={(e) => set('description', e.target.value)} {...invalid('description')} />
-          </Field>
-        </Card>
+        {drafted ? (
+          <div ref={preview} className="scroll-mt-24">
+            <Card className="space-y-4 border-brand-200 p-5">
+              <h2 className="text-lg font-semibold">Your job post</h2>
+              {taskFields}
+              {budgetFields}
+            </Card>
+          </div>
+        ) : (
+          <>
+            <Card className="space-y-4 p-5">
+              <h2 className="text-lg font-semibold">The task</h2>
+              {taskFields}
+            </Card>
+          </>
+        )}
 
         <Card className="space-y-4 p-5">
-          <h2 className="text-lg font-semibold">2. Where and when?</h2>
-          <Field label="Area" htmlFor="area_slug" error={errors.area_slug} hint="Shown publicly so nearby workers find your gig.">
+          <h2 className="text-lg font-semibold">Where and when</h2>
+          <Field label="Area" htmlFor="area_slug" error={errors.area_slug}>
             <AreaSelect id="area_slug" value={form.area_slug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} placeholder="Choose the area" />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -152,48 +191,31 @@ export default function PostGig() {
           </div>
         </Card>
 
-        <Card className="space-y-4 p-5">
-          <h2 className="text-lg font-semibold">3. Set a clear budget</h2>
-          <Field label="What will you pay for this job?" htmlFor="payout" error={errors.payout_cents} hint="Between R50 and R50 000. Nothing is added on top. Service providers are shown what they’ll receive after KashWise’s 10% fee.">
-            <div className="relative">
-              <span className="pointer-events-none absolute inset-y-0 left-3.5 grid place-items-center font-semibold text-muted">R</span>
-              <input id="payout" type="number" inputMode="decimal" min={50} max={50000} step={0.01} className="input pl-8 text-lg font-semibold"
-                placeholder="500" value={form.payout_rands} onChange={(e) => set('payout_rands', e.target.value)} {...invalid('payout_cents')} />
-            </div>
-          </Field>
-          {priceNote && <p role="status" className="rounded-md bg-brand-50 px-3 py-2 text-sm text-brand-800">{priceNote}</p>}
-          <div className="flex flex-wrap gap-2">
-            {[200, 350, 500, 800, 1200].map((r) => (
-              <button key={r} type="button" className="chip" aria-pressed={form.payout_rands === String(r)} onClick={() => set('payout_rands', String(r))}>
-                R{r}
-              </button>
-            ))}
-          </div>
-          <FeeBreakdown payoutCents={payoutCents > 0 ? payoutCents : 0} perspective="customer" counterpart />
-          <SimulationNote>You won’t be charged. When you choose a worker, KashWise simulates a payment provider holding the job price until you confirm the job is done.</SimulationNote>
-        </Card>
+        {!drafted && (
+          <Card className="space-y-4 p-5">
+            <h2 className="text-lg font-semibold">Budget</h2>
+            {budgetFields}
+          </Card>
+        )}
 
         <Card className="space-y-4 p-5">
           <div className="flex items-start gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
             <div>
-              <h2 className="text-lg font-semibold">4. Add private details</h2>
-              <p className="text-sm text-muted">
-                Your exact address is kept off the public listing. These details are stored encrypted and can be revealed by the worker you choose.
-              </p>
+              <h2 className="text-lg font-semibold">Private details</h2>
+              <p className="text-sm text-muted">Only the worker you choose can see these.</p>
             </div>
           </div>
           <Field label="Street address" htmlFor="address" error={errors.address} optional>
             <input id="address" autoComplete="street-address" className="input" maxLength={200} value={form.address} onChange={(e) => set('address', e.target.value)} {...invalid('address')} />
           </Field>
-          <Field label="Access notes" htmlFor="access_notes" error={errors.access_notes} optional hint="Gate code, parking, which house — anything the worker needs.">
+          <Field label="Access notes" htmlFor="access_notes" error={errors.access_notes} optional>
             <input id="access_notes" className="input" maxLength={300} value={form.access_notes} onChange={(e) => set('access_notes', e.target.value)} {...invalid('access_notes')} />
           </Field>
         </Card>
 
         {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
-        <p className="text-sm text-muted">After publishing, review applications on your gig page. Nothing is booked until you choose a worker. Keep phone numbers and street addresses out of the public task description.</p>
-        <Button type="submit" size="lg" block loading={busy}>Post task</Button>
+        <Button type="submit" size="lg" block loading={busy}>Post gig</Button>
       </form>
     </div>
   )

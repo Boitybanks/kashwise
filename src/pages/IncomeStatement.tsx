@@ -1,12 +1,11 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Download, Printer, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Printer, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { fetchIncomeStatement } from '../lib/api'
 import { categoryLabel } from '../lib/categories'
 import { formatDate } from '../lib/format'
 import { monthName, STATEMENT_MONTHS } from '../lib/income-statement'
 import { formatRand } from '../lib/money'
-import { downloadSigned } from '../lib/pq/verify-client'
 import { LogoMark } from '../components/layout/Logo'
 import { Button, ButtonLink, DemoBadge, ErrorState, Skeleton } from '../components/ui'
 
@@ -22,16 +21,13 @@ export default function IncomeStatement() {
 
   const toolbar = (
     <div className="mb-4 flex flex-wrap items-center gap-2 print:hidden">
-      <Link to="/wallet" className="mr-auto inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-brand-700"><ArrowLeft className="size-4" aria-hidden /> My Wallet</Link>
+      <Link to="/wallet" className="mr-auto inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-brand-500"><ArrowLeft className="size-4" aria-hidden /> My Wallet</Link>
       <label htmlFor="statement-months" className="sr-only">Period</label>
       <select id="statement-months" className="input w-auto py-2" value={months} onChange={(e) => setParams({ months: e.target.value })}>
         {STATEMENT_MONTHS.map((m) => <option key={m} value={m}>Last {m} months</option>)}
       </select>
       {q.data && (
         <>
-          <Button variant="secondary" size="sm" onClick={() => downloadSigned(q.data, `kashwise-income-${q.data.credential.reference}.json`)}>
-            <Download className="size-4" aria-hidden /> Signed copy
-          </Button>
           <Button size="sm" onClick={() => window.print()}><Printer className="size-4" aria-hidden /> Print or save PDF</Button>
         </>
       )}
@@ -117,7 +113,6 @@ export default function IncomeStatement() {
                   <th className="py-2 font-semibold">Month</th>
                   <th className="py-2 text-right font-semibold">Jobs</th>
                   <th className="py-2 text-right font-semibold">Clients paid</th>
-                  <th className="py-2 text-right font-semibold">KashWise fee (10%)</th>
                   <th className="py-2 text-right font-semibold">Received</th>
                 </tr>
               </thead>
@@ -127,7 +122,6 @@ export default function IncomeStatement() {
                     <td className="py-2">{monthName(m.month)}</td>
                     <td className="py-2 text-right">{m.jobs}</td>
                     <td className="py-2 text-right">{formatRand(m.client_paid_cents)}</td>
-                    <td className="py-2 text-right">{formatRand(m.fee_cents)}</td>
                     <td className="py-2 text-right font-semibold">{formatRand(m.net_cents)}</td>
                   </tr>
                 ))}
@@ -137,7 +131,6 @@ export default function IncomeStatement() {
                   <td className="py-2">Total</td>
                   <td className="py-2 text-right">{s.totals.jobs}</td>
                   <td className="py-2 text-right">{formatRand(s.totals.client_paid_cents)}</td>
-                  <td className="py-2 text-right">{formatRand(s.totals.fee_cents)}</td>
                   <td className="py-2 text-right">{formatRand(s.totals.net_cents)}</td>
                 </tr>
               </tfoot>
@@ -166,7 +159,7 @@ export default function IncomeStatement() {
                       <td className="py-2 whitespace-nowrap">{formatDate(l.date)}</td>
                       <td className="py-2">
                         <p className="font-semibold">{l.title}</p>
-                        <p className="text-xs text-muted">{categoryLabel(l.category)} · {l.area}{l.record ? ` · record ${l.record}` : ''}</p>
+                        <p className="text-xs text-muted">{categoryLabel(l.category)} · {l.area}</p>
                       </td>
                       <td className="py-2">{l.customer ?? '—'}</td>
                       <td className="py-2 text-right font-semibold tabular-nums">{formatRand(l.net_cents)}</td>
@@ -179,7 +172,7 @@ export default function IncomeStatement() {
           {s.cash_outs.count > 0 && (
             <p className="mt-3 text-sm text-muted">
               Cashed out in this period: {formatRand(s.cash_outs.amount_cents)} in {s.cash_outs.count} {s.cash_outs.count === 1 ? 'cash-out' : 'cash-outs'}
-              {s.cash_outs.fee_cents ? ` (${formatRand(s.cash_outs.fee_cents)} in cash-out fees)` : ''}.
+              .
             </p>
           )}
         </section>
@@ -187,14 +180,7 @@ export default function IncomeStatement() {
         <footer className="mt-8 space-y-2 border-t border-line pt-5 text-xs text-muted">
           <p className="flex items-start gap-2">
             <ShieldCheck className="size-4 shrink-0 text-brand-600" aria-hidden />
-            <span>
-              Signed by KashWise with ML-DSA-65 (key <code>{q.data.kid}</code>). To check it is genuine and unchanged, upload the signed copy at{' '}
-              <span className="font-semibold text-ink">{s.verify_url}</span>.
-            </span>
-          </p>
-          <p>
-            Earnings are payments released to {s.worker.name.split(' ')[0]} after each client confirmed the job was done, less KashWise’s 10% fee.
-            KashWise is a work marketplace, not a bank or a credit provider. The lender or landlord decides how to use this statement.
+            <span>Signed by KashWise.</span>
           </p>
         </footer>
       </article>

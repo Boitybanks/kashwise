@@ -23,7 +23,7 @@ export function ServiceCard({ service, showProvider = true }: { service: Discove
             </span>
             <div className="min-w-0">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-500">{categoryLabel(service.category)}</span>
-              <h3 className="text-lg font-semibold leading-snug text-ink transition-colors group-hover:text-brand-700">{service.title}</h3>
+              <h3 className="text-lg font-semibold leading-snug text-ink transition-colors group-hover:text-brand-400">{service.title}</h3>
             </div>
           </div>
           <div className="shrink-0 text-right">
@@ -57,7 +57,7 @@ export function ServiceCard({ service, showProvider = true }: { service: Discove
           </span>
         )}
         {service.is_demo && <DemoBadge />}
-        <span className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-500 border border-brand-200 transition-all group-hover:bg-brand-600 group-hover:text-brand-700">
+        <span className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-500 border border-brand-200 transition-all group-hover:bg-brand-600 group-hover:text-brand-400">
           Book <ArrowUpRight className="size-3.5" aria-hidden />
         </span>
       </div>

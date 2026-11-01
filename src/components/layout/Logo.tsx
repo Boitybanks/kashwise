@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 
-/** Mark: a location pin holding a check — local work, verified. */
+/** Mark: a check for confirmed work, reaching up to a gold coin. */
 export function LogoMark({ className = 'size-8' }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden>
-      <rect width="32" height="32" rx="9" fill="#235747" />
-      <path d="M16 6.5c-4.4 0-7.8 3.3-7.8 7.6 0 5.4 6.4 10.6 7.2 11.3.35.3.85.3 1.2 0 .8-.7 7.2-5.9 7.2-11.3 0-4.3-3.4-7.6-7.8-7.6Z" fill="#d5ef98" />
-      <path d="m12.6 14.2 2.4 2.4 4.6-4.8" fill="none" stroke="#06472c" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <rect width="32" height="32" rx="8" fill="#0d9488" />
+      <path d="M7.5 16.5 13 22l8.5-11" fill="none" stroke="#fff" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="24.5" cy="7.5" r="3.7" fill="#f2b92c" />
     </svg>
   )
 }
@@ -16,7 +16,7 @@ export function Logo({ to = '/' }: { to?: string }) {
     <Link to={to} className="flex items-center gap-2 rounded-lg" aria-label="KashWise home">
       <LogoMark />
       <span className="text-[23px] font-semibold tracking-[-.06em] text-ink">
-        Kash<span className="text-brand-600">Wise</span>
+        Kash<span className="text-brand-500">Wise</span>
       </span>
     </Link>
   )

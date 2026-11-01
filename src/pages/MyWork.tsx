@@ -12,9 +12,9 @@ import { CategoryIcon } from '../components/CategoryIcon'
 function GigRow({ gig, note }: { gig: Gig; note?: string }) {
   return (
     <Link to={`/gigs/${gig.id}`} className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-all hover:border-brand-200 hover:bg-surface-elevated shadow-sm">
-      <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas border border-line text-xl"><CategoryIcon category={gig.category} className="size-5 text-brand-700" /></span>
+      <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas border border-line text-xl"><CategoryIcon category={gig.category} className="size-5 text-brand-500" /></span>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-ink transition-colors group-hover:text-brand-700">{gig.title}</p>
+        <p className="truncate font-semibold text-ink transition-colors group-hover:text-brand-400">{gig.title}</p>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-soft">
           <StatusPill status={gig.status} />
           <span>{formatDay(gig.scheduled_date)}</span>
@@ -22,7 +22,7 @@ function GigRow({ gig, note }: { gig: Gig; note?: string }) {
           {note && <span className="text-muted">· {note}</span>}
         </div>
       </div>
-      <ChevronRight className="size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700" aria-hidden />
+      <ChevronRight className="size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-400" aria-hidden />
     </Link>
   )
 }
@@ -79,7 +79,7 @@ export default function MyWork() {
       <section aria-labelledby="apps-h" className="mb-8">
         <h2 id="apps-h" className="mb-3 flex items-center gap-2 text-lg font-semibold"><Hourglass className="size-5 text-sun-600" aria-hidden /> Waiting to hear back</h2>
         {appsQ.isPending ? <Skeleton className="h-20" /> : pending.length === 0 ? (
-          <p className="card p-4 text-sm text-muted">No pending applications. <Link to="/discover" className="font-semibold text-brand-700 underline">Browse open gigs</Link></p>
+          <p className="card p-4 text-sm text-muted">No pending applications. <Link to="/discover" className="font-semibold text-brand-500 underline">Browse open gigs</Link></p>
         ) : (
           <ul className="space-y-3">{pending.map((a) => <li key={a.id}><GigRow gig={a.gig!} note={`applied ${timeAgo(a.created_at)}`} /></li>)}</ul>
         )}

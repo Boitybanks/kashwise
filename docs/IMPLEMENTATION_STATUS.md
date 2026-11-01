@@ -59,7 +59,11 @@ Parallel thread workers time out on OneDrive ("Failed to start threads worker");
 | Price suggestion: said → similar KashWise jobs → labelled AI estimate | WORKING (rules) | `dictation.test.ts` |
 | iBanks read-out on Earn My Goal | WORKING | `proofscript-cv.test.tsx` |
 | ProofScript CV `/w/:id/cv`, PDF through print | WORKING | `proofscript-cv.test.tsx`; rendered against the live demo worker at 360 px, desktop and A4 |
-| Editorial light theme across all screens | WORKING | Every route screenshotted at 360 and 1280 px as visitor, worker and customer with an automated contrast and overflow check |
+| Dark theme restored, with less copy on every screen | WORKING | Key screens screenshotted at desktop size; Find work also at 360 px |
+| Find work defaults to the worker's skills; open-to-work switch | PARTIAL | Code done; **the switch needs migration `20261102000100` on live** |
+| Job photos, before and after gallery | PARTIAL | Code done, migration runs in the local test database. **Not applied to live: the apply was declined**, so uploads fail until it is |
+| CV as a real PDF download | WORKING | `cv-pdf.test.ts`; downloaded in a browser against the live demo worker |
+| Live AI on `/api/dictate` | NOT WORKING | Key is set in Netlify, but the live endpoint fell back to rules on 2 Nov. New `ai_status` field and function logs will show why |
 
 ## Product, business, presentation
 

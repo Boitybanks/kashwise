@@ -30,7 +30,7 @@ export function IdentityFields({ value, onChange, errors }: {
         label="SA ID number"
         htmlFor="id_number"
         error={errors.id_number}
-        hint={idCheck?.ok ? <span className="inline-flex items-center gap-1 text-brand-700"><CircleCheck className="size-3.5" aria-hidden /> Valid ID number format · born {formatDate(`${idCheck.details.dateOfBirth}T12:00:00`)}</span> : '13 digits, from your green ID book or smart ID card.'}
+        hint={idCheck?.ok ? <span className="inline-flex items-center gap-1 text-brand-500"><CircleCheck className="size-3.5" aria-hidden /> Valid ID number format · born {formatDate(`${idCheck.details.dateOfBirth}T12:00:00`)}</span> : '13 digits, from your green ID book or smart ID card.'}
       >
         <input id="id_number" inputMode="numeric" autoComplete="off" spellCheck={false} className="input font-mono tracking-[0.12em]" value={value.id_number}
           onChange={(e) => set('id_number', e.target.value)} {...(errors.id_number ? err('id_number') : { 'aria-describedby': 'id_number-hint' })} />

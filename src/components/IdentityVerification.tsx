@@ -112,7 +112,7 @@ export function IdentityVerification({ onComplete, minimumAge = 18 }: {
       {step === 'camera' && <div className="space-y-4">
         <h2 ref={heading} tabIndex={-1} className="text-2xl font-semibold">Try a selfie, if you like</h2>
         <p className="text-sm text-muted">ID format checked. The ID and birth-date inputs have been cleared. Your browser will ask permission only when you open the camera. A captured photo stays in this page’s memory and is discarded when you leave.</p>
-        {photo ? <img src={photo} alt="Your temporary selfie preview" className="aspect-square w-full rounded-lg object-cover" /> : camera === 'live' ? <video ref={video} autoPlay playsInline muted aria-label="Live camera preview" className="aspect-square w-full -scale-x-100 rounded-lg bg-ink object-cover" /> : <div className="grid min-h-44 place-items-center rounded-lg bg-brand-50 p-5 text-center text-brand-800"><Camera size={40} aria-hidden /><p>{camera === 'starting' ? 'Waiting for camera permission…' : 'Camera is off. No photo has been captured.'}</p></div>}
+        {photo ? <img src={photo} alt="Your temporary selfie preview" className="aspect-square w-full rounded-lg object-cover" /> : camera === 'live' ? <video ref={video} autoPlay playsInline muted aria-label="Live camera preview" className="aspect-square w-full -scale-x-100 rounded-lg bg-ink object-cover" /> : <div className="grid min-h-44 place-items-center rounded-lg bg-brand-50 p-5 text-center text-brand-300"><Camera size={40} aria-hidden /><p>{camera === 'starting' ? 'Waiting for camera permission…' : 'Camera is off. No photo has been captured.'}</p></div>}
         {camera === 'live' ? <Button block onClick={snap}>Snap selfie</Button> : <Button block disabled={camera === 'starting'} onClick={() => void openCamera()}>{photo ? <><RefreshCw size={16} /> Retake selfie</> : camera === 'error' ? 'Try camera again' : 'Open camera'}</Button>}
         {photo && <Button block onClick={proceed}>Use this photo for the demo</Button>}
         <Button block variant="ghost" onClick={() => { setPhoto(null); proceed() }}>Skip selfie — continue demo</Button>
@@ -124,7 +124,7 @@ export function IdentityVerification({ onComplete, minimumAge = 18 }: {
         <div className="h-2 overflow-hidden rounded bg-line"><div className="h-full animate-progress-fill bg-brand-600" /></div>
       </div>}
       {step === 'success' && <div className="space-y-4">
-        <CircleCheck size={36} className="text-brand-700" aria-hidden />
+        <CircleCheck size={36} className="text-brand-500" aria-hidden />
         <h2 ref={heading} tabIndex={-1} className="text-2xl font-semibold">Demo completed</h2>
         <p className="font-medium">ID format checked · {photo ? 'selfie captured locally' : 'selfie skipped'}</p>
         <p className="text-sm text-muted">Your identity has not been verified. No public badge, account permission or saved verification record has been created.</p>

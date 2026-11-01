@@ -25,7 +25,7 @@ const documentsQuery = (ownerId: string) => ({
 
 function DocumentLink({ doc }: { doc: DocumentWithLink }) {
   return doc.url ? (
-    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-700 hover:underline">
+    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-500 hover:underline">
       {doc.title}
     </a>
   ) : (
@@ -93,7 +93,7 @@ export function DocumentsManager({ userId, readOnly }: { userId: string; readOnl
   return (
     <Card className="mt-6 p-5">
       <div className="flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><FileText className="size-4" aria-hidden /></span>
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><FileText className="size-4" aria-hidden /></span>
         <div>
           <h2 className="font-semibold">Documents (PDF)</h2>
           <p className="text-sm text-muted">
@@ -193,7 +193,7 @@ export function SharedDocuments({ ownerId, firstName }: { ownerId: string; first
       <ul className="mt-3 space-y-2">
         {docs.map((d) => (
           <li key={d.id} className="flex items-center gap-2 text-sm">
-            <FileText className="size-4 shrink-0 text-brand-700" aria-hidden />
+            <FileText className="size-4 shrink-0 text-brand-500" aria-hidden />
             <DocumentLink doc={d} />
             <span className="text-xs text-muted">· {KIND_LABEL[d.kind]} · PDF</span>
           </li>

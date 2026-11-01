@@ -58,7 +58,7 @@ export function goalBrief(plan: GoalPlan, now = new Date()): string {
   if (suggestions.length === 0) {
     return `${need}${booked} ${p.remaining_cents > p.booked_cents ? 'No open job fits your choices right now, so try a wider area, more days or another skill.' : 'That would cover it once the work is done and paid.'}`
   }
-  const jobs = `${suggestions.length} open ${suggestions.length === 1 ? 'job fits' : 'jobs fit'} your skills, area and free time, worth ${rand(p.planned_cents)} to you after the fee`
+  const jobs = `${suggestions.length} open ${suggestions.length === 1 ? 'job fits' : 'jobs fit'} your skills, area and free time, worth ${rand(p.planned_cents)} to you`
   const outcome = p.remaining_after_plan_cents > 0
     ? `That would leave you ${rand(p.remaining_after_plan_cents)} short${candidates_count > suggestions.length ? `, and ${candidates_count - suggestions.length} more ${candidates_count - suggestions.length === 1 ? 'job also fits' : 'jobs also fit'}` : ', so a wider area or more days would help'}.`
     : 'That would cover your goal if you are hired and the work is confirmed.'
@@ -125,14 +125,11 @@ export function buildGoalPlan(context: GoalContext, memory: GoalMemory, now = ne
     },
     as_of: now.toISOString(), simulation: context.simulation, memory,
     notes: [
-      'Net amounts include the platform fee, but not your travel, materials or other costs.',
       'Suggested work and booked work are potential income. Only settlement ledger entries count as earned progress.',
       'Earned progress is the net change since this goal started, including refunds. It is not your available wallet balance.',
       'Times are broad windows and distances use area centres. Confirm timing and travel before accepting.',
       ...(context.truncated ? ['This shortlist uses the first 500 open jobs. Narrow your preferences if needed.'] : []),
       ...(context.bookings.some((b) => b.status === 'completed') ? ['Completed jobs awaiting settlement do not count as earned progress yet.'] : []),
-      ...(context.simulation ? ['Payment simulation: no real money moves and no bank is connected.'] : []),
-      ...(context.market_demo ? ['Demo account: opportunities in this plan are sample jobs.'] : []),
       ...(goal.deadline < today ? ['This goal has ended. Choose a new target and deadline to start another period.'] : []),
     ],
   }

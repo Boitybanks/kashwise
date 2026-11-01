@@ -10,7 +10,6 @@ import { Button, ButtonLink, EmptyState, ErrorState, PageHeader, Skeleton } from
 import { CategoryIcon } from '../components/CategoryIcon'
 import { AreaSelect } from '../components/AreaSelect'
 import { ServiceCard } from '../components/service/ServiceCard'
-import { LiveJobsActivitySlider } from '../components/activity/LiveJobsActivitySlider'
 
 /** Clients browse services that providers have priced. Prices shown are what the client pays, nothing added. */
 export default function Services() {
@@ -58,7 +57,7 @@ export default function Services() {
               type="button"
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                 category === null
-                  ? 'bg-canvas text-deep font-semibold'
+                  ? 'bg-brand-600 text-white font-semibold'
                   : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
               }`}
               aria-pressed={category === null}
@@ -74,7 +73,7 @@ export default function Services() {
                   type="button"
                   className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-canvas text-deep font-semibold'
+                      ? 'bg-brand-600 text-white font-semibold'
                       : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
                   }`}
                   aria-pressed={active}
@@ -87,11 +86,6 @@ export default function Services() {
           </div>
         </div>
       </div>
-
-      <LiveJobsActivitySlider
-        title="Recent Verified Bookings"
-        subtitle="Confirmed customer ratings & reviews from local services"
-      />
 
       {query.isPending ? (
         <div className="grid gap-3 md:grid-cols-2">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-48" />)}</div>
@@ -112,7 +106,7 @@ export default function Services() {
               <Store className="size-3.5 text-brand-500" aria-hidden />
               Showing <strong className="text-ink">{services.length}{query.hasNextPage ? '+' : ''}</strong> service{services.length === 1 ? '' : 's'}
             </p>
-            <span className="hidden sm:inline-block text-[11px] text-muted">Transparent direct pricing · nothing added later</span>
+            {services.some((x) => x.is_demo) && <span className="text-[11px] text-muted">Sample listings</span>}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {services.map((s) => <ServiceCard key={s.id} service={s} />)}

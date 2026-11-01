@@ -38,7 +38,7 @@ function ServiceRow({ service }: { service: Service }) {
           <span className="block truncate font-semibold">{service.title}</span>
           <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
             {service.is_active ? <Badge tone="brand">Live</Badge> : <Badge tone="gray">Paused</Badge>}
-            <span className="font-semibold text-brand-700">you receive {formatRand(service.take_home_cents)}</span>
+            <span className="font-semibold text-brand-500">you receive {formatRand(service.take_home_cents)}</span>
             <span>· clients see {formatRand(service.price_cents)}</span>
             {service.is_demo && <DemoBadge />}
           </span>
@@ -59,7 +59,7 @@ export default function MyServices() {
     <div>
       <PageHeader
         title="Your services"
-        subtitle="You set the amount you want to receive. Clients see one price that covers KashWise’s 10% fee, and can book you directly. No VAT is taken from your pay."
+        subtitle="You set the amount you want to receive."
         action={<ButtonLink to="/services/new"><Plus className="size-4" aria-hidden /> Offer a service</ButtonLink>}
       />
       {q.isPending ? (
@@ -73,7 +73,7 @@ export default function MyServices() {
       ) : (
         <ul className="space-y-3">{services.map((s) => <li key={s.id}><ServiceRow service={s} /></li>)}</ul>
       )}
-      <p className="mt-6 text-sm text-muted">Bookings show up in <Link to="/my-work" className="font-semibold text-brand-700 underline">My work</Link> alongside the gigs you applied for.</p>
+      <p className="mt-6 text-sm text-muted">Bookings show up in <Link to="/my-work" className="font-semibold text-brand-500 underline">My work</Link> alongside the gigs you applied for.</p>
     </div>
   )
 }

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, FileCheck2, Landmark, Smartphone, Store, Zap } from 'lucide-react'
 import { fetchWallet, requestCashout, sandboxPayment } from '../lib/api'
-import { useAuth } from '../lib/auth'
 import { friendlyError } from '../lib/errors'
 import { timeAgo } from '../lib/format'
 import { CASH_VOUCHER_MAX_CENTS, CASHOUT_MIN_CENTS, cashoutFee, EWALLET_MAX_CENTS, formatRand, randsToCents, type CashoutMethod } from '../lib/money'
@@ -32,7 +31,7 @@ function MethodOption({ method, current, onPick, title, body, fee, icon }: {
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center justify-between gap-2">
           <span className="font-semibold">{title}</span>
-          <span className="text-xs font-semibold text-brand-700">{fee}</span>
+          <span className="text-xs font-semibold text-brand-500">{fee}</span>
         </span>
         <span className="mt-0.5 block text-sm text-ink-soft">{body}</span>
       </span>
@@ -42,7 +41,7 @@ function MethodOption({ method, current, onPick, title, body, fee, icon }: {
 
 const STATUS_BADGE = {
   processing: { tone: 'blue' as const, label: 'Processing' },
-  paid: { tone: 'brand' as const, label: 'Paid out (simulation)' },
+  paid: { tone: 'brand' as const, label: 'Paid out' },
   failed: { tone: 'clay' as const, label: 'Failed — money returned' },
 }
 
@@ -51,7 +50,7 @@ function CashoutRow({ c, onSimulate }: { c: Cashout; onSimulate?: (outcome: 'set
   const badge = STATUS_BADGE[c.status]
   return (
     <li className="card flex items-center gap-3 p-4">
-      <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl bg-canvas text-brand-700">
+      <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl bg-canvas text-brand-500">
         {c.method === 'cash' ? <Store className="size-5" /> : c.method === 'ewallet' ? <Smartphone className="size-5" /> : c.method === 'payshap' ? <Zap className="size-5" /> : <Landmark className="size-5" />}
       </span>
       <span className="min-w-0 flex-1">
@@ -64,7 +63,7 @@ function CashoutRow({ c, onSimulate }: { c: Cashout; onSimulate?: (outcome: 'set
         <Badge tone={badge.tone}>{badge.label}</Badge>
         {c.status === 'processing' && onSimulate && (
           <span className="flex gap-1" aria-label="Payment simulator">
-            <button type="button" onClick={() => onSimulate('settled')} className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-100 hover:bg-brand-50">Simulate: provider pays</button>
+            <button type="button" onClick={() => onSimulate('settled')} className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-brand-500 ring-1 ring-brand-100 hover:bg-brand-50">Simulate: provider pays</button>
             <button type="button" onClick={() => onSimulate('failed')} className="rounded-md px-2 py-0.5 text-[11px] font-semibold text-clay-700 ring-1 ring-clay-100 hover:bg-clay-50">Simulate: fails</button>
           </span>
         )}
@@ -75,7 +74,6 @@ function CashoutRow({ c, onSimulate }: { c: Cashout; onSimulate?: (outcome: 'set
 
 /** A provider's earnings from confirmed jobs, cashed out to a bank or as a cash voucher collected at a shop. */
 export default function Wallet() {
-  const { profile } = useAuth()
   const queryClient = useQueryClient()
   const toast = useToast()
   const q = useQuery({ queryKey: ['wallet'], queryFn: fetchWallet })
@@ -127,8 +125,8 @@ export default function Wallet() {
       setAmount('')
       toast.show(
         result.status === 'processing'
-          ? `Payout requested: ${formatRand(result.amount_cents - result.fee_cents)}. It shows as paid once the payment provider confirms it (simulation).`
-          : `Cash-out sent: ${formatRand(result.amount_cents - result.fee_cents)} (simulation).`,
+          ? `Payout requested: ${formatRand(result.amount_cents - result.fee_cents)}. It shows as paid once the payment provider confirms it.`
+          : `Cash-out sent: ${formatRand(result.amount_cents - result.fee_cents)}.`,
       )
       await queryClient.invalidateQueries({ queryKey: ['wallet'] })
     } catch (err) {
@@ -185,7 +183,7 @@ export default function Wallet() {
 
       <Card className="mt-4 p-5">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><FileCheck2 className="size-5" aria-hidden /></span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500"><FileCheck2 className="size-5" aria-hidden /></span>
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">Proof of income</h2>
             <p className="mt-1 text-sm text-muted">
@@ -203,8 +201,8 @@ export default function Wallet() {
 
       {done && (
         <div role="status" className="mt-4 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100">
-          <p className="flex items-center gap-2 font-semibold text-brand-800"><CheckCircle2 className="size-5" aria-hidden /> {formatRand(done.amount_cents - done.fee_cents)} on its way · {done.reference}</p>
-          <p className="mt-1 text-sm text-brand-800">
+          <p className="flex items-center gap-2 font-semibold text-brand-300"><CheckCircle2 className="size-5" aria-hidden /> {formatRand(done.amount_cents - done.fee_cents)} on its way · {done.reference}</p>
+          <p className="mt-1 text-sm text-brand-300">
             {done.method === 'cash'
               ? `In the live version you get an SMS with a voucher number. Take it to ${CASH_SHOPS}, and enter your PIN at the till to collect your cash.`
               : `In the live version our licensed payment partner sends this to ${done.destination}.`}
@@ -223,9 +221,9 @@ export default function Wallet() {
               {ibanks && (
                 <>
                   <MethodOption method="payshap" current={method} onPick={setMethod} icon={<Zap className="size-5" aria-hidden />} title="PayShap (instant)" fee={feeLabel('payshap')}
-                    body="Instant payment to a bank account or ShapID. Simulated: no PayShap connection exists yet." />
+                    body="Instant payment to a bank account or ShapID." />
                   <MethodOption method="ewallet" current={method} onPick={setMethod} icon={<Smartphone className="size-5" aria-hidden />} title="eWallet to my cellphone" fee={feeLabel('ewallet')}
-                    body={`Money sent to your cellphone number, withdrawable as cash. Up to ${formatRand(EWALLET_MAX_CENTS)}. Simulated: no eWallet connection exists yet.`} />
+                    body={`Money sent to your cellphone number, withdrawable as cash. Up to ${formatRand(EWALLET_MAX_CENTS)}.`} />
                 </>
               )}
               <MethodOption method="bank" current={method} onPick={setMethod} icon={<Landmark className="size-5" aria-hidden />} title="My bank account" fee={feeLabel('bank')}
@@ -275,7 +273,7 @@ export default function Wallet() {
         </form>
       ) : (
         <Card className="mt-4 p-5 text-sm text-muted">
-          You can cash out from R50. When a client confirms a job, your money lands here. <Link to="/my-work" className="font-semibold text-brand-700 underline">Go to My work</Link>
+          You can cash out from R50. When a client confirms a job, your money lands here. <Link to="/my-work" className="font-semibold text-brand-500 underline">Go to My work</Link>
         </Card>
       )}
 
@@ -289,12 +287,7 @@ export default function Wallet() {
       </section>
 
       <div className="mt-6 space-y-3">
-        {profile?.is_demo && (
-          <p className="rounded-lg bg-sun-50 px-3 py-2 text-xs font-medium text-sun-700 ring-1 ring-inset ring-sun-100">
-            <strong>Shared demo account.</strong> Cash-outs reset after 30 minutes so the next person can try.
-          </p>
-        )}
-        <SimulationNote>No real money moves. In the live version a licensed banking partner holds your earnings and sends each payout; KashWise never holds your money itself.</SimulationNote>
+        <SimulationNote />
       </div>
     </div>
   )

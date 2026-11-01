@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Mic, Square, Sparkles, Undo2, Volume2, VolumeX, WandSparkles } from 'lucide-react'
+import { Mic, Square, Undo2, Volume2, VolumeX, WandSparkles } from 'lucide-react'
 import { requestDictation } from '../lib/api'
 import type { DictationDraft, DictationKind, DictationResult } from '../lib/dictation'
 import { friendlyError } from '../lib/errors'
@@ -9,19 +9,18 @@ import { Button } from './ui'
 interface DictatePanelProps<K extends DictationKind> {
   kind: K
   title: string
-  subtitle: string
   placeholder: string
   action: string
   /** Puts the draft into the form and returns how to put the form back. */
   onDraft: (draft: DictationDraft[K]) => () => void
   /** What to read back aloud so the person can check it. */
   readBack: (draft: DictationDraft[K]) => string
-  /** One-line summary of what still needs doing after the draft arrives. */
-  afterDraft?: (draft: DictationDraft[K]) => string | null
+  /** Called when the person undoes a draft. */
+  onUndo?: () => void
 }
 
-/** Say it, in your own words and language. KashWise writes it, you check it. Nothing is saved until you press save. */
-export function DictatePanel<K extends DictationKind>({ kind, title, subtitle, placeholder, action, onDraft, readBack, afterDraft }: DictatePanelProps<K>) {
+/** Say it in your own words and language. KashWise writes it, you edit it. Nothing is saved until you press save. */
+export function DictatePanel<K extends DictationKind>({ kind, title, placeholder, action, onDraft, readBack, onUndo }: DictatePanelProps<K>) {
   const [language, setLanguage] = useState('en-ZA')
   const speech = useDictation(language)
   const voice = useReadAloud()
@@ -51,18 +50,13 @@ export function DictatePanel<K extends DictationKind>({ kind, title, subtitle, p
     undo.current?.()
     undo.current = null
     setResult(null)
+    onUndo?.()
   }
-
-  const note = result && afterDraft?.(result.draft)
 
   return (
     <section aria-labelledby={`dictate-${kind}-h`} className="dictate-panel">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="eyebrow">SPEAK IT. KASHWISE WRITES IT.</p>
-          <h2 id={`dictate-${kind}-h`} className="mt-1 text-xl font-semibold">{title}</h2>
-          <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id={`dictate-${kind}-h`} className="text-xl font-semibold">{title}</h2>
         {speech.supported && (
           <div>
             <label htmlFor={`dictate-${kind}-language`} className="sr-only">Language you will speak</label>
@@ -92,22 +86,20 @@ export function DictatePanel<K extends DictationKind>({ kind, title, subtitle, p
             rows={3}
             maxLength={2000}
             className="input"
-            placeholder={speech.supported ? placeholder : `Type it in your own words. ${placeholder}`}
+            placeholder={placeholder}
             value={speech.transcript}
             onChange={(e) => speech.setTranscript(e.target.value)}
           />
-          <p aria-live="polite" className="mt-1.5 min-h-5 text-xs text-muted">
-            {speech.listening ? `Listening… ${seconds}s. Tap the square when you are done.` : speech.supported ? 'Tap the microphone and talk, or type. You can fix any words here first.' : 'Voice is not available in this browser, so type instead.'}
-          </p>
+          {speech.listening && <p aria-live="polite" className="mt-1.5 text-xs text-muted">Listening… {seconds}s</p>}
         </div>
       </div>
 
       {(speech.error || error) && <p role="alert" className="mt-2 rounded-md bg-clay-50 px-3 py-2 text-sm text-clay-700">{speech.error || error}</p>}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <label className="flex max-w-md items-start gap-2 text-xs text-muted">
+        <label className="flex items-start gap-2 text-xs text-muted">
           <input type="checkbox" className="mt-0.5 size-4 accent-brand-600" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />
-          <span>Let AI write it. What you say goes to Anthropic to be written up, and voice goes through your browser’s speech service. Don’t say private details.</span>
+          <span>Write it with AI. Your words go to our AI and speech providers.</span>
         </label>
         <Button size="sm" loading={busy} disabled={speech.transcript.trim().length < 3} onClick={write}>
           <WandSparkles className="size-4" aria-hidden /> {action}
@@ -116,15 +108,8 @@ export function DictatePanel<K extends DictationKind>({ kind, title, subtitle, p
 
       {result && (
         <div role="status" className="dictate-result">
-          <p className="flex items-start gap-2 text-sm">
-            <Sparkles className="mt-0.5 size-4 shrink-0 text-gold-600" aria-hidden />
-            <span>
-              <strong>{result.written_by === 'ai' ? 'Written by KashWise AI.' : 'Tidied up by KashWise.'}</strong>{' '}
-              {result.written_by === 'ai' ? 'It only used what you said. Check it says what you meant.' : `${useAi && !result.ai_available ? 'AI writing isn’t switched on yet, so we ' : 'We '}kept to your own words. Check it says what you meant.`}
-              {note ? ` ${note}` : ''}
-            </span>
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          {useAi && result.written_by === 'rules' && <p className="mb-2 text-sm text-sun-700">AI is unavailable right now, so this is a basic draft.</p>}
+          <div className="flex flex-wrap gap-2">
             {voice.supported && (
               <Button size="sm" variant="secondary" onClick={() => voice.toggle(readBack(result.draft))}>
                 {voice.speaking ? <VolumeX className="size-4" aria-hidden /> : <Volume2 className="size-4" aria-hidden />} {voice.speaking ? 'Stop' : 'Read it to me'}

@@ -10,6 +10,7 @@ import type { SkillsProfile } from '../src/lib/skills-profile'
 
 const mocks = vi.hoisted(() => ({ profile: vi.fn(), credential: vi.fn(), skills: vi.fn(), verify: vi.fn() }))
 vi.mock('../src/lib/api', () => ({ fetchProfile: mocks.profile, fetchWorkCredential: mocks.credential, fetchSkillsProfile: mocks.skills }))
+vi.mock('../src/components/ui/toast', () => ({ useToast: () => ({ show: vi.fn() }) }))
 vi.mock('../src/lib/pq/verify-client', () => ({ verifySigned: mocks.verify, downloadSigned: vi.fn() }))
 
 const { default: ProofScriptCv } = await import('../src/pages/ProofScriptCv')
@@ -46,21 +47,21 @@ describe('ProofScript CV page', () => {
     show()
     expect(await screen.findByRole('heading', { name: /Sipho Dlamini/ })).toBeInTheDocument()
     expect(screen.getByText('Verified by KashWise')).toBeInTheDocument()
-    expect(screen.getByText('Paint a lounge')).toBeInTheDocument()
-    expect(screen.getByText(/ML-DSA-65/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Paint a lounge' })).toBeInTheDocument()
+    expect(screen.queryByText(/ML-DSA-65|SG-1/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Download CV \(PDF\)/ })).toBeInTheDocument()
   })
 
-  it('says what verified means and that payments are simulated', async () => {
+  it('says what verified means', async () => {
     show()
     await screen.findByRole('heading', { name: /Sipho Dlamini/ })
-    expect(screen.getByText(/does not mean an identity, background or trade-qualification check/)).toBeInTheDocument()
-    expect(screen.getByText(/simulated, so this record shows confirmed work, not proof of income/)).toBeInTheDocument()
+    expect(screen.getByText(/not an identity or qualification check/)).toBeInTheDocument()
   })
 
   it('keeps self-written words apart from the proof, and never lists an unproven skill', async () => {
     show()
     await screen.findByRole('heading', { name: /Sipho Dlamini/ })
-    expect(screen.getByText(/Not checked by KashWise/)).toBeInTheDocument()
+    expect(screen.getByText('Written by Sipho.')).toBeInTheDocument()
     expect(screen.getByRole('rowheader', { name: 'Painting' })).toBeInTheDocument()
     expect(screen.queryByRole('rowheader', { name: 'Tutoring' })).not.toBeInTheDocument()
   })
@@ -82,7 +83,7 @@ describe('ProofScript CV page', () => {
   it('labels demonstration data', async () => {
     mocks.credential.mockResolvedValue({ ...signed, credential: { ...credential, demo_data: true } })
     show()
-    expect(await screen.findByText(/Demonstration data/)).toBeInTheDocument()
+    expect(await screen.findByText(/Sample profile/)).toBeInTheDocument()
   })
 })
 
@@ -124,7 +125,7 @@ describe('iBanks read-out', () => {
     const brief = goalBrief(plan({}), NOW)
     expect(brief).toContain('You need R900 more in the next 6 days.')
     expect(brief).toContain('1 open job fits')
-    expect(brief).toContain('R450 to you after the fee')
+    expect(brief).toContain('R450 to you')
     expect(brief).toContain('leave you R450 short, and 1 more job also fits')
     expect(brief).toContain('Start with “Paint a wall”')
   })

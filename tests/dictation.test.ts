@@ -113,27 +113,34 @@ describe('job posts', () => {
     expect(job.scheduled_date).toBe(TODAY)
     expect(job.time_window).toBe('morning')
     expect(job.price_rands).toBe(650)
+    expect(job.market_floor_rands).toBe(650)
     expect(job.price_basis).toBe('market')
   })
 
-  it('never invents a price when it has no basis', () => {
+  it('falls back to the baseline rate as the floor', () => {
     const job = rulesJob(said, [], TODAY)
-    expect(job.price_rands).toBeNull()
-    expect(job.price_basis).toBe('none')
+    expect(job.price_rands).toBe(400)
+    expect(job.market_floor_rands).toBe(400)
   })
 
-  it('the price the client said beats everything, and the source is always stated', () => {
-    expect(priceFor('I can pay R500', guides[0], 900)).toMatchObject({ price_rands: 500, price_basis: 'said' })
-    expect(priceFor('fix it', guides[0], 900)).toMatchObject({ price_rands: 650, price_basis: 'market' })
-    expect(priceFor('fix it', undefined, 873)).toMatchObject({ price_rands: 870, price_basis: 'estimate' })
-    expect(priceFor('fix it', { ...guides[0], samples: 2 }, 873).price_basis).toBe('estimate')
-    expect(priceFor('fix it', undefined, 900_000).price_rands).toBe(50_000)
+  it('cleans filler and stammering out of a spoken request', () => {
+    const job = rulesJob("hey I need help with someone who's going to mount my TV and also um assemble my desk um on on on my door so yeah", [], TODAY)
+    expect(job.title).toBe('Mount the TV')
+    expect(job.description).not.toMatch(/\bum\b|on on|so yeah/i)
+  })
+
+  it('never goes below the market rate, whatever was said or estimated', () => {
+    expect(priceFor('I can pay R500', 'repairs', guides[0], 900)).toMatchObject({ price_rands: 900, market_floor_rands: 650, price_basis: 'estimate' })
+    expect(priceFor('I can pay R100', 'repairs', guides[0], null)).toMatchObject({ price_rands: 650, price_basis: 'market' })
+    expect(priceFor('I can pay R800', 'repairs', guides[0], null)).toMatchObject({ price_rands: 800, price_basis: 'said' })
+    expect(priceFor('fix it', 'repairs', { ...guides[0], samples: 2 }, null).market_floor_rands).toBe(400)
+    expect(priceFor('fix it', 'repairs', undefined, 900_000).price_rands).toBe(50_000)
   })
 
   it('checks an AI post the same way', () => {
     const ai = { title: 'Repair a leaking roof', category: 'repairs', description: 'I require a person to repair a leaking roof at my home this morning.', time_window: null, scheduled_date: null, estimated_price_rands: 800 }
     const job = finalizeJob(ai, said, guides, TODAY)!
-    expect(job).toMatchObject({ title: 'Repair a leaking roof', time_window: 'morning', scheduled_date: TODAY, price_rands: 650, price_basis: 'market' })
+    expect(job).toMatchObject({ title: 'Repair a leaking roof', time_window: 'morning', scheduled_date: TODAY, price_rands: 800, price_basis: 'estimate', market_floor_rands: 650 })
     expect(finalizeJob({ ...ai, description: 'A 3 hour job for a licensed roofer at my home this morning.' }, said, guides, TODAY)).toBeNull()
     expect(finalizeJob({ ...ai, title: 'Roof' }, said, guides, TODAY)).toBeNull()
     expect(finalizeJob({ ...ai, scheduled_date: '2020-01-01' }, 'fix my roof, it leaks badly', guides, TODAY)?.scheduled_date).toBeNull()

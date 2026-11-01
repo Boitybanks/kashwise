@@ -58,7 +58,7 @@ export default function ForgotPassword() {
           </form>
         )}
         <p className="mt-4 text-center text-sm text-muted">
-          Remembered it? <Link to="/login" className="font-semibold text-brand-700 hover:underline">Back to sign in</Link>
+          Remembered it? <Link to="/login" className="font-semibold text-brand-500 hover:underline">Back to sign in</Link>
         </p>
       </Card>
     </div>

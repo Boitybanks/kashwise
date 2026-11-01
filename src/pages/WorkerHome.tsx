@@ -2,13 +2,12 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, BadgeCheck, Compass, MapPin, PlusCircle, ShieldCheck, TrendingUp } from 'lucide-react'
-import { discoverGigs, fetchPortfolio, fetchWorkerStats } from '../lib/api'
+import { discoverGigs, fetchWorkerStats } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useAreaLookup } from '../lib/hooks'
 import { formatRand } from '../lib/money'
 import { ButtonLink, Card, Skeleton } from '../components/ui'
 import { GigCard } from '../components/gig/GigCard'
-import { LiveJobsActivitySlider } from '../components/activity/LiveJobsActivitySlider'
 
 function greetingByHour(): string {
   const hour = new Date().getHours()
@@ -25,8 +24,8 @@ export default function WorkerHome() {
   const greeting = greetingByHour()
 
   const gigsQ = useQuery({
-    queryKey: ['discover', profile?.area_slug ?? 'all', null, null],
-    queryFn: () => discoverGigs({ area: profile?.area_slug || null, page: 0 }),
+    queryKey: ['discover', profile?.area_slug ?? 'all', null, profile?.skills ?? null],
+    queryFn: () => discoverGigs({ area: profile?.area_slug || null, skills: profile?.skills, page: 0 }),
   })
 
   const statsQ = useQuery({
@@ -35,14 +34,7 @@ export default function WorkerHome() {
     enabled: Boolean(userId),
   })
 
-  const portfolioQ = useQuery({
-    queryKey: ['portfolio', userId],
-    queryFn: () => (userId ? fetchPortfolio(userId) : []),
-    enabled: Boolean(userId),
-  })
-
   const stats = statsQ.data
-  const portfolio = portfolioQ.data ?? []
   const availableGigs = useMemo(() => (gigsQ.data ?? []).slice(0, 3), [gigsQ.data])
   const totalNearby = gigsQ.data?.length ?? 0
 
@@ -51,15 +43,13 @@ export default function WorkerHome() {
       {/* ── 1. Top Header: Greeting + Location ── */}
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500">Worker Dashboard</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-500">Dashboard</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             {greeting}, {firstName}.
           </h1>
           <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-soft">
             <MapPin className="size-4 text-brand-500" aria-hidden />
             <span>{area ? `${area.name}, ${area.city}` : 'South Africa'}</span>
-            <span className="text-muted">·</span>
-            <span className="text-muted">Ready for work</span>
           </p>
         </div>
 
@@ -84,15 +74,14 @@ export default function WorkerHome() {
                   <BadgeCheck className="size-3.5 fill-gold-500/20 text-gold-600" aria-hidden />
                   ProofScript Verified
                 </span>
-                <span className="text-xs text-muted">Cryptographically signed</span>
               </div>
               <h3 className="text-lg font-semibold text-ink">
                 Your ProofScript reputation
               </h3>
               <p className="text-sm text-ink-soft">
                 {stats && stats.completed > 0
-                  ? `${stats.completed} client-confirmed job${stats.completed === 1 ? '' : 's'} on record · ${portfolio.length} verified evidence items.`
-                  : 'Every confirmed job builds tamper-proof evidence that opens better-paying opportunities.'}
+                  ? `${stats.completed} confirmed job${stats.completed === 1 ? '' : 's'} on record.`
+                  : 'Your confirmed jobs will appear here.'}
               </p>
             </div>
 
@@ -117,12 +106,6 @@ export default function WorkerHome() {
         </Card>
       </section>
 
-      {/* ── Community Activity Slider ── */}
-      <LiveJobsActivitySlider
-        title="Community activity"
-        subtitle="Sample data, showing how jobs booked and confirmed nearby will appear."
-      />
-
       {/* ── 3. "Available near you" Section ── */}
       <section aria-labelledby="available-heading" className="space-y-4">
         <div className="flex items-end justify-between gap-4">
@@ -132,8 +115,8 @@ export default function WorkerHome() {
             </h2>
             <p className="mt-0.5 text-sm text-ink-soft">
               {totalNearby > 0
-                ? `${totalNearby} open gig${totalNearby === 1 ? '' : 's'} matching your area and verified skills.`
-                : 'Showing active opportunities open for application.'}
+                ? `${totalNearby} open gig${totalNearby === 1 ? '' : 's'} for your skills.`
+                : ''}
             </p>
           </div>
           <Link
@@ -156,7 +139,7 @@ export default function WorkerHome() {
             <Compass className="mx-auto size-8 text-brand-500" aria-hidden />
             <h3 className="mt-3 text-base font-semibold text-ink">No gigs open in your immediate area right now</h3>
             <p className="mx-auto mt-1 max-w-sm text-sm text-ink-soft">
-              Expand your search radius or plan an income target with our structured earnings guide.
+              Try all work, or set an income goal.
             </p>
             <div className="mt-4 flex justify-center gap-3">
               <ButtonLink to="/discover" variant="primary" size="sm">
@@ -170,7 +153,7 @@ export default function WorkerHome() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {availableGigs.map((gig) => (
-              <GigCard key={gig.id} gig={gig} matchesSkills={profile?.skills?.includes(gig.category)} />
+              <GigCard key={gig.id} gig={gig} />
             ))}
           </div>
         )}
@@ -191,7 +174,7 @@ export default function WorkerHome() {
             </div>
             <h3 className="mt-3 text-base font-semibold text-ink">Earn My Goal</h3>
             <p className="mt-1 text-sm text-ink-soft">
-              Say how much you want to make this week. iBanks finds open jobs that fit your skills, area and free time, and shows how close they get you.
+              Say how much you want to make. iBanks finds the jobs to get you there.
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-line">
@@ -208,7 +191,7 @@ export default function WorkerHome() {
             </div>
             <h3 className="mt-3 text-base font-semibold text-ink">Your verified CV</h3>
             <p className="mt-1 text-sm text-ink-soft">
-              A formal CV written from jobs your customers confirmed. Share it with employers and anyone who needs to see what you can do. They can check it themselves.
+              Built from jobs your customers confirmed. Download it and apply anywhere.
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-line">

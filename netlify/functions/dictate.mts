@@ -47,13 +47,25 @@ async function writeWithClaude(apiKey: string, kind: DictationKind, transcript: 
       system,
       messages: [{ role: 'user', content: user }],
     })
-    if (response.stop_reason === 'refusal' || !response.parsed_output) return null
-    return finalizeAi(kind, response.parsed_output, transcript, guides, today)
+    if (response.stop_reason === 'refusal' || !response.parsed_output) return { draft: null, status: 'refused' as const }
+    const draft = finalizeAi(kind, response.parsed_output, transcript, guides, today)
+    if (!draft) console.error('dictation: the draft failed the checks')
+    return { draft, status: draft ? 'ok' as const : 'rejected' as const }
   } catch (e) {
-    if (e instanceof Anthropic.RateLimitError) console.error('dictation: Claude rate limited')
-    else if (e instanceof Anthropic.APIError) console.error(`dictation: Claude API error ${e.status}`)
-    else console.error('dictation: Claude call failed:', (e as Error).message)
-    return null
+    if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) {
+      console.error(`dictation: ANTHROPIC_API_KEY was rejected (${e.status})`)
+      return { draft: null, status: 'auth' as const }
+    }
+    if (e instanceof Anthropic.RateLimitError) {
+      console.error('dictation: Claude rate limited')
+      return { draft: null, status: 'rate_limited' as const }
+    }
+    if (e instanceof Anthropic.APIError) {
+      console.error(`dictation: Claude API error ${e.status}: ${e.message}`)
+      return { draft: null, status: 'api_error' as const }
+    }
+    console.error('dictation: Claude call failed:', (e as Error).message)
+    return { draft: null, status: 'failed' as const }
   }
 }
 
@@ -93,11 +105,13 @@ export default safe(async (req: Request) => {
 
   const apiKey = optionalEnv('ANTHROPIC_API_KEY')
   const ai = useAi && apiKey ? await writeWithClaude(apiKey, kind, transcript, guides, today) : null
+  const draft = ai?.draft ?? null
   const result: DictationResult = {
     kind,
-    draft: ai ?? draftByRules(kind, transcript, guides, today),
-    written_by: ai ? 'ai' : 'rules',
+    draft: draft ?? draftByRules(kind, transcript, guides, today),
+    written_by: draft ? 'ai' : 'rules',
     ai_available: Boolean(apiKey),
+    ai_status: ai?.status ?? 'off',
   }
   return json(result)
 })

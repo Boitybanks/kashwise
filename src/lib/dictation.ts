@@ -32,6 +32,8 @@ export interface JobDraft {
   price_rands: number | null
   price_basis: PriceBasis
   price_note: string
+  /** The lowest price this job may be posted at. Clients can offer more, not less. */
+  market_floor_rands: number
 }
 
 export interface GoalDraft {
@@ -57,6 +59,8 @@ export interface DictationResult<K extends DictationKind = DictationKind> {
   draft: DictationDraft[K]
   written_by: 'ai' | 'rules'
   ai_available: boolean
+  /** Why the AI draft was not used, for diagnosis. */
+  ai_status?: 'ok' | 'off' | 'rejected' | 'refused' | 'auth' | 'rate_limited' | 'api_error' | 'failed'
 }
 
 // ── What the model returns ─────────────────────────────────────────────────
@@ -164,9 +168,9 @@ const KEYWORDS: Record<string, RegExp> = {
   catering: /\b(cook|cater|baking|bake\b|meals?\b|food)/i,
   photography: /\b(photo|camera|portrait)/i,
   moving: /\b(moving|move house|bakkie|deliver|furniture|removal)/i,
+  repairs: /\b(roof|leak|plumb|tap\b|taps\b|geyser|fix|repair|handyman|gate|tiles?\b|tiling|electric|broken|mount|assembl|install|curtain)/i,
   'tech-support': /\b(laptop|computer|wi-?fi|printer|software|tech\b|cellphone repair)/i,
   automotive: /\b(cars?\b|mechanic|tyre|engine|vehicle|panel beat)/i,
-  repairs: /\b(roof|leak|plumb|tap\b|taps\b|geyser|fix|repair|handyman|gate|tiles?\b|tiling|electric|broken)/i,
 }
 
 export function spokenSkills(text: string): string[] {
@@ -222,10 +226,11 @@ export function saysOnlyWhatWasSaid(draftText: string, transcript: string): bool
   return claims.every((c) => said.includes(c.toLowerCase()))
 }
 
-const FILLERS = /\b(um+|uh+|er+|ah+|you know|i mean|like,|kinda|sort of|eish|haibo|neh)\b[,.]?\s*/gi
+const FILLERS = /\b(um+|uh+|er+|ah+|so yeah|you know|i mean|like,|kinda|sort of|eish|haibo|neh)\b[,.]?\s*/gi
+const stammer = (text: string) => text.replace(/\b(\w+)(\s+\1\b)+/gi, '$1')
 
 function tidySentences(text: string): string {
-  const cleaned = text.replace(FILLERS, '').replace(/\bi\b/g, 'I').replace(/\s+/g, ' ').trim()
+  const cleaned = stammer(text.replace(FILLERS, '')).replace(/\bi\b/g, 'I').replace(/\s+/g, ' ').trim()
   return cleaned
     .split(/(?<=[.!?])\s+/)
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
@@ -233,7 +238,6 @@ function tidySentences(text: string): string {
     .join(' ')
 }
 
-const roundToTen = (rands: number) => Math.round(rands / 10) * 10
 const clampPrice = (rands: number) => Math.min(MAX_PAYOUT_CENTS / 100, Math.max(MIN_PAYOUT_CENTS / 100, rands))
 
 function validDate(value: string | null, today: string, maxDays: number): string | null {
@@ -243,23 +247,26 @@ function validDate(value: string | null, today: string, maxDays: number): string
   return value >= today && value <= addDays(today, maxDays) ? value : null
 }
 
-/** A price is suggested from what the client said, then real jobs on KashWise, then a labelled estimate. Never silently. */
-export function priceFor(transcript: string, guide: PriceGuide | undefined, estimate: number | null): Pick<JobDraft, 'price_rands' | 'price_basis' | 'price_note'> {
+// Starting labour rates per category when KashWise has too few similar jobs to go by. Review these against real pricing.
+const BASELINE_FLOOR: Record<string, number> = {
+  cleaning: 300, gardening: 300, tutoring: 200, 'hair-beauty': 250, repairs: 400, painting: 500,
+  catering: 400, photography: 600, moving: 400, 'tech-support': 300, automotive: 500, other: 250,
+}
+
+export function baselineFloor(category: string): number {
+  return BASELINE_FLOOR[category] ?? BASELINE_FLOOR.other
+}
+
+const roundUpToTen = (rands: number) => Math.ceil(rands / 10) * 10
+
+/** The market rate is the floor: similar jobs on KashWise if there are enough, otherwise the baseline for the work. The client may go higher, never lower. */
+export function priceFor(transcript: string, category: string, guide: PriceGuide | undefined, estimate: number | null): Pick<JobDraft, 'price_rands' | 'price_basis' | 'price_note' | 'market_floor_rands'> {
+  const floor = clampPrice(roundUpToTen(guide && guide.samples >= 3 ? guide.median_rands : baselineFloor(category)))
   const said = spokenAmount(transcript)
-  if (said && said >= MIN_PAYOUT_CENTS / 100) {
-    return { price_rands: clampPrice(said), price_basis: 'said', price_note: 'The price you said. Change it if you like.' }
-  }
-  if (guide && guide.samples >= 3) {
-    return {
-      price_rands: clampPrice(roundToTen(guide.median_rands)),
-      price_basis: 'market',
-      price_note: `Middle of ${guide.samples} similar jobs on KashWise (R${guide.low_rands}–R${guide.high_rands}). You set the final price.`,
-    }
-  }
-  if (estimate && estimate > 0) {
-    return { price_rands: clampPrice(roundToTen(estimate)), price_basis: 'estimate', price_note: 'An AI estimate, not a market rate. You set the final price.' }
-  }
-  return { price_rands: null, price_basis: 'none', price_note: 'Add what you would like to pay.' }
+  const candidates = [floor, said ?? 0, estimate && estimate > 0 ? roundUpToTen(estimate) : 0]
+  const price = clampPrice(Math.max(...candidates))
+  const price_basis: PriceBasis = said && said >= price ? 'said' : estimate && estimate > 0 && roundUpToTen(estimate) >= price ? 'estimate' : 'market'
+  return { price_rands: price, price_basis, price_note: `Market rate from R${floor}. You can offer more, not less.`, market_floor_rands: floor }
 }
 
 export function finalizeBio(ai: AiBio, transcript: string): BioDraft | null {
@@ -281,7 +288,7 @@ export function finalizeJob(ai: AiJob, transcript: string, guides: PriceGuide[],
     description,
     time_window: ai.time_window ?? spokenWindows(transcript)[0] ?? null,
     scheduled_date: spokenDate(transcript, today) ?? validDate(ai.scheduled_date, today, 180),
-    ...priceFor(transcript, guides.find((g) => g.category === ai.category), ai.estimated_price_rands),
+    ...priceFor(transcript, ai.category, guides.find((g) => g.category === ai.category), ai.estimated_price_rands),
   }
 }
 
@@ -306,10 +313,10 @@ export function rulesBio(transcript: string): BioDraft {
 }
 
 export function rulesJob(transcript: string, guides: PriceGuide[], today: string): JobDraft {
-  const clean = withoutContactDetails(transcript)
+  const clean = stammer(withoutContactDetails(transcript).replace(FILLERS, ''))
   const category = spokenSkills(clean)[0] ?? 'other'
   const need = clean.match(/\b(?:help(?: me)? (?:with|to)|someone (?:who can|to)|somebody (?:who can|to)|person (?:who can|to)|need (?:someone to|help with)?)\s+([^.,!?]{4,70})/i)?.[1]?.trim()
-  const titleText = need ? need.replace(/\b(today|tomorrow|this (?:morning|afternoon|evening|week)|on (?:mon|tues|wednes|thurs|fri|satur|sun)day)\b.*$/i, '').replace(/\bmy\b/gi, 'the').trim() : ''
+  const titleText = need ? need.split(/\s+(?:and|for|because)\s+/i)[0].replace(/^(?:someone|somebody)\s+who(?:'s| is)\s+going\s+to\s+/i, '').replace(/\b(today|tomorrow|this (?:morning|afternoon|evening|week)|on (?:mon|tues|wednes|thurs|fri|satur|sun)day)\b.*$/i, '').replace(/\bmy\b/gi, 'the').trim() : ''
   const title = clip(titleText.length >= 5 ? titleText.charAt(0).toUpperCase() + titleText.slice(1) : `${categoryLabel(category)} help needed`, 80)
   const said = tidySentences(clean)
   return {
@@ -318,7 +325,7 @@ export function rulesJob(transcript: string, guides: PriceGuide[], today: string
     description: clip(said.length >= 20 ? said : `${said} Please contact me for details.`, 1000),
     time_window: spokenWindows(clean)[0] ?? null,
     scheduled_date: spokenDate(clean, today),
-    ...priceFor(transcript, guides.find((g) => g.category === category), null),
+    ...priceFor(transcript, category, guides.find((g) => g.category === category), null),
   }
 }
 
@@ -372,12 +379,12 @@ export function dictationPrompt(kind: DictationKind, transcript: string, guides:
       system: [
         'You turn what a South African household or small business says it needs into a formal job post on KashWise, a work marketplace.',
         SHARED,
-        'title: a short, specific title of 4 to 10 words, such as "Repair a leaking roof".',
-        'description: 2 to 4 formal sentences, at most 90 words, in the client\'s voice: the work needed, anything they said about size or tools, and when. Do not state a price in the words.',
+        'title: a short, specific title of 4 to 10 words naming the work, such as "Mount a TV and install curtain rails". Never start with "Someone" or "I need".',
+        'description: a polished job description of 2 to 4 formal sentences, at most 90 words: every task they mentioned, anything they said about size or tools, and when. Remove filler, repetition and small talk, and correct obvious speech-recognition mistakes from context, such as "curtain trees" for "curtain rails". Do not state a price in the words.',
         `category: one of: ${CATEGORY_LIST}.`,
         'time_window: morning, afternoon, evening or flexible, or null if they did not say.',
         'scheduled_date: YYYY-MM-DD if they gave a day, otherwise null.',
-        `estimated_price_rands: a fair total in rand for this job in South Africa. The client confirms it. ${prices} If you cannot judge, null.`,
+        `estimated_price_rands: a fair South African labour cost in rand for all the work described, excluding materials. ${prices} If you cannot judge, null.`,
       ].join('\n'),
       user,
     }

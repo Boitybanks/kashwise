@@ -21,6 +21,7 @@ export interface Profile {
   headline: string | null
   bio: string | null
   skills: string[]
+  open_to_work?: boolean
   is_demo: boolean
   avatar_path: string | null
   created_at: string
@@ -49,6 +50,7 @@ export interface Gig {
   scheduled_date: string
   time_window: TimeWindow
   payout_cents: number
+  photo_paths?: string[]
   fee_cents: number
   total_cents: number
   worker_net_cents: number
@@ -75,6 +77,7 @@ export interface DiscoverGig {
   scheduled_date: string
   time_window: TimeWindow
   payout_cents: number
+  photo_paths?: string[]
   created_at: string
   is_demo: boolean
   customer_id: string
@@ -202,6 +205,7 @@ export interface PortfolioItem {
   rating: number | null
   review: string | null
   evidence_paths: string[]
+  before_paths?: string[]
   worker_note: string | null
   record_code: string
   is_demo: boolean

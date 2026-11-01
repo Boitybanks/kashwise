@@ -35,7 +35,7 @@ function Stat({ label, cents, hint, icon, prov = 'system_verified' }: { label: s
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between gap-2">
-        <span className="grid size-9 place-items-center rounded-lg bg-brand-50 text-brand-700" aria-hidden>{icon}</span>
+        <span className="grid size-9 place-items-center rounded-lg bg-brand-50 text-brand-500" aria-hidden>{icon}</span>
         <Prov kind={prov} />
       </div>
       <p className="mt-3 text-sm font-semibold text-muted">{label}</p>
@@ -52,7 +52,7 @@ function InsightCard({ insight, onFeedback }: { insight: Insight & { id?: string
   return (
     <Card className="p-4">
       <div className="flex items-start gap-3">
-        <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${risk ? 'bg-sun-50 text-sun-700' : 'bg-brand-50 text-brand-700'}`} aria-hidden>
+        <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${risk ? 'bg-sun-50 text-sun-700' : 'bg-brand-50 text-brand-500'}`} aria-hidden>
           {risk ? <AlertTriangle className="size-5" /> : <Bell className="size-5" />}
         </span>
         <div className="min-w-0 flex-1">
@@ -127,7 +127,7 @@ function Overview({ intel, insights }: { intel: EarningsIntelligence; insights: 
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Earned this week" cents={intel.this_week.net_earned_cents} hint={`${intel.this_week.settled_jobs} settled ${intel.this_week.settled_jobs === 1 ? 'job' : 'jobs'}, after fees`} icon={<ArrowUpRight className="size-5" />} />
+        <Stat label="Earned this week" cents={intel.this_week.net_earned_cents} hint={`${intel.this_week.settled_jobs} settled ${intel.this_week.settled_jobs === 1 ? 'job' : 'jobs'}`} icon={<ArrowUpRight className="size-5" />} />
         <Stat label="Earned, not yet paid out" cents={L.available_cents} hint="Available to cash out" icon={<WalletIcon className="size-5" />} />
         <Stat label="Payout on its way" cents={L.payout_pending_cents} hint="Waiting for the payment provider" icon={<Clock className="size-5" />} />
         <Stat label="Paid out to you" cents={L.paid_out_cents} hint="Confirmed by the payment provider" icon={<ArrowDownRight className="size-5" />} />
@@ -150,8 +150,8 @@ function Earnings({ intel }: { intel: EarningsIntelligence }) {
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="This week (net)" cents={intel.this_week.net_earned_cents} hint={`${diff >= 0 ? '+' : '−'}${formatRand(Math.abs(diff))} vs last week`} icon={<ArrowUpRight className="size-5" />} />
-        <Stat label="This month (net)" cents={intel.this_month.net_earned_cents} hint={`Clients paid ${formatRand(intel.this_month.gross_cents)}; fees ${formatRand(intel.this_month.platform_fee_cents)}`} icon={<PiggyBank className="size-5" />} />
-        <Stat label="All time (net)" cents={intel.lifetime.net_earned_cents} hint={`${intel.lifetime.settled_jobs} settled jobs · KashWise fee 10%`} icon={<ShieldCheck className="size-5" />} />
+        <Stat label="This month (net)" cents={intel.this_month.net_earned_cents} hint={`Clients paid ${formatRand(intel.this_month.gross_cents)}`} icon={<PiggyBank className="size-5" />} />
+        <Stat label="All time (net)" cents={intel.lifetime.net_earned_cents} hint={`${intel.lifetime.settled_jobs} settled jobs`} icon={<ShieldCheck className="size-5" />} />
       </div>
 
       <Card className="p-4">
@@ -394,12 +394,12 @@ export default function Money() {
   return (
     <div>
       <PageHeader
-        title={<>KashWise Money <span className="block text-sm font-semibold text-brand-700 sm:inline sm:pl-2">Powered by iBanks</span></>}
+        title={<>KashWise Money <span className="block text-sm font-semibold text-brand-500 sm:inline sm:pl-2">Powered by iBanks</span></>}
         subtitle={<>{SCOPE_LABEL}. {intel && <>Updated {formatDate(intel.as_of)}.</>}</>}
-        action={<Link to="/wallet" className="text-sm font-semibold text-brand-700 hover:underline">Cash out →</Link>}
+        action={<Link to="/wallet" className="text-sm font-semibold text-brand-500 hover:underline">Cash out →</Link>}
       />
       <p className="mb-4 rounded-lg bg-sun-50 px-3 py-2 text-xs font-medium text-sun-700 ring-1 ring-inset ring-sun-100">
-        <strong>Payment simulation.</strong> Payments and payouts come from a labelled provider simulator. No real money moves, and no bank is connected.
+        Payments are simulated for now. No real money moves.
       </p>
 
       <Link to="/money/earn-goal" className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900 hover:bg-brand-100">

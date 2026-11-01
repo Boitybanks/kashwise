@@ -26,10 +26,10 @@ export function ContactReveal({ gigId, onRevealed }: { gigId: string; onRevealed
 
   return (
     <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4">
-      <p className="flex items-center gap-2 font-semibold text-brand-800">
+      <p className="flex items-center gap-2 font-semibold text-brand-300">
         <ShieldCheck className="size-5" aria-hidden /> Private contact details
       </p>
-      <p className="mt-1 text-xs text-brand-800/80">
+      <p className="mt-1 text-xs text-brand-300/80">
         Stored encrypted (ML-KEM-768 + X25519 → AES-256-GCM). Only you and your matched partner can open them. Opening is logged.
       </p>
       {!data ? (
@@ -39,7 +39,7 @@ export function ContactReveal({ gigId, onRevealed }: { gigId: string; onRevealed
       ) : (
         <dl className="mt-3 space-y-2 text-sm">
           <div className="flex gap-2">
-            <MapPin className="mt-0.5 size-4 shrink-0 text-brand-700" aria-hidden />
+            <MapPin className="mt-0.5 size-4 shrink-0 text-brand-500" aria-hidden />
             <div>
               <dt className="sr-only">Address</dt>
               <dd>{data.address ?? <span className="text-muted">No street address was added.</span>}</dd>
@@ -47,12 +47,12 @@ export function ContactReveal({ gigId, onRevealed }: { gigId: string; onRevealed
             </div>
           </div>
           <div className="flex gap-2">
-            <Phone className="mt-0.5 size-4 shrink-0 text-brand-700" aria-hidden />
+            <Phone className="mt-0.5 size-4 shrink-0 text-brand-500" aria-hidden />
             <div>
               <dt className="sr-only">Phone</dt>
               <dd>
                 {data.counterpart_phone ? (
-                  <a className="font-semibold text-brand-700 underline" href={`tel:${data.counterpart_phone}`}>
+                  <a className="font-semibold text-brand-500 underline" href={`tel:${data.counterpart_phone}`}>
                     {data.counterpart_phone}
                   </a>
                 ) : (

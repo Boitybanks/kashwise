@@ -44,7 +44,7 @@ export function JobQrMenu({ gig, workerName }: { gig: Pick<Gig, 'id' | 'status' 
                 <button type="button" disabled={!ready[s]} onClick={() => { setShown(s); setOpen(false) }}
                   className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent">
                   {LABEL[s]}{' '}
-                  <span className={`inline-flex items-center gap-1 text-xs font-medium ${byStep(s)?.used_at ? 'text-brand-700' : 'text-muted'}`}>
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium ${byStep(s)?.used_at ? 'text-brand-500' : 'text-muted'}`}>
                     {byStep(s)?.used_at && <CircleCheck className="size-3.5" aria-hidden />}{status(s)}
                   </span>
                 </button>

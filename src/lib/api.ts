@@ -29,8 +29,8 @@ import type {
 import type { BookingInput, GigInput, ServiceInput, SignupInput } from './validation'
 import type { Gender, IdentityInput } from './identity'
 import type { HandshakeStep } from './qr-scan'
-import { validateEvidenceFile, validatePdf } from './validation'
-import { toSquareJpeg } from './image'
+import { validatePdf } from './validation'
+import { toSquareJpeg, toUploadJpeg } from './image'
 import type { RecoveryLink } from './recovery'
 import type { LedgerEntry } from './ibanks/contracts'
 import type { Insight } from './ibanks/orchestrator'
@@ -99,7 +99,7 @@ export async function fetchProfile(id: string): Promise<Profile | null> {
   return must(await supabase.from('profiles').select(PUBLIC_PROFILE).eq('id', id).maybeSingle())
 }
 
-export async function updateProfile(id: string, patch: Partial<Pick<Profile, 'display_name' | 'role' | 'area_slug' | 'headline' | 'bio' | 'skills'>>) {
+export async function updateProfile(id: string, patch: Partial<Pick<Profile, 'open_to_work' | 'display_name' | 'role' | 'area_slug' | 'headline' | 'bio' | 'skills'>>) {
   must(await supabase.from('profiles').update(patch).eq('id', id).select('id').single())
 }
 
@@ -362,14 +362,21 @@ export const fetchImpact = (includeDemo: boolean) => rpc<ImpactMetrics>('impact_
 
 // ── Evidence photos ────────────────────────────────────────────────────────
 export async function uploadEvidence(itemId: string, userId: string, file: File) {
-  const problem = validateEvidenceFile(file)
-  if (problem) throw new Error(problem)
-  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
-  const path = `${userId}/${itemId}/${crypto.randomUUID()}.${ext}`
-  const { error } = await supabase.storage.from(EVIDENCE_BUCKET).upload(path, file, { contentType: file.type, upsert: false })
+  const photo = await toUploadJpeg(file)
+  const path = `${userId}/${itemId}/${crypto.randomUUID()}.jpg`
+  const { error } = await supabase.storage.from(EVIDENCE_BUCKET).upload(path, photo, { contentType: 'image/jpeg', upsert: false })
   if (error) throw error
   await rpc<void>('add_portfolio_evidence', { p_item: itemId, p_path: path })
   return path
+}
+
+/** A photo of the job from the client who posted it. It becomes the "before" of the worker's record. */
+export async function addGigPhoto(gigId: string, userId: string, file: File) {
+  const photo = await toUploadJpeg(file)
+  const path = `${userId}/gigs/${gigId}/${crypto.randomUUID()}.jpg`
+  const { error } = await supabase.storage.from(EVIDENCE_BUCKET).upload(path, photo, { contentType: 'image/jpeg', upsert: false })
+  if (error) throw error
+  await rpc<void>('add_gig_photo', { p_gig: gigId, p_path: path })
 }
 
 export async function removeEvidence(itemId: string, path: string) {

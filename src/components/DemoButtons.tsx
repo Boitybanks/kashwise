@@ -31,7 +31,7 @@ export function DemoButtons({ compact = false, next }: { compact?: boolean; next
         <Button key={role} variant="secondary" loading={busy === role} disabled={busy !== null} onClick={() => go(role)} className="justify-start text-left">
           <Sparkles className="size-4 text-sun-600" aria-hidden />
           <span>
-            Try as {DEMO_ACCOUNTS[role].name} <span className="font-normal text-muted">· demo {role}</span>
+            Try as {DEMO_ACCOUNTS[role].name} <span className="font-normal text-muted">· {role === 'customer' ? 'client' : 'worker'}</span>
           </span>
         </Button>
       ))}

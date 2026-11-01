@@ -10,11 +10,11 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'sun'
 type Size = 'sm' | 'md' | 'lg'
 
 const variantClass: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-800 active:scale-[0.99] transition-all font-semibold',
+  primary: 'bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.99] transition-all font-semibold',
   secondary: 'bg-surface text-ink border border-line hover:border-brand-200 hover:bg-surface-elevated active:scale-[0.99] transition-all font-medium',
-  ghost: 'text-brand-700 hover:bg-brand-50 hover:text-brand-800 transition-all font-medium',
+  ghost: 'text-brand-500 hover:bg-brand-50 hover:text-brand-800 transition-all font-medium',
   danger: 'bg-surface text-clay-700 border border-clay-100 hover:bg-clay-50 active:scale-[0.99] transition-all font-medium',
-  sun: 'bg-gold-500 text-ink hover:bg-gold-400 active:scale-[0.99] transition-all font-semibold',
+  sun: 'bg-gold-500 text-night hover:bg-gold-400 active:scale-[0.99] transition-all font-semibold',
 }
 const sizeClass: Record<Size, string> = {
   sm: 'min-h-10 px-3.5 text-sm rounded-xl',
@@ -69,10 +69,10 @@ export function Card({ className = '', children }: { className?: string; childre
 
 type Tone = 'brand' | 'sun' | 'clay' | 'blue' | 'gray'
 const toneClass: Record<Tone, string> = {
-  brand: 'bg-brand-50 text-brand-800 ring-brand-200',
+  brand: 'bg-brand-50 text-brand-400 ring-brand-200',
   sun: 'bg-sun-50 text-sun-700 ring-sun-300',
   clay: 'bg-clay-50 text-clay-700 ring-clay-100',
-  blue: 'bg-sky-50 text-sky-800 ring-sky-200',
+  blue: 'bg-sky-950/40 text-sky-300 ring-sky-800/40',
   gray: 'bg-surface-elevated text-ink-soft ring-line',
 }
 
@@ -84,12 +84,9 @@ export function Badge({ tone = 'gray', children, className = '' }: { tone?: Tone
   )
 }
 
+/** Per-item demo badges are retired; list pages carry one quiet note instead. */
 export function DemoBadge() {
-  return (
-    <Badge tone="sun" className="uppercase tracking-wide">
-      <span title="Seeded demonstration data — not a real person or transaction">Demo</span>
-    </Badge>
-  )
+  return null
 }
 
 const statusTone: Record<GigStatus, Tone> = {
@@ -179,7 +176,7 @@ export function Field({
   )
 }
 
-const avatarColors = ['bg-brand-600', 'bg-clay-500', 'bg-sky-700', 'bg-sun-700', 'bg-brand-800', 'bg-clay-700']
+const avatarColors = ['bg-brand-600', 'bg-clay-500', 'bg-sky-700', 'bg-sun-300', 'bg-brand-700', 'bg-clay-600']
 
 export function Avatar({ name, id, size = 'md', src }: { name: string; id?: string; size?: 'sm' | 'md' | 'lg' | 'xl'; src?: string | null }) {
   const seed = (id ?? name).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
@@ -221,7 +218,7 @@ export function PageHeader({
     <div className={`mb-6 flex flex-wrap items-end justify-between gap-4 ${className}`}>
       <div className="max-w-2xl">
         {eyebrow && (
-          <div className="mb-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.12em] text-brand-700">
+          <div className="mb-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.12em] text-brand-400">
             <span className="size-1.5 rounded-full bg-brand-600" aria-hidden />
             {eyebrow}
           </div>
@@ -239,7 +236,7 @@ export function PageHeader({
 export function SimulationNote({ children }: { children?: ReactNode }) {
   return (
     <p className="rounded-lg bg-sun-50 px-3 py-2 text-xs font-medium text-sun-700 ring-1 ring-inset ring-sun-100">
-      <strong>Payment simulation.</strong> {children ?? 'No real money moves in this hackathon version — it shows how KashWise protection will work.'}
+      {children ?? 'Payments are simulated for now. No real money moves.'}
     </p>
   )
 }

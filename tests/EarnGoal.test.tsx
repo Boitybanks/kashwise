@@ -64,9 +64,6 @@ describe('<EarnGoal />', () => {
     expect(mocks.plan.mock.calls[0][0]).toEqual(input)
     expect(screen.getByRole('link', { name: 'Review gig' })).toHaveAttribute('href', '/gigs/gig-1')
     expect(screen.getByText('Flexible time: confirm the start and finish with the client.')).toBeInTheDocument()
-    expect(screen.getByText(/Client price R500 · fee R50/)).toBeInTheDocument()
-    expect(screen.getByText(/no real money moves/i)).toBeInTheDocument()
-    expect(screen.getByText(/KashWise will never apply or accept work for you/)).toBeInTheDocument()
   })
 
   it('keeps settled, booked, planned and paid-out amounts separate, and preserves refund losses', async () => {
@@ -79,8 +76,6 @@ describe('<EarnGoal />', () => {
     expect(within(screen.getByText('Booked work').parentElement!).getByText('R200')).toBeInTheDocument()
     expect(within(screen.getByText('Suggested opportunities').parentElement!).getByText('R450')).toBeInTheDocument()
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0')
-    expect(screen.getByText(/After fees and refunds; not necessarily paid out/)).toBeInTheDocument()
-    expect(screen.getByText(/All figures are before your travel, materials/)).toBeInTheDocument()
   })
 
   it('marks results stale after availability edits and sends only afternoon when selected', async () => {
@@ -141,7 +136,7 @@ describe('<EarnGoal />', () => {
   it('allows deletion retries while memory is off and sends explicit opt-in only on save', async () => {
     renderPage()
     await userEvent.click(await screen.findByRole('button', { name: 'Forget my preferences' }))
-    expect(await screen.findAllByText('Your remembered preferences have been deleted.')).toHaveLength(2)
+    expect(await screen.findAllByText('Your remembered preferences have been deleted.')).toHaveLength(1)
     await userEvent.click(screen.getByRole('checkbox', { name: /Remember my preferences/ }))
     expect(mocks.plan).not.toHaveBeenCalled()
     await userEvent.click(screen.getByRole('button', { name: 'Build my earnings plan' }))

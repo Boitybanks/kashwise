@@ -52,7 +52,7 @@ export default function Workers() {
               type="button"
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                 skill === null
-                  ? 'bg-canvas text-deep font-semibold'
+                  ? 'bg-brand-600 text-white font-semibold'
                   : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
               }`}
               aria-pressed={skill === null}
@@ -68,7 +68,7 @@ export default function Workers() {
                   type="button"
                   className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-canvas text-deep font-semibold'
+                      ? 'bg-brand-600 text-white font-semibold'
                       : 'bg-white/5 border border-white/15 text-deep-ink hover:bg-white/15 hover:text-white'
                   }`}
                   aria-pressed={active}
@@ -97,7 +97,7 @@ export default function Workers() {
               <Users className="size-3.5 text-brand-500" aria-hidden />
               Showing <strong className="text-ink">{workers.length}{q.hasNextPage ? '+' : ''}</strong> verified profile{workers.length === 1 ? '' : 's'}
             </p>
-            <span className="hidden sm:inline-block text-[11px] text-muted">Customer-confirmed ProofScripts</span>
+            {workers.some((x) => x.is_demo) && <span className="text-[11px] text-muted">Sample listings</span>}
           </div>
           <ul className="grid gap-4 md:grid-cols-2">
             {workers.map((w) => (
@@ -109,7 +109,7 @@ export default function Workers() {
                   <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} size="lg" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-ink transition-colors group-hover:text-brand-700">{w.display_name}</p>
+                      <p className="font-semibold text-ink transition-colors group-hover:text-brand-400">{w.display_name}</p>
                       {w.is_demo && <DemoBadge />}
                     </div>
                     {w.headline && <p className="truncate text-sm text-ink-soft">{w.headline}</p>}

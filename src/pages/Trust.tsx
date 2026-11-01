@@ -1,5 +1,5 @@
 import { BadgeCheck, EyeOff, FileText, Fingerprint, Flag, IdCard, KeyRound, Lock, ScanLine, ShieldCheck, Wallet } from 'lucide-react'
-import { ButtonLink, Card, PageHeader } from '../components/ui'
+import { Card, PageHeader } from '../components/ui'
 
 const sections = [
   {
@@ -25,12 +25,17 @@ const sections = [
   {
     icon: ShieldCheck,
     title: 'Verifiable ProofScript records',
-    body: 'Workers can download their customer-confirmed work history with tamper-proof cryptographic signatures, verifiable on the Verify page.',
+    body: 'Every worker’s CV is signed by KashWise. Scan its QR code to see the live record.',
+  },
+  {
+    icon: Wallet,
+    title: 'What KashWise charges',
+    body: 'Joining is free. KashWise keeps 10% of each job’s price. Clients pay the agreed price with nothing added, and workers always see what they will receive before they apply.',
   },
   {
     icon: Wallet,
     title: 'Simulated payment protection',
-    body: 'Demonstrates how client payments are safely held and released upon job confirmation without moving real money in this preview.',
+    body: 'Payments are simulated for now. No real money moves until a licensed partner goes live.',
   },
   {
     icon: ScanLine,
@@ -66,7 +71,7 @@ export default function Trust() {
       <div className="space-y-3">
         {sections.map((s) => (
           <Card key={s.title} className="flex gap-4 p-5">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><s.icon className="size-5" aria-hidden /></span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500"><s.icon className="size-5" aria-hidden /></span>
             <div>
               <h2 className="font-semibold">{s.title}</h2>
               <p className="mt-1 text-sm text-ink-soft">{s.body}</p>
@@ -74,11 +79,6 @@ export default function Trust() {
           </Card>
         ))}
       </div>
-      <Card className="mt-6 p-5">
-        <h2 className="font-semibold">Optional ID format & selfie demo</h2>
-        <p className="mt-2 text-sm text-muted">This demonstration checks an ID number’s structure and checksum locally and optionally captures a temporary selfie. It does not check official records, identify anyone, match a face or detect liveness. No ID, birth date or photo is uploaded or saved, and no public badge is awarded. Use the sample details; completing this demo is never required to work or hire.</p>
-        <ButtonLink to="/identity-demo" variant="secondary" className="mt-4">Try the identity demo</ButtonLink>
-      </Card>
       <p className="mt-6 text-sm text-muted">
         Note: &ldquo;Verified&rdquo; on KashWise refers to customer-confirmed gig records. Identity numbers are checked for formatting only, not verified against Home Affairs records.
 

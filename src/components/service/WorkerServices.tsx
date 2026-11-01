@@ -26,7 +26,7 @@ export function WorkerServices({ workerId, first, isOwner }: { workerId: string;
   return (
     <section aria-labelledby="services-h">
       <h2 id="services-h" className="text-lg font-semibold">Book {first} directly</h2>
-      <p className="mb-3 text-sm text-muted">The price you see is the price you pay. <Link to="/services" className="font-semibold text-brand-700 underline">More services nearby</Link></p>
+      <p className="mb-3 text-sm text-muted">The price you see is the price you pay. <Link to="/services" className="font-semibold text-brand-500 underline">More services nearby</Link></p>
       <div className="grid gap-3 md:grid-cols-2">
         {services.map((s) => <ServiceCard key={s.id} service={s} showProvider={false} />)}
       </div>

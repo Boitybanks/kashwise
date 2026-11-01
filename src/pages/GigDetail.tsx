@@ -10,6 +10,7 @@ import { formatDay, formatPostedAt, timeAgo } from '../lib/format'
 import { distanceKm, formatDistance } from '../lib/geo'
 import { allowedActions, nextStepText, TIME_WINDOW_LABEL, viewerOf } from '../lib/gig-rules'
 import { useAreaLookup } from '../lib/hooks'
+import { PhotoGallery } from '../components/PhotoGallery'
 import { Avatar, Button, ButtonLink, Card, DemoBadge, ErrorState, Spinner, Stars, StatusPill } from '../components/ui'
 import { useToast } from '../components/ui/toast'
 import { FeeBreakdown } from '../components/gig/FeeBreakdown'
@@ -194,12 +195,12 @@ export default function GigDetail() {
 
       <Card className="p-5">
         <div className="flex items-start gap-3">
-          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas text-2xl"><CategoryIcon category={gig.category} className="size-5 text-brand-700" /></span>
+          <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-xl bg-canvas text-2xl"><CategoryIcon category={gig.category} className="size-5 text-brand-500" /></span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill status={gig.status} />
               <span className="text-xs font-semibold text-muted">{categoryLabel(gig.category)}</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-800 border border-line">
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-300 border border-line">
                 <Clock className="size-3 text-brand-500" aria-hidden />
                 {formatPostedAt(gig.created_at, gig.is_demo)}
               </span>
@@ -217,6 +218,7 @@ export default function GigDetail() {
           <p className="flex items-center gap-2"><CalendarDays className="size-4 text-muted" aria-hidden />{formatDay(gig.scheduled_date)} · {TIME_WINDOW_LABEL[gig.time_window]}</p>
         </div>
         <p className="mt-4 whitespace-pre-line">{gig.description}</p>
+        {Boolean(gig.photo_paths?.length) && <div className="mt-4"><PhotoGallery paths={gig.photo_paths!} label="Job" size="size-28 sm:size-36" /></div>}
         <p className="mt-4 text-xs text-muted">
           {gig.service_id ? 'Booked' : 'Posted'} by <strong className="text-ink-soft">{gig.customer?.display_name ?? 'a customer'}</strong>
           {gig.service_id && gig.worker && <> from {viewer === 'assigned_worker' ? 'your' : `${gig.worker.display_name.split(' ')[0]}’s`} listed service</>} · <span className="font-semibold text-brand-500">{formatPostedAt(gig.created_at, gig.is_demo)}</span>
@@ -258,7 +260,7 @@ export default function GigDetail() {
             <textarea id="apply-message" rows={3} maxLength={300} className="input" placeholder="e.g. I live nearby and did a similar job last month." value={message} onChange={(e) => setMessage(e.target.value)} />
             <Button type="submit" size="lg" block loading={applyBusy}>I’m interested in this job</Button>
             <p className="text-sm text-muted">Applying is free. Check that the date, area and payout work for you. The customer reviews your profile before choosing a worker; applying does not book the job.</p>
-            <Link to={`/profile?welcome=1&next=${encodeURIComponent(`/gigs/${gig.id}`)}`} className="inline-block text-sm font-semibold text-brand-700 underline">Improve your profile before applying</Link>
+            <Link to={`/profile?welcome=1&next=${encodeURIComponent(`/gigs/${gig.id}`)}`} className="inline-block text-sm font-semibold text-brand-500 underline">Improve your profile before applying</Link>
           </form>
         )}
         {viewer === 'other_worker' && myApp?.status === 'pending' && (
@@ -268,7 +270,7 @@ export default function GigDetail() {
           </div>
         )}
         {viewer === 'other_worker' && myApp?.status === 'declined' && (
-          <p className="rounded-xl bg-canvas p-4 text-sm">The customer chose someone else this time. <Link to="/discover" className="font-semibold text-brand-700 underline">Find more work</Link></p>
+          <p className="rounded-xl bg-canvas p-4 text-sm">The customer chose someone else this time. <Link to="/discover" className="font-semibold text-brand-500 underline">Find more work</Link></p>
         )}
 
         {/* ── Assigned worker ── */}
@@ -306,7 +308,7 @@ export default function GigDetail() {
                 applications={appsQ.data ?? []}
                 gigArea={gig.area_slug}
                 totalCents={gig.total_cents}
-                onSelect={(appId) => run(() => api.selectWorker(gig.id, appId), 'Worker chosen! The payment provider is holding the payment (simulation).')}
+                onSelect={(appId) => run(() => api.selectWorker(gig.id, appId), 'Worker chosen! The payment provider is holding the payment.')}
               />
             )}
           </div>
@@ -318,7 +320,7 @@ export default function GigDetail() {
               <p className="font-semibold">{gig.worker.display_name} {gig.worker.is_demo && <DemoBadge />}</p>
               <p className="text-xs text-muted">{gig.worker.headline}</p>
             </div>
-            <Link to={`/w/${gig.worker.id}`} className="text-sm font-semibold text-brand-700 hover:underline">Portfolio</Link>
+            <Link to={`/w/${gig.worker.id}`} className="text-sm font-semibold text-brand-500 hover:underline">Portfolio</Link>
           </div>
         )}
         {viewer === 'customer' && gig.worker && (gig.status === 'matched' || (gig.status === 'in_progress' && !gig.worker_done_at)) && (
@@ -328,7 +330,7 @@ export default function GigDetail() {
           <ConfirmAction
             label="Confirm job is complete"
             icon={<BadgeCheck className="size-5" aria-hidden />}
-            confirmText={`Confirm ${workerFirst} finished the job? A verified record is added to their portfolio, and your payment is then settled by the payment provider (simulation).`}
+            confirmText={`Confirm ${workerFirst} finished the job? A verified record is added to their portfolio, and your payment is then settled by the payment provider.`}
             onConfirm={() =>
               run(async () => {
                 await api.confirmCompletion(gig.id)
@@ -356,7 +358,7 @@ export default function GigDetail() {
           <Link to={`/w/${gig.worker.id}#${recordQ.data.record_code}`} className="flex items-center gap-3 rounded-xl bg-brand-600 p-4 text-white hover:bg-brand-700">
             <BadgeCheck className="size-6 shrink-0" aria-hidden />
             <span className="flex-1">
-              <span className="block font-semibold">Verified record {recordQ.data.record_code}</span>
+              <span className="block font-semibold">Verified record added</span>
               <span className="block text-sm text-brand-50">{viewer === 'assigned_worker' ? 'Now on your portfolio — tap to see and share it.' : `Added to ${workerFirst}’s portfolio.`}</span>
             </span>
           </Link>
@@ -383,7 +385,7 @@ export default function GigDetail() {
           {viewer === 'customer' && gig.status === 'completed' && txnQ.data?.status === 'held' && (
             <Button
               variant="secondary"
-              onClick={() => run(() => api.sandboxPayment({ action: 'settle', gigId: gig.id }), 'The payment provider settled your payment (simulation).')}
+              onClick={() => run(() => api.sandboxPayment({ action: 'settle', gigId: gig.id }), 'The payment provider settled your payment.')}
             >
               Settle payment through the provider (simulation)
             </Button>
