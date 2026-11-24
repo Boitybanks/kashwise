@@ -36,7 +36,7 @@ export default function ForgotPassword() {
   return (
     <div className="mx-auto max-w-md">
       <h1 className="text-3xl font-semibold">Reset your password</h1>
-      <p className="mt-1 text-muted">Enter the email you signed up with and we’ll send you a link to choose a new password.</p>
+      <p className="mt-1 text-muted">We’ll email you a reset link.</p>
       <Card className="mt-6 p-5">
         {sentTo ? (
           <div role="status">

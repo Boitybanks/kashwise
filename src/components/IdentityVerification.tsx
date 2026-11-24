@@ -99,7 +99,7 @@ export function IdentityVerification({ onComplete, minimumAge = 18 }: {
       <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted">{step === 'id' ? '01 / ID format' : step === 'camera' ? '02 / Optional selfie' : step === 'processing' ? '03 / Demo processing' : '04 / Complete'}</p>
       {step === 'id' && <form onSubmit={checkId} noValidate className="space-y-4">
         <h2 ref={heading} tabIndex={-1} className="text-2xl font-semibold">Check an ID number’s format</h2>
-        <p className="text-sm text-muted">Try the sample below instead of entering your own details. A valid format does not prove an ID was issued or belongs to you.</p>
+        <p className="text-sm text-muted">Try the sample instead of your own details. A valid format doesn’t prove the ID is yours.</p>
         <Button type="button" variant="secondary" onClick={() => { setId('8001015009087'); setDob('1980-01-01'); setError('') }}>Use sample details</Button>
         <Field label="SA ID number" htmlFor="demo-id" hint="13 digits; spaces and hyphens are accepted.">
           <input id="demo-id" className="input" inputMode="numeric" autoComplete="off" value={id} onChange={e => setId(e.target.value)} aria-describedby={error ? 'identity-error' : undefined} aria-invalid={Boolean(error)} />
@@ -127,7 +127,7 @@ export function IdentityVerification({ onComplete, minimumAge = 18 }: {
         <CircleCheck size={36} className="text-brand-500" aria-hidden />
         <h2 ref={heading} tabIndex={-1} className="text-2xl font-semibold">Demo completed</h2>
         <p className="font-medium">ID format checked · {photo ? 'selfie captured locally' : 'selfie skipped'}</p>
-        <p className="text-sm text-muted">Your identity has not been verified. No public badge, account permission or saved verification record has been created.</p>
+        <p className="text-sm text-muted">Not verified. Nothing has been saved.</p>
         <Button block onClick={() => { const captured = Boolean(photo); setPhoto(null); onComplete({ status: 'demo_completed', simulated: true, idFormatChecked: true, selfieCaptured: captured }) }}>Continue to job board</Button>
       </div>}
       {error && <p id="identity-error" role="alert" className="mt-4 text-sm font-medium text-clay-700">{error}</p>}

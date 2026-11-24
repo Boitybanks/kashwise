@@ -44,7 +44,7 @@ Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise.ne
   `ANTHROPIC_API_KEY`; if that is missing or fails, the open-weight `openai/gpt-oss-120b` on Groq's free tier (`GROQ_API_KEY`) does. `finalize*` rejects any number or credential the person did not say and strips contact details. No consent or
   key → the rules write it, labelled "Tidied up by KashWise", never "AI". The market rate (similar jobs, else `baselineFloor`) is a floor: clients posting a gig can offer more, not less. Enforced in the form only, not the database. Providers still set their own service prices.
 - ProofScript CV (`/w/:id/cv`): renders from the signed work history and only after its signature verifies in the browser. The person's
-  own headline and bio appear only in the labelled "own words" panel, never as verified fact. Workers download a real PDF (`cv-pdf.ts`); signed JSON and record codes stay off the front end.
+  own headline and bio appear only in the separate "Personal statement" section (like any CV), never mixed into the verified sections. Workers download a real PDF (`cv-pdf.ts`); signed JSON and record codes stay off the front end.
 - Sign-up identity (`IdentityFields`, `identitySchema`, `private.check_identity_document`): SA ID, passport (issuing country + date of birth)
   or asylum / refugee permit (nationality + date of birth). Format-checked only, never verified with Home Affairs; never ask about
   visa or work-permit status. One document = one account via the keyed hash; SA ID hashes are unchanged from before.

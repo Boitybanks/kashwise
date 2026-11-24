@@ -156,7 +156,7 @@ function Earnings({ intel }: { intel: EarningsIntelligence }) {
 
       <Card className="p-4">
         <h2 className="font-semibold">Weekly net earnings</h2>
-        <p className="text-xs text-muted">Weeks run Monday to Sunday, South African time. Weeks with no settled jobs count as R0.</p>
+        <p className="text-xs text-muted">Weeks run Monday to Sunday.</p>
         {intel.weeks.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No settled earnings yet.</p>
         ) : (
@@ -268,7 +268,7 @@ function Diagnostics() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="font-semibold">How iBanks decided</h2>
-          <p className="text-xs text-muted">Read-only audit of the events, rules and policy checks behind your insights. Only your own records.</p>
+          <p className="text-xs text-muted">The records behind your insights.</p>
         </div>
         <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)} aria-expanded={open}>{open ? 'Hide' : 'Show audit trail'}</Button>
       </div>
@@ -337,7 +337,7 @@ function Goals({ net, paidOut, prefs }: { net: number; paidOut: number; prefs: M
         </p>
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" checked={ai} onChange={(e) => setAi(e.target.checked)} className="mt-1 size-4 accent-brand-600" />
-          <span>Let iBanks use AI to phrase answers more simply. Your figures are always calculated by KashWise and checked before you see them.</span>
+          <span>Let AI word answers simply. The numbers always come from KashWise.</span>
         </label>
         <Button onClick={() => save.mutate()} disabled={save.isPending}>Save my goals</Button>
       </Card>
@@ -426,7 +426,7 @@ export default function Money() {
           {tab === 'Earnings' && <Earnings intel={intel} />}
           {tab === 'Insights' && (
             <div className="space-y-3">
-              {q.data.insights.length === 0 ? <EmptyState title="No insights yet">iBanks writes insights when a payment settles, a payout changes or something needs your attention.</EmptyState> : (
+              {q.data.insights.length === 0 ? <EmptyState title="No insights yet">Insights appear as you get paid.</EmptyState> : (
                 (q.data.insights as (Insight & { id: string })[]).map((i) => (
                   <InsightCard key={i.id} insight={i} onFeedback={(status, helpful) => feedback.mutate({ id: i.id, status, helpful })} />
                 ))

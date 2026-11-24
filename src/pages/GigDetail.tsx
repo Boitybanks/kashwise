@@ -23,6 +23,7 @@ import { ScanCodeDialog } from '../components/gig/ScanCodeDialog'
 import type { HandshakeStep } from '../lib/qr-scan'
 import { avatarUrl } from '../lib/supabase'
 import { Applicants } from '../components/gig/Applicants'
+import { ClientTrack } from '../components/gig/ClientTrack'
 import { ReviewForm } from '../components/gig/ReviewForm'
 import { ReportButton } from '../components/ReportButton'
 import NotFound from './NotFound'
@@ -224,6 +225,8 @@ export default function GigDetail() {
           {gig.service_id && gig.worker && <> from {viewer === 'assigned_worker' ? 'your' : `${gig.worker.display_name.split(' ')[0]}’s`} listed service</>} · <span className="font-semibold text-brand-500">{formatPostedAt(gig.created_at, gig.is_demo)}</span>
         </p>
 
+        {viewer !== 'customer' && gig.customer && <ClientTrack client={gig.customer} />}
+
         <div className="mt-5">
           {viewer === 'customer' ? <FeeBreakdown payoutCents={gig.payout_cents} perspective="customer" /> : <FeeBreakdown payoutCents={gig.payout_cents} perspective="worker" />}
         </div>
@@ -307,6 +310,7 @@ export default function GigDetail() {
               <Applicants
                 applications={appsQ.data ?? []}
                 gigArea={gig.area_slug}
+                category={gig.category}
                 totalCents={gig.total_cents}
                 onSelect={(appId) => run(() => api.selectWorker(gig.id, appId), 'Worker chosen! The payment provider is holding the payment.')}
               />

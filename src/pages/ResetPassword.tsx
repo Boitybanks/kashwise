@@ -100,7 +100,7 @@ export default function ResetPassword() {
         {phase === 'invalid' && (
           <div role="alert">
             <p className="font-semibold">{problem}</p>
-            <p className="mt-1 text-sm text-muted">Reset links work once and expire after a while. Request a fresh one and use the newest email.</p>
+            <p className="mt-1 text-sm text-muted">Links work once and expire after an hour. Use the newest email.</p>
             <ButtonLink to="/forgot-password" className="mt-4">Request a new link</ButtonLink>
           </div>
         )}
@@ -118,7 +118,7 @@ export default function ResetPassword() {
             </Field>
             {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
             <Button type="submit" block size="lg" loading={busy}>Save new password</Button>
-            <p className="text-xs text-muted">You’ll be signed out on every device, then sign in again with your new password.</p>
+            <p className="text-xs text-muted">You’ll sign in again with the new password.</p>
           </form>
         )}
       </Card>

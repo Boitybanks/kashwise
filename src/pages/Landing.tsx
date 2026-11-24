@@ -24,7 +24,7 @@ const categories = [
 const journeys = {
   worker: [
     ['Bring your skills.', 'Create a free profile with your skills and area. Browse the work that fits your day.'],
-    ['Find your next gig.', 'See the task, timing and exactly what you’ll receive before applying. The customer reviews your profile and chooses a worker.'],
+    ['Find your next gig.', 'See the job, time and your pay before you apply. The customer picks who to hire.'],
     ['Do good work. Build your name.', 'Mark the job done. Once the customer confirms, it becomes a verified work record on your shareable portfolio.'],
   ],
   customer: [
@@ -33,6 +33,13 @@ const journeys = {
     ['Confirm a job well done.', 'The worker marks it done; you confirm and leave a review. Your feedback helps their next opportunity.'],
   ],
 }
+
+const growthLoop = [
+  ['Matched nearby', 'iBanks puts jobs that fit your skills in front of you, close to home first.'],
+  ['Paid safely', 'The client’s payment is held before work starts. No deposits.'],
+  ['Proven by clients', 'Each confirmed job, review and photo goes on your ProofScript.'],
+  ['Grow your career', 'Better record, better jobs and pay, and a CV that opens formal doors.'],
+]
 
 function WorkerStories() {
   const [active, setActive] = useState(0)
@@ -88,7 +95,7 @@ export default function Landing() {
           <h1>Your thing.<br /><span>Someone’s next find.</span></h1>
         </div>
         <div className="hero-intro">
-          <p className="hero-description">The photos you take. The lessons you teach. The looks you create. Turn your skills into extra income—or find the right person for what you need.</p>
+          <p className="hero-description">Turn your skills into income, or find the right person for the job.</p>
           <div className="hero-actions"><ButtonLink to="/discover" size="lg">Find work <ArrowUpRight size={19} aria-hidden /></ButtonLink><ButtonLink to="/signup?role=customer&next=%2Fgigs%2Fnew" variant="secondary" size="lg">Post a task <ArrowRight size={18} aria-hidden /></ButtonLink></div>
           <div className="hero-assurances"><span><Check size={15} aria-hidden /> Free to join</span><span><Check size={15} aria-hidden /> You choose the work</span></div>
         </div>
@@ -115,10 +122,23 @@ export default function Landing() {
           <img src="/images/photographer.webp" alt="Illustrative photographer preparing for a session" loading="lazy" width="1536" height="1024" />
           <div className="work-receipt"><div className="flex items-center justify-between gap-3"><span className="receipt-label"><BadgeCheck size={17} aria-hidden /> WORK THAT COUNTS</span></div><h3>Portraits delivered.<br />Reputation growing.</h3><div className="receipt-line"><span>Work completed</span><Check size={16} aria-hidden /></div><div className="receipt-line"><span>Confirmed by customer</span><Check size={16} aria-hidden /></div><div className="receipt-line"><span>Added to your ProofScript</span><BadgeCheck size={17} aria-hidden /></div></div>
         </div>
-        <div className="portfolio-copy"><p className="eyebrow">MORE THAN A ONCE-OFF GIG</p><h2>Build a name.<br /><em>Not just an income.</em></h2><p>The lesson that clicked. The portraits they loved. The laptop you brought back to life. It all counts.</p><p>Every client-confirmed job grows your ProofScript—your work transcript of skills, reviews and work photos. Your evidence builds with each completed job, ready to share with your next customer.</p><Link to="/workers" className="text-link">Explore a ProofScript <ArrowUpRight size={19} aria-hidden /></Link><div className="verification-note"><ShieldCheck size={21} aria-hidden /><span>“Verified” means the job was confirmed by its customer. It doesn’t mean an identity or background check.</span></div></div>
+        <div className="portfolio-copy"><p className="eyebrow">MORE THAN A ONCE-OFF GIG</p><h2>Build a name.<br /><em>Not just an income.</em></h2><p>The lesson that clicked. The portraits they loved. The laptop you brought back to life. It all counts.</p><p>Every client-confirmed job adds to your ProofScript: skills, reviews and photos you can share.</p><Link to="/workers" className="text-link">Explore a ProofScript <ArrowUpRight size={19} aria-hidden /></Link><div className="verification-note"><ShieldCheck size={21} aria-hidden /><span>“Verified” means the job was confirmed by its customer. It doesn’t mean an identity or background check.</span></div></div>
+      </section>
+      <section className="page-width landing-section" aria-labelledby="loop-title">
+        <div className="section-heading"><div><p className="eyebrow">POWERED BY iBANKS</p><h2 id="loop-title">Good work <em>pays forward.</em></h2></div></div>
+        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {growthLoop.map(([title, body], index) => (
+            <li key={title} className="rounded-2xl border border-line bg-surface p-5">
+              <span className="text-xs font-semibold tabular-nums text-brand-500">0{index + 1}</span>
+              <h3 className="mt-2 text-lg font-semibold">{title}</h3>
+              <p className="mt-1 text-sm text-ink-soft">{body}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-4 flex items-start gap-2 text-sm text-ink-soft"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-500" aria-hidden /> Unlike a Facebook group: real profiles, payment held before work starts, and every job on record.</p>
       </section>
       <section className="page-width fee-section">
-        <div><p className="eyebrow">STRAIGHTFORWARD FROM THE START</p><h2>Your skills.<br />Clear, fair pay.</h2><p>Free to join. The customer pays the agreed price, and workers can cash out at a shop without a bank account. Each side sees its own number.</p><Link to="/trust" className="text-link">How trust & safety works <ArrowUpRight size={17} aria-hidden /></Link></div>
+        <div><p className="eyebrow">STRAIGHTFORWARD FROM THE START</p><h2>Your skills.<br />Clear, fair pay.</h2><p>Free to join. Cash out at a shop, no bank account needed.</p><Link to="/trust" className="text-link">How trust & safety works <ArrowUpRight size={17} aria-hidden /></Link></div>
         <div className="fee-example"><div className="flex items-center justify-between"><span className="text-sm font-semibold">Try the numbers</span></div><div className="fee-choices" role="group" aria-label="Example job price">{[200, 500, 1000].map((value) => <button key={value} type="button" aria-pressed={amount === value} onClick={() => setAmount(value)}>R{value.toLocaleString('en-ZA')}</button>)}</div><dl><div><dt>Customer pays</dt><dd>{formatRand(example.price)}</dd></div><div className="fee-total"><dt>Worker receives</dt><dd>{formatRand(example.workerNet)}</dd></div></dl></div>
       </section>
       <section className="page-width final-invite"><div><p className="eyebrow">BIG POTENTIAL. RIGHT AROUND THE CORNER.</p><h2>Your next opportunity<br />could be next door.</h2></div><div><ButtonLink to="/discover" size="lg" variant="sun">Find your next gig <ArrowUpRight size={19} aria-hidden /></ButtonLink><Link to="/signup?role=customer&next=%2Fgigs%2Fnew" className="text-link">Need something done? Post a task <ArrowRight size={16} aria-hidden /></Link></div></section>

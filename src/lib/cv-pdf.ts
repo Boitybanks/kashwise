@@ -1,5 +1,5 @@
 // Builds the ProofScript CV as a real PDF file people can attach to a job application. Loaded on demand.
-import { LineCapStyle, PDFDocument, PDFFont, PDFPage, rgb, StandardFonts, type RGB } from 'pdf-lib'
+import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts, type RGB } from 'pdf-lib'
 import { encode } from 'uqr'
 import { categoryLabel } from './categories'
 import { formatDate, formatMonthYear } from './format'
@@ -14,6 +14,7 @@ export interface CvPdfInput {
   headline: string | null
   bio: string | null
   url: string
+  reference: string
 }
 
 const INK = rgb(0.067, 0.145, 0.165)
@@ -73,38 +74,21 @@ export async function buildCvPdf(input: CvPdfInput): Promise<Uint8Array> {
     room(50); y -= 24; put(text, MARGIN, y, serif, 15); y -= 6; rule()
   }
 
-  // Masthead
-  page.drawRectangle({ x: MARGIN, y: y - 18, width: 22, height: 22, color: rgb(0.051, 0.58, 0.533) })
-  page.drawSvgPath('M 5.2 11.3 L 8.9 15.1 L 14.8 7.6', { x: MARGIN, y: y + 4, borderColor: rgb(1, 1, 1), borderWidth: 2.6, borderLineCap: LineCapStyle.Round })
-  page.drawCircle({ x: MARGIN + 16.8, y: y - 1.2, size: 2.6, color: rgb(0.949, 0.725, 0.173) })
-  put('KashWise', MARGIN + 29, y - 12, bold, 11)
-  put('ProofScript', MARGIN + 29 + bold.widthOfTextAtSize('KashWise ', 11), y - 12, italic, 12, TEAL)
-  const seal = 'Verified by KashWise'
+  // Name and title, with a small "customer-verified" seal on the right
+  const seal = 'Customer-verified'
   const sealWidth = bold.widthOfTextAtSize(seal, 8.5) + 20
-  page.drawRectangle({ x: WIDTH - MARGIN - sealWidth, y: y - 17, width: sealWidth, height: 20, color: GOLD_BG, borderColor: GOLD_LINE, borderWidth: 0.7 })
-  put(seal, WIDTH - MARGIN - sealWidth + 10, y - 10, bold, 8.5, GOLD)
+  page.drawRectangle({ x: WIDTH - MARGIN - sealWidth, y: y - 16, width: sealWidth, height: 20, color: GOLD_BG, borderColor: GOLD_LINE, borderWidth: 0.7 })
+  put(seal, WIDTH - MARGIN - sealWidth + 10, y - 9, bold, 8.5, GOLD)
+  const textWidth = WIDTH - MARGIN * 2 - sealWidth - 16
+  const nameSize = Math.min(32, 32 * textWidth / Math.max(serif.widthOfTextAtSize(pdfSafe(c.worker.name), 32), 1))
   y -= 26
-  rule(1.4, INK)
-
-  // Who, with the QR code beside them
-  const qr = encode(input.url, { ecc: 'M', border: 0 })
-  const cell = 74 / qr.size
-  const qrTop = y - 14
-  qr.data.forEach((row, r) => row.forEach((on, col) => {
-    if (on) page.drawRectangle({ x: WIDTH - MARGIN - 74 + col * cell, y: qrTop - (r + 1) * cell, width: cell + 0.1, height: cell + 0.1, color: INK })
-  }))
-  put('Scan to check it live', WIDTH - MARGIN - 74 + (74 - sans.widthOfTextAtSize('Scan to check it live', 7)) / 2, qrTop - 84, sans, 7, SOFT)
-  y -= 24
-  put('VERIFIED WORK RECORD', MARGIN, y, bold, 7.5, TEAL)
-  y -= 32
-  const textWidth = WIDTH - MARGIN * 2 - 90
-  const nameSize = Math.min(34, 34 * textWidth / Math.max(serif.widthOfTextAtSize(pdfSafe(c.worker.name), 34), 1))
   put(c.worker.name, MARGIN, y, serif, nameSize)
-  y -= 4
+  y -= 6
   const proven = input.skills.slice(0, 3).map((s) => s.name).join('  |  ')
-  if (proven) paragraph(proven, bold, 10.5, INK, MARGIN, textWidth)
-  paragraph(`${c.worker.area}  |  On KashWise since ${formatMonthYear(c.worker.member_since)}`, sans, 9, SOFT, MARGIN, textWidth)
-  y = Math.min(y, qrTop - 92) - 12
+  if (proven) paragraph(proven, bold, 11, TEAL, MARGIN, textWidth)
+  paragraph(`${c.worker.area}  |  Independent service provider since ${formatMonthYear(c.worker.member_since)}`, sans, 9, SOFT, MARGIN, textWidth)
+  y -= 10
+  rule(1.4, INK)
 
   // Facts
   rule()
@@ -116,28 +100,26 @@ export async function buildCvPdf(input: CvPdfInput): Promise<Uint8Array> {
   y -= 40
   rule()
 
-  heading('Professional summary')
+  heading('Profile')
   y -= 4
   paragraph(input.summary, sans, 10)
 
   if (input.skills.length) {
-    heading('Proven skills')
-    y -= 4
-    paragraph('Every skill here comes from jobs customers confirmed.', sans, 8.5, SOFT)
+    heading('Key skills')
     y -= 4
     for (const s of input.skills) {
       room(32)
       y -= 14
       put(s.name, MARGIN, y, bold, 10)
-      const count = `${s.jobs} confirmed ${s.jobs === 1 ? 'job' : 'jobs'}`
+      const count = `${s.jobs} ${s.jobs === 1 ? 'job' : 'jobs'}`
       put(count, WIDTH - MARGIN - sans.widthOfTextAtSize(count, 8.5), y, sans, 8.5, SOFT)
-      if (s.examples.length) paragraph(s.examples.slice(0, 3).join(', '), sans, 8.5, SOFT)
+      if (s.examples.length) paragraph(s.examples.slice(0, 2).join(', '), sans, 8.5, SOFT)
       y -= 4
     }
   }
 
   if (c.records.length) {
-    heading('Work history')
+    heading('Experience')
     for (const r of c.records) {
       const reviewLines = r.review ? wrap(`"${r.review}"`, italic, 11, WIDTH - MARGIN * 2 - 72) : []
       room(50 + reviewLines.length * 14)
@@ -145,35 +127,45 @@ export async function buildCvPdf(input: CvPdfInput): Promise<Uint8Array> {
       put(formatMonthYear(r.completed_at), MARGIN, y, sans, 8.5, SOFT)
       put(r.title, MARGIN + 62, y, bold, 10.5)
       y -= 12
-      put(`${categoryLabel(r.category)}  |  ${r.area}  |  for ${r.customer}`, MARGIN + 62, y, sans, 8.5, SOFT)
+      put(`${categoryLabel(r.category)}  |  ${r.area}  |  Client: ${r.customer}`, MARGIN + 62, y, sans, 8.5, SOFT)
       if (reviewLines.length) {
         const top = y - 2
         for (const line of reviewLines) { y -= 13.5; put(line, MARGIN + 72, y, italic, 11) }
         page.drawLine({ start: { x: MARGIN + 64, y: top }, end: { x: MARGIN + 64, y: y - 2 }, thickness: 1.4, color: GOLD_LINE })
       }
       y -= 12
-      put(`Confirmed by customer ${formatDate(r.completed_at)}${r.rating != null ? `  |  ${r.rating}/5` : ''}`, MARGIN + 62, y, bold, 8, GOLD)
+      put(`Confirmed by client ${formatDate(r.completed_at)}${r.rating != null ? `  |  ${r.rating}/5` : ''}`, MARGIN + 62, y, bold, 8, GOLD)
       y -= 6
       page.drawLine({ start: { x: MARGIN, y }, end: { x: WIDTH - MARGIN, y }, thickness: 0.4, color: LINE })
     }
   }
 
   if (input.headline || input.bio) {
-    const first = c.worker.name.split(' ')[0]
-    heading(`In ${first}'s own words`)
+    heading('Personal statement')
     y -= 2
     if (input.headline) paragraph(input.headline, bold, 9.5)
     if (input.bio) paragraph(input.bio, sans, 9.5)
-    paragraph(`Written by ${first}.`, sans, 8, SOFT)
   }
 
-  room(44)
+  // Verification footer: what "verified" means, a reference, and a QR code to the live copy
+  const QR = 64
+  room(QR + 40)
   y -= 18
   rule(1.4, INK)
+  const footTop = y
+  const footWidth = WIDTH - MARGIN * 2 - QR - 16
   y -= 4
-  paragraph('"Verified" means the customer confirmed the job was done. It is not an identity or qualification check.', sans, 8, SOFT)
-  paragraph(`Issued ${formatDate(c.issued_at)}. Check this record at ${input.url}`, sans, 8, SOFT)
-  if (c.demo_data) paragraph('Sample profile.', sans, 8, SOFT)
+  paragraph('Verified work history  |  KashWise ProofScript', bold, 8.5, INK, MARGIN, footWidth)
+  paragraph('Each job above was confirmed by the client who paid for it. This is not an identity or qualification check.', sans, 8, SOFT, MARGIN, footWidth)
+  paragraph(`Reference ${input.reference}  |  Issued ${formatDate(c.issued_at)}${c.demo_data ? '  |  Sample profile' : ''}`, sans, 8, SOFT, MARGIN, footWidth)
+  paragraph(`Verify at ${input.url}`, sans, 8, SOFT, MARGIN, footWidth)
+  const qr = encode(input.url, { ecc: 'M', border: 0 })
+  const cell = QR / qr.size
+  const qrTop = footTop - 8
+  qr.data.forEach((row, r) => row.forEach((on, col) => {
+    if (on) page.drawRectangle({ x: WIDTH - MARGIN - QR + col * cell, y: qrTop - (r + 1) * cell, width: cell + 0.1, height: cell + 0.1, color: INK })
+  }))
+  put('Scan to verify', WIDTH - MARGIN - QR + (QR - sans.widthOfTextAtSize('Scan to verify', 7)) / 2, qrTop - QR - 10, sans, 7, SOFT)
 
   return doc.save()
 }

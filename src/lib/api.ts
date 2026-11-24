@@ -227,6 +227,24 @@ export async function fetchPostedGigs(userId: string): Promise<(Gig & { applican
   }))
 }
 
+export type ClientReview = Pick<Review, 'id' | 'rating' | 'comment' | 'created_at'> & {
+  worker: Pick<Profile, 'id' | 'display_name' | 'avatar_path'> | null
+}
+
+/** What anyone can see about a client: their open gigs and the reviews they have left (both public by RLS). */
+export async function fetchClientActivity(clientId: string): Promise<{ openGigs: Gig[]; reviews: ClientReview[] }> {
+  const [gigs, reviews] = await Promise.all([
+    supabase.from('gigs').select('*').eq('customer_id', clientId).eq('status', 'open').order('scheduled_date').limit(6),
+    supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, worker:profiles!reviews_worker_id_fkey(id, display_name, avatar_path)')
+      .eq('reviewer_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ])
+  return { openGigs: must(gigs) as Gig[], reviews: must(reviews) as unknown as ClientReview[] }
+}
+
 export async function fetchAssignedGigs(userId: string): Promise<Gig[]> {
   return must(
     await supabase.from('gigs').select('*').eq('assigned_worker_id', userId).order('scheduled_date', { ascending: false }),
@@ -634,7 +652,7 @@ export interface MoneyData {
 export async function fetchMoney(userId: string): Promise<MoneyData> {
   const [ledger, insights, gigs, items, reviews, prefs] = await Promise.all([
     supabase.from('financial_ledger_entries').select('*').eq('worker_id', userId).order('id').limit(5000),
-    supabase.from('ibanks_insights').select('*').eq('worker_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(20),
+    supabase.from('ibanks_insights').select('*').eq('worker_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(100),
     supabase.from('gigs').select('id, title, category, completed_at, customer_id').eq('assigned_worker_id', userId).eq('status', 'completed').limit(1000),
     supabase.from('portfolio_items').select('record_code').eq('worker_id', userId).limit(1000),
     supabase.from('reviews').select('rating').eq('worker_id', userId).limit(1000),

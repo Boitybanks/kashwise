@@ -204,7 +204,7 @@ function GoalWorkspace({ profile, data }: { profile: Profile; data: GoalResponse
             <fieldset><legend className="mb-2 text-sm font-semibold">Days I can work</legend><div id="weekdays" tabIndex={-1} className="flex flex-wrap gap-2" {...invalid('weekdays')}>{DAYS.map((day) => <button key={day.n} type="button" className="chip min-w-12 justify-center" aria-pressed={form.weekdays.includes(day.n)} onClick={() => set('weekdays', toggle(form.weekdays, day.n))}>{day.label}</button>)}</div>{errors.weekdays && <p id="weekdays-error" className="mt-2 text-sm text-clay-700">{errors.weekdays}</p>}</fieldset>
             <fieldset><legend className="mb-2 text-sm font-semibold">Time of day</legend><div id="time_windows" tabIndex={-1} className="flex flex-wrap gap-2" {...invalid('time_windows')}>{WINDOWS.map((window) => <button key={window.value} type="button" className="chip" aria-pressed={form.time_windows.includes(window.value)} onClick={() => set('time_windows', toggle(form.time_windows, window.value))}>{window.label}</button>)}</div>{errors.time_windows && <p id="time_windows-error" className="mt-2 text-sm text-clay-700">{errors.time_windows}</p>}</fieldset>
             <div className="border-t border-line pt-4"><label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={form.memory_opt_in} onChange={(e) => set('memory_opt_in', e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-brand-600" /><span><strong>Remember my preferences for next time</strong></span></label></div>
-            {startsNewPeriod && <p className="rounded-xl bg-sun-50 p-3 text-xs text-sun-700">Changing the amount or deadline starts a new earnings period when you update. Changing skills, area or availability keeps your existing period.</p>}
+            {startsNewPeriod && <p className="rounded-xl bg-sun-50 p-3 text-xs text-sun-700">A new amount or deadline starts a new period.</p>}
             {save.error && <p role="alert" className="rounded-xl bg-clay-50 p-3 text-sm text-clay-700">{friendlyError(save.error)}</p>}
             <Button type="submit" block loading={save.isPending}><Sparkles className="size-4" aria-hidden />{save.isPending ? 'Finding opportunities…' : data.goal ? 'Update my plan' : 'Build my earnings plan'}</Button>
           </fieldset>
@@ -215,13 +215,13 @@ function GoalWorkspace({ profile, data }: { profile: Profile; data: GoalResponse
         {notice && <p role="status" className="rounded-xl bg-brand-50 p-3 text-sm text-brand-300">{notice}</p>}
       </form>
       <section aria-label="Your earnings plan" aria-busy={save.isPending} className="space-y-4">
-        {changed && data.plan && <p className="rounded-xl bg-sun-50 p-3 text-sm text-sun-700" role="status">Your choices have changed. Update your plan to see new matches. The results below still use your last saved choices.</p>}
+        {changed && data.plan && <p className="rounded-xl bg-sun-50 p-3 text-sm text-sun-700" role="status">Update your plan to see new matches.</p>}
         {data.plan ? <>
           <Progress plan={data.plan} />
           <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-semibold">Your next opportunities</h2><Badge tone="brand">{data.plan.suggestions.length} suggested</Badge></div>
-          {data.plan.suggestions.length > 0 ? <>{data.plan.suggestions.map((gig) => <Opportunity key={gig.id} gig={gig} />)}</> : <EmptyState icon={<Target className="size-5" aria-hidden />} title="No suitable opportunities right now" action={<ButtonLink to="/discover" variant="secondary" size="sm">Browse all work</ButtonLink>}>Try a wider area, another available day or another skill. Your goal stays here while new jobs are posted.</EmptyState>}
+          {data.plan.suggestions.length > 0 ? <>{data.plan.suggestions.map((gig) => <Opportunity key={gig.id} gig={gig} />)}</> : <EmptyState icon={<Target className="size-5" aria-hidden />} title="No suitable opportunities right now" action={<ButtonLink to="/discover" variant="secondary" size="sm">Browse all work</ButtonLink>}>Try a wider area, another day or another skill.</EmptyState>}
           
-        </> : <Card className="flex min-h-96 flex-col items-center justify-center p-8 text-center"><span className="grid size-16 place-items-center rounded-2xl bg-brand-50 text-brand-500"><Target className="size-8" aria-hidden /></span><h2 className="mt-5 max-w-xs text-2xl font-semibold">A little extra income. A practical next step.</h2><p className="mt-3 max-w-sm text-sm text-muted">Set a goal to find current opportunities that fit your skills, area and availability.</p><ol className="mt-6 grid w-full grid-cols-3 gap-3 text-xs font-semibold text-brand-300"><li>1. Set your goal</li><li>2. Review matches</li><li>3. Choose to apply</li></ol></Card>}
+        </> : <Card className="flex min-h-96 flex-col items-center justify-center p-8 text-center"><span className="grid size-16 place-items-center rounded-2xl bg-brand-50 text-brand-500"><Target className="size-8" aria-hidden /></span><h2 className="mt-5 max-w-xs text-2xl font-semibold">A little extra income. A practical next step.</h2><p className="mt-3 max-w-sm text-sm text-muted">Set a goal to see jobs that fit you.</p><ol className="mt-6 grid w-full grid-cols-3 gap-3 text-xs font-semibold text-brand-300"><li>1. Set your goal</li><li>2. Review matches</li><li>3. Choose to apply</li></ol></Card>}
       </section>
     </div>
   )
@@ -234,7 +234,7 @@ export default function EarnGoal() {
   return (
     <div>
       <PageHeader title={<>Earn My Goal <span className="block text-sm font-semibold text-brand-400 sm:inline sm:pl-2">Powered by iBanks</span></>} action={<Link to="/money" className="text-sm font-semibold text-brand-500 hover:underline">My money <ArrowUpRight className="inline size-4" aria-hidden /></Link>} />
-      {loading ? <Spinner /> : !worker || !userId ? <EmptyState title="Make a plan with your worker profile" action={<ButtonLink to={userId ? '/profile' : '/login'} variant="secondary" size="sm">{userId ? 'View my profile' : 'Sign in'}</ButtonLink>}>Earnings plans are available to workers. Customers can post a gig to find local help.</EmptyState> : <>
+      {loading ? <Spinner /> : !worker || !userId ? <EmptyState title="Make a plan with your worker profile" action={<ButtonLink to={userId ? '/profile' : '/login'} variant="secondary" size="sm">{userId ? 'View my profile' : 'Sign in'}</ButtonLink>}>Earning goals are for workers.</EmptyState> : <>
         
         {q.isPending ? <Spinner label="Getting your earnings goal…" /> : q.error ? <ErrorState error={q.error} onRetry={() => q.refetch()} /> : q.data && <GoalWorkspace key={userId} profile={profile} data={q.data} />}
       </>}

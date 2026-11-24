@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth'
 import { CATEGORIES } from '../lib/categories'
 import { Button, EmptyState, ErrorState, PageHeader, Skeleton } from '../components/ui'
 import { GigCard } from '../components/gig/GigCard'
+import { matchReasons } from '../lib/ibanks/match'
 import { AreaSelect } from '../components/AreaSelect'
 
 export default function Discover() {
@@ -97,7 +98,7 @@ export default function Discover() {
       ) : (
         <>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {gigs.map((g) => <GigCard key={g.id} gig={g} />)}
+            {gigs.map((g) => <GigCard key={g.id} gig={g} reasons={isWorker ? matchReasons(g, profile) : []} />)}
           </div>
           <div className="mt-6 flex items-center justify-between gap-3">
             {gigs.some((g) => g.is_demo) ? <p className="text-xs text-muted">Sample listings</p> : <span />}
