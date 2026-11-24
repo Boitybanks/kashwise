@@ -19,7 +19,7 @@ import {
 } from '../../src/lib/skills-profile'
 import { json, optionalEnv, safe, seed, supabaseAs } from '../lib/shared'
 
-const MODEL = 'claude-opus-5'
+const MODEL = 'claude-opus-5-5'
 const MAX_RECORDS = 60
 
 async function writeWithClaude(apiKey: string, name: string, records: CredentialRecord[]): Promise<{ content: ProfileContent; model: string } | null> {

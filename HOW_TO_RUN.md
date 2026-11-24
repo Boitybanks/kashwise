@@ -143,8 +143,8 @@ npx --yes netlify-cli@27.14.2 deploy --prod --dir=dist --functions=netlify/funct
 
 The `.netlify/` folder created by linking is ignored by Git. When Git deployment is connected, its next production
 push supersedes a manual deployment; deploy the same branch/commit to avoid divergence. Verify the published deploy's
-functions, environment configuration and live routes after publishing. The existing hosted address is
-`https://sidegigs-codecraft.netlify.app`; the domain name alone does not indicate which app version is deployed.
+functions, environment configuration and live routes after publishing. The live KashWise app is `https://kashwise.netlify.app`. The older `https://sidegigs-codecraft.netlify.app`
+site still serves the pre-KashWise SideGigs build; do not demo from it.
 
 ## 7. Run the Expo mobile app
 
