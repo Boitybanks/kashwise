@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CredentialRecord } from '../src/lib/pq/credential'
-import { aiPrompt, bindToEvidence, isOutOfDate, summaryProfile, type SkillsProfile } from '../src/lib/skills-profile'
+import { aiPrompt, bindToEvidence, isOutOfDate, summaryProfile, withName, type SkillsProfile } from '../src/lib/skills-profile'
 
 const records: CredentialRecord[] = [
   { code: 'SG-A1', title: 'Paint spaza shop interior', category: 'painting', area: 'Soweto, Johannesburg', completed_at: '2026-07-26T10:00:00Z', rating: 5,
@@ -59,13 +59,20 @@ describe('summaryProfile (no AI)', () => {
 })
 
 describe('aiPrompt', () => {
-  it('sends job facts and reviews, but never the customers’ names', () => {
-    const { user } = aiPrompt('Sipho Dlamini', records)
+  it('sends job facts and reviews, but no names at all', () => {
+    const { user } = aiPrompt(records, 'Sipho Dlamini')
+    expect(user).toContain('{name} arrived early')
     expect(user).toContain('SG-A1')
     expect(user).toContain('fair price')
-    expect(user).toContain("Worker's first name: Sipho")
+    expect(user).not.toContain('Sipho')
     expect(user).not.toContain('Dudu N.')
     expect(user).not.toContain('Dlamini')
+  })
+
+  it('fills the first name in afterwards', () => {
+    const filled = withName({ summary: '{name} paints homes.', skills: [], habits: [{ label: 'Early', quote: '{name} arrived early', record: 'SG-A1' }] }, 'Sipho Dlamini')
+    expect(filled.summary).toBe('Sipho paints homes.')
+    expect(filled.habits[0].quote).toBe('Sipho arrived early')
   })
 })
 

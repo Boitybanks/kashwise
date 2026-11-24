@@ -35,14 +35,20 @@ Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise.ne
   Don't add features that control their hours or prices (that points to employment, LRA s200A).
 - Proof of income (`/wallet/statement`): `income_statement` RPC (released payments only) → `netlify/functions/income-statement.mts`
   signs it with ML-DSA-65. While payments are simulated every statement says "not valid proof of income"; never remove that.
+- AI (zero-budget beta, `netlify/lib/ai.ts`): Groq's free tier (`GROQ_API_KEY`, `openai/gpt-oss-20b`) is the only provider; no paid
+  failover. Every call is claimed first through `claim_ai_call` (persistent, atomic: 3 dictations and 1 AI CV per person per SA day,
+  400 requests / 150k tokens a day and 20 / 6k a minute globally, duplicates refused) and settled with `finish_ai_call`.
+  `AI_DISABLED=true` is the kill switch. Any failure (no key, quota, 429, timeout, missing migration) falls back to the non-AI path.
+  AI runs only when a person presses a button with AI ticked, never on page load. Never log prompts, transcripts or keys.
 - Skills profile (ProofScript): `netlify/functions/skills-profile.mts` writes it from customer-confirmed records only, signs it,
-  saves it via `save_skills_profile`. Pages show it only if the signature verifies. With the worker's consent and
-  `ANTHROPIC_API_KEY`, Claude (`claude-opus-5-5`) phrases it; `bindToEvidence` drops any skill without record codes and any
-  quote that isn't a review verbatim. No consent or key → a factual summary labelled "Summarised by SideGigs", never "AI".
-- Dictation (`src/lib/dictation.ts`, `netlify/functions/dictate.mts`, `DictatePanel`): speech to a draft bio, job post or earnings goal.
-  It only returns a draft; the normal forms and RPCs save it. Claude (`claude-opus-5-5`) phrases it with the person's consent and
-  `ANTHROPIC_API_KEY`; if that is missing or fails, the open-weight `openai/gpt-oss-120b` on Groq's free tier (`GROQ_API_KEY`) does. `finalize*` rejects any number or credential the person did not say and strips contact details. No consent or
-  key → the rules write it, labelled "Tidied up by KashWise", never "AI". The market rate (similar jobs, else `baselineFloor`) is a floor: clients posting a gig can offer more, not less. Enforced in the form only, not the database. Providers still set their own service prices.
+  saves it via `save_skills_profile`. Pages show it only if the signature verifies. It is reused (no AI call) while it covers exactly
+  the current records. With the worker's consent the AI phrases it from at most 25 records with names masked as `{name}` and contact
+  details removed; `bindToEvidence` drops any skill without record codes and any quote that isn't a review verbatim. No consent, or
+  no AI → a factual summary labelled "Summarised by KashWise", never "AI".
+- Dictation (`src/lib/dictation.ts`, `netlify/functions/dictate.mts`, `DictatePanel`): speech (the browser's own recognition; no audio
+  reaches KashWise) to a draft bio, job post or earnings goal. It only returns a draft; the normal forms and RPCs save it. With the
+  person's consent the AI phrases it (contact details stripped first). `finalize*` rejects any number or credential the person did not say and strips contact details. No consent or
+  AI → the rules write it, labelled "Tidied up by KashWise", never "AI". The market rate (similar jobs, else `baselineFloor`) is a floor: clients posting a gig can offer more, not less. Enforced in the form only, not the database. Providers still set their own service prices.
 - ProofScript CV (`/w/:id/cv`): renders from the signed work history and only after its signature verifies in the browser. The person's
   own headline and bio appear only in the separate "Personal statement" section (like any CV), never mixed into the verified sections. Workers download a real PDF (`cv-pdf.ts`); signed JSON and record codes stay off the front end.
 - Sign-up identity (`IdentityFields`, `identitySchema`, `private.check_identity_document`): SA ID, passport (issuing country + date of birth)

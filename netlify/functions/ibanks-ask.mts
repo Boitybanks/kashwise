@@ -6,7 +6,8 @@ import type { Config } from '@netlify/functions'
 import { acceptAiOutput, allowedAmounts, answerDeterministic } from '../../src/lib/ibanks/agent'
 import { buildAgentFacts, toEntries, type LedgerRow } from '../../src/lib/ibanks/facts'
 import type { Insight } from '../../src/lib/ibanks/orchestrator'
-import { rephraseWithClaude } from '../lib/ibanks-llm'
+import { aiKillSwitchOn, groqKey } from '../lib/ai'
+import { rephraseWithClaude, rephraseWithGroq } from '../lib/ibanks-llm'
 import { json, optionalEnv, safe, supabaseAs } from '../lib/shared'
 
 export default safe(async (req: Request) => {
@@ -52,12 +53,17 @@ export default safe(async (req: Request) => {
   })
   const { output, scenario } = answerDeterministic(question, facts)
 
+  // IBANKS_LLM_PROVIDER: none (default), groq (free tier, quota-limited) or anthropic (paid; only if set on purpose).
+  const provider = optionalEnv('IBANKS_LLM_PROVIDER')
   const apiKey = optionalEnv('ANTHROPIC_API_KEY')
-  const aiEnabled = optionalEnv('IBANKS_LLM_PROVIDER') === 'anthropic' && Boolean(apiKey) && prefs.data?.ai_explanations_opt_in === true
+  const providerReady = provider === 'groq' ? Boolean(groqKey()) : provider === 'anthropic' && Boolean(apiKey)
+  const aiEnabled = !aiKillSwitchOn() && providerReady && prefs.data?.ai_explanations_opt_in === true
   let final = output
   let model: string | null = null
   if (aiEnabled) {
-    const ai = await rephraseWithClaude(apiKey!, question, output, optionalEnv('IBANKS_LLM_MODEL') ?? 'claude-opus-5-5')
+    const ai = provider === 'groq'
+      ? await rephraseWithGroq(db, question, output)
+      : await rephraseWithClaude(apiKey!, question, output, optionalEnv('IBANKS_LLM_MODEL') ?? 'claude-opus-5-5')
     if (ai) {
       final = acceptAiOutput({ ...ai, answered_by: 'ai' }, output, allowedAmounts(facts, scenario))
       if (final.answered_by === 'ai') model = ai.model

@@ -627,7 +627,7 @@ export async function fetchSkillsProfile(workerId: string): Promise<StoredSkills
 }
 
 export async function writeSkillsProfile(useAi: boolean) {
-  return callFunction<{ signed: SignedDocument<SkillsProfile>; aiAvailable: boolean; aiUsed: boolean }>('/api/skills-profile', {
+  return callFunction<{ signed: SignedDocument<SkillsProfile>; aiAvailable: boolean; aiUsed: boolean; cached?: boolean; aiStatus?: string }>('/api/skills-profile', {
     method: 'POST',
     headers: await bearer(),
     body: JSON.stringify({ useAi }),

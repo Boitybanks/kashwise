@@ -20,6 +20,13 @@ interface DictatePanelProps<K extends DictationKind> {
 }
 
 /** Say it in your own words and language. KashWise writes it, you edit it. Nothing is saved until you press save. */
+function fallbackNote(status: DictationResult['ai_status']): string {
+  if (status === 'quota') return 'You’ve used today’s AI drafts, so this is a basic draft. More tomorrow.'
+  if (status === 'busy') return 'Your last request is still running, so this is a basic draft.'
+  if (status === 'rate_limited') return 'AI is busy right now, so this is a basic draft. Try again in a minute.'
+  return 'AI is unavailable right now, so this is a basic draft.'
+}
+
 export function DictatePanel<K extends DictationKind>({ kind, title, placeholder, action, onDraft, readBack, onUndo }: DictatePanelProps<K>) {
   const [language, setLanguage] = useState('en-ZA')
   const speech = useDictation(language)
@@ -32,6 +39,7 @@ export function DictatePanel<K extends DictationKind>({ kind, title, placeholder
   const seconds = useElapsed(speech.listening)
 
   async function write() {
+    if (busy) return // one request at a time
     if (speech.listening) speech.stop()
     setBusy(true)
     setError('')
@@ -99,7 +107,7 @@ export function DictatePanel<K extends DictationKind>({ kind, title, placeholder
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-start gap-2 text-xs text-muted">
           <input type="checkbox" className="mt-0.5 size-4 accent-brand-600" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />
-          <span>Write it with AI. Your words go to our AI and speech providers.</span>
+          <span>Write it with AI (3 a day). Your words go to our AI and speech providers.</span>
         </label>
         <Button size="sm" loading={busy} disabled={speech.transcript.trim().length < 3} onClick={write}>
           <WandSparkles className="size-4" aria-hidden /> {action}
@@ -108,7 +116,7 @@ export function DictatePanel<K extends DictationKind>({ kind, title, placeholder
 
       {result && (
         <div role="status" className="dictate-result">
-          {useAi && result.written_by === 'rules' && <p className="mb-2 text-sm text-sun-700">AI is unavailable right now, so this is a basic draft.</p>}
+          {useAi && result.written_by === 'rules' && <p className="mb-2 text-sm text-sun-700">{fallbackNote(result.ai_status)}</p>}
           <div className="flex flex-wrap gap-2">
             {voice.supported && (
               <Button size="sm" variant="secondary" onClick={() => voice.toggle(readBack(result.draft))}>
