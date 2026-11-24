@@ -45,6 +45,9 @@ Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise.ne
   key → the rules write it, labelled "Tidied up by KashWise", never "AI". The market rate (similar jobs, else `baselineFloor`) is a floor: clients posting a gig can offer more, not less. Enforced in the form only, not the database. Providers still set their own service prices.
 - ProofScript CV (`/w/:id/cv`): renders from the signed work history and only after its signature verifies in the browser. The person's
   own headline and bio appear only in the labelled "own words" panel, never as verified fact. Workers download a real PDF (`cv-pdf.ts`); signed JSON and record codes stay off the front end.
+- Sign-up identity (`IdentityFields`, `identitySchema`, `private.check_identity_document`): SA ID, passport (issuing country + date of birth)
+  or asylum / refugee permit (nationality + date of birth). Format-checked only, never verified with Home Affairs; never ask about
+  visa or work-permit status. One document = one account via the keyed hash; SA ID hashes are unchanged from before.
 - Portfolio records are created only by `confirm_completion`. "Verified" means customer-confirmed, never ID-verified.
 - Addresses/phones are X-Wing (ML-KEM-768+X25519) → AES-256-GCM envelopes encrypted in the browser; decrypted only in
   `netlify/functions/reveal-contact.mts` using the caller's JWT so RLS decides access. No service-role key anywhere.

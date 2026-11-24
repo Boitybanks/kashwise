@@ -4,7 +4,7 @@ import { IdCard } from 'lucide-react'
 import { fetchMyIdentity, saveIdentity } from '../../lib/api'
 import { friendlyError } from '../../lib/errors'
 import { formatDate } from '../../lib/format'
-import { EMPTY_IDENTITY, GENDER_LABEL, identitySchema, identityWarnings, withoutError, type IdentityDraft } from '../../lib/identity'
+import { DOCUMENT_LABEL, EMPTY_IDENTITY, GENDER_LABEL, identitySchema, identityWarnings, withoutError, type IdentityDraft } from '../../lib/identity'
 import { firstError } from '../../lib/validation'
 import { Button, Card } from '../ui'
 import { useToast } from '../ui/toast'
@@ -35,7 +35,7 @@ export function IdentityCard({ userId, displayName, readOnly }: { userId: string
       return
     }
     setErrors({})
-    const found = identityWarnings({ displayName, legalName: parsed.data.legal_name, gender: parsed.data.gender, idNumber: parsed.data.id_number })
+    const found = identityWarnings({ displayName, legalName: parsed.data.legal_name, gender: parsed.data.gender, idNumber: parsed.data.id_number, documentType: parsed.data.document_type })
     if (found.length && !confirmed) return setWarnings(found)
     setBusy(true)
     try {
@@ -59,14 +59,14 @@ export function IdentityCard({ userId, displayName, readOnly }: { userId: string
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><IdCard className="size-4" aria-hidden /></span>
         <div>
           <h2 className="font-semibold">Identity details (private)</h2>
-          <p className="text-sm text-muted">Your SA ID number, legal name, gender and home address. Encrypted, and never shown on your profile.</p>
+          <p className="text-sm text-muted">Your ID document (SA ID, passport or asylum / refugee permit), legal name, gender and home address. Encrypted, and never shown on your profile.</p>
         </div>
       </div>
       {readOnly ? (
         <p className="mt-3 text-sm text-muted">Shared demo accounts don’t hold identity details.</p>
       ) : saved && !editing ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-semibold">✅ Saved {formatDate(saved.created_at)} · Gender: {GENDER_LABEL[saved.gender]}</p>
+          <p className="text-sm font-semibold">✅ Saved {formatDate(saved.created_at)} · {DOCUMENT_LABEL[saved.document_type ?? 'sa_id']} · Gender: {GENDER_LABEL[saved.gender]}</p>
           <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Update details</Button>
         </div>
       ) : !editing && !q.isPending ? (

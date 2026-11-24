@@ -3,7 +3,10 @@ import { identitySchema, identityWarnings, nameMatchesLegalName } from '../src/l
 
 const valid = {
   legal_name: 'Sipho Themba Dlamini',
+  document_type: 'sa_id',
   id_number: '800101 5009 087',
+  country: '',
+  date_of_birth: '',
   gender: 'male',
   home_address: '12 Vilakazi Street, Orlando West, Soweto, 1804',
   consent: true,
@@ -14,6 +17,8 @@ describe('sign-up identity details', () => {
     const r = identitySchema.safeParse(valid)
     expect(r.success).toBe(true)
     expect(r.data?.id_number).toBe('8001015009087')
+    expect(r.data?.country).toBeNull()
+    expect(r.data?.date_of_birth).toBeNull()
   })
 
   it('rejects a bad ID number, under-18s, a missing gender, a short address and no consent', () => {
@@ -23,6 +28,35 @@ describe('sign-up identity details', () => {
     expect(identitySchema.safeParse({ ...valid, gender: 'other' }).success).toBe(false)
     expect(identitySchema.safeParse({ ...valid, home_address: 'Soweto' }).success).toBe(false)
     expect(identitySchema.safeParse({ ...valid, consent: false }).success).toBe(false)
+  })
+})
+
+describe('passport and asylum / refugee permit sign-ups', () => {
+  const passport = { ...valid, legal_name: 'Tendai Moyo', document_type: 'passport', id_number: 'fn 123-456', country: 'zw', date_of_birth: '1990-04-12' }
+  const issue = (input: object) => identitySchema.safeParse(input).error?.issues[0]
+
+  it('accepts a passport and normalises its number and country', () => {
+    const r = identitySchema.safeParse(passport)
+    expect(r.success).toBe(true)
+    expect(r.data).toMatchObject({ document_type: 'passport', id_number: 'FN123456', country: 'ZW', date_of_birth: '1990-04-12' })
+  })
+
+  it('accepts an asylum-seeker or refugee permit number', () => {
+    const r = identitySchema.safeParse({ ...passport, document_type: 'permit', id_number: 'jhb/004512/2023', country: 'CD' })
+    expect(r.data).toMatchObject({ document_type: 'permit', id_number: 'JHB/004512/2023', country: 'CD' })
+  })
+
+  it('asks for the right field when something is missing or wrong', () => {
+    expect(issue({ ...passport, country: '' })).toMatchObject({ path: ['country'] })
+    expect(issue({ ...passport, country: 'ZA' })).toMatchObject({ path: ['country'] })
+    expect(issue({ ...passport, date_of_birth: '' })).toMatchObject({ path: ['date_of_birth'] })
+    expect(issue({ ...passport, date_of_birth: '2015-06-01' })?.message).toMatch(/18 or older/)
+    expect(issue({ ...passport, id_number: 'A1' })).toMatchObject({ path: ['id_number'], message: expect.stringMatching(/passport number/) })
+    expect(issue({ ...passport, document_type: 'permit', id_number: 'ABCDEFG' })?.message).toMatch(/permit/)
+  })
+
+  it('does not run the SA ID gender check on a passport', () => {
+    expect(identityWarnings({ displayName: 'Tendai Moyo', legalName: 'Tendai Moyo', idNumber: '8001015009087', gender: 'female', documentType: 'passport' })).toEqual([])
   })
 })
 

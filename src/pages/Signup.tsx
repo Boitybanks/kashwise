@@ -43,16 +43,20 @@ export default function Signup() {
 
   async function submit(confirmed: boolean) {
     setFormError('')
-    const parsed = signupSchema.extend(identitySchema.shape).safeParse({ ...form, ...identity })
-    if (!parsed.success) {
-      const fields = firstError(parsed.error)
+    // I check the account and the identity document separately, so the document's cross-field rules
+    // (passport needs a country and birth date) still run, then show every problem at once.
+    const account = signupSchema.safeParse(form)
+    const doc = identitySchema.safeParse(identity)
+    if (!account.success || !doc.success) {
+      const fields = { ...(account.success ? {} : firstError(account.error)), ...(doc.success ? {} : firstError(doc.error)) }
       setErrors(fields)
       document.getElementById(Object.keys(fields)[0])?.focus()
       return
     }
+    const parsed = { data: { ...account.data, ...doc.data } }
     setErrors({})
     // Mismatches never block sign-up: the person fixes them or confirms the details are right.
-    const found = identityWarnings({ displayName: parsed.data.display_name, legalName: parsed.data.legal_name, gender: parsed.data.gender, idNumber: parsed.data.id_number })
+    const found = identityWarnings({ displayName: parsed.data.display_name, legalName: parsed.data.legal_name, gender: parsed.data.gender, idNumber: parsed.data.id_number, documentType: parsed.data.document_type })
     if (found.length && !confirmed) {
       setWarnings(found)
       return

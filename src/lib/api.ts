@@ -27,7 +27,7 @@ import type {
   WorkerStats,
 } from './types'
 import type { BookingInput, GigInput, ServiceInput, SignupInput } from './validation'
-import type { Gender, IdentityInput } from './identity'
+import type { DocumentType, Gender, IdentityInput } from './identity'
 import type { HandshakeStep } from './qr-scan'
 import { validatePdf } from './validation'
 import { toSquareJpeg, toUploadJpeg } from './image'
@@ -463,11 +463,26 @@ export async function fetchWorkId(gigId: string): Promise<string | null> {
 // ── Identity (sign-up) ─────────────────────────────────────────────────────
 async function encryptIdentity(userId: string, input: IdentityInput) {
   const [identity, address] = await Promise.all([
-    encryptForVault({ legal_name: input.legal_name, id_number: input.id_number }, identityAad(userId)),
+    // I keep the document type, country and birth date inside the encrypted envelope too, never in the clear.
+    encryptForVault({
+      legal_name: input.legal_name,
+      id_number: input.id_number,
+      document_type: input.document_type,
+      ...(input.country ? { country: input.country } : {}),
+      ...(input.date_of_birth ? { date_of_birth: input.date_of_birth } : {}),
+    }, identityAad(userId)),
     encryptForVault({ address: input.home_address }, homeAddressAad(userId)),
   ])
   return { identity, address }
 }
+
+/** The document fields the database re-checks. Sent over TLS; only ciphertext and a keyed hash are stored. */
+const documentArgs = (input: IdentityInput) => ({
+  p_id_number: input.id_number,
+  p_document_type: input.document_type,
+  p_document_country: input.country,
+  p_date_of_birth: input.date_of_birth,
+})
 
 /** The ID number is also sent in the clear over TLS so the database can re-check it; only ciphertext is stored. */
 export async function createAccount(input: SignupInput & IdentityInput) {
@@ -480,7 +495,7 @@ export async function createAccount(input: SignupInput & IdentityInput) {
     p_display_name: input.display_name,
     p_role: input.role,
     p_area: input.area_slug,
-    p_id_number: input.id_number,
+    ...documentArgs(input),
     p_gender: input.gender,
     p_identity_envelope: envelopes.identity,
     p_address_envelope: envelopes.address,
@@ -490,15 +505,15 @@ export async function createAccount(input: SignupInput & IdentityInput) {
 export async function saveIdentity(userId: string, input: IdentityInput) {
   const envelopes = await encryptIdentity(userId, input)
   await rpc<void>('save_identity', {
-    p_id_number: input.id_number,
+    ...documentArgs(input),
     p_gender: input.gender,
     p_identity_envelope: envelopes.identity,
     p_address_envelope: envelopes.address,
   })
 }
 
-export async function fetchMyIdentity(userId: string): Promise<{ gender: Gender; created_at: string } | null> {
-  return must(await supabase.from('profile_identity').select('gender, created_at').eq('id', userId).maybeSingle())
+export async function fetchMyIdentity(userId: string): Promise<{ gender: Gender; created_at: string; document_type?: DocumentType } | null> {
+  return must(await supabase.from('profile_identity').select('gender, created_at, document_type').eq('id', userId).maybeSingle())
 }
 
 // ── Password reset ─────────────────────────────────────────────────────────
