@@ -9,7 +9,7 @@ Source of truth: `.pipeline/idea.md` (brief), `docs/architecture.md` (design), `
 
 ## Stack
 React 19 + TypeScript + Vite + Tailwind v4 (`src/`), Supabase Postgres/Auth/Storage (project ref `plzbbfoteevfpqxspyxi`),
-Netlify hosting + Functions (`netlify/functions`, site `sidegigs-codecraft`).
+Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise.netlify.app (the older `sidegigs-codecraft` site is the pre-KashWise SideGigs build).
 
 ## Commands
 - `npm run dev` — Vite dev server (functions need `netlify dev`)
@@ -37,7 +37,7 @@ Netlify hosting + Functions (`netlify/functions`, site `sidegigs-codecraft`).
   signs it with ML-DSA-65. While payments are simulated every statement says "not valid proof of income"; never remove that.
 - Skills profile (ProofScript): `netlify/functions/skills-profile.mts` writes it from customer-confirmed records only, signs it,
   saves it via `save_skills_profile`. Pages show it only if the signature verifies. With the worker's consent and
-  `ANTHROPIC_API_KEY`, Claude (`claude-opus-5`) phrases it; `bindToEvidence` drops any skill without record codes and any
+  `ANTHROPIC_API_KEY`, Claude (`claude-opus-5-5`) phrases it; `bindToEvidence` drops any skill without record codes and any
   quote that isn't a review verbatim. No consent or key → a factual summary labelled "Summarised by SideGigs", never "AI".
 - Dictation (`src/lib/dictation.ts`, `netlify/functions/dictate.mts`, `DictatePanel`): speech to a draft bio, job post or earnings goal.
   It only returns a draft; the normal forms and RPCs save it. Claude (`claude-opus-5-5`) phrases it with the person's consent and

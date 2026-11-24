@@ -2,6 +2,8 @@
 
 **Earn it. Prove it. Grow it.**
 
+**Live app:** https://kashwise.netlify.app
+
 KashWise connects South Africans with local paid work, turns each client-confirmed job into a verified work record,
 and explains a worker's earnings with **iBanks**, an event-driven financial-intelligence engine built for irregular
 income. Built for the FNB App of the Year 2026 hackathon (Financial Inclusion and Money Confidence). KashWise is built
