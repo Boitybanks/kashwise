@@ -10,7 +10,7 @@ export function ClientTrack({ client }: { client: { id: string; display_name: st
   const q = useQuery({ queryKey: ['client-activity', client.id], queryFn: () => fetchClientActivity(client.id) })
   const reviews = q.data?.reviews ?? []
   const avg = reviews.length ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : null
-  const record = q.isPending ? '…' : reviews.length ? `Hired and reviewed ${reviews.length} provider${reviews.length === 1 ? '' : 's'} · gives ${avg}★ on average` : 'New client'
+  const record = q.isPending ? '…' : q.isError ? '' : reviews.length ? `Hired and reviewed ${reviews.length} provider${reviews.length === 1 ? '' : 's'} · gives ${avg}★ on average` : 'New client'
   return (
     <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-surface">
       <Link to={`/w/${client.id}`} className="group flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-surface-elevated">
