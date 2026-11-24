@@ -35,8 +35,7 @@ export function IdentityFields({ value, onChange, errors }: {
       <legend className="px-1 text-sm font-semibold">Your identity (private)</legend>
       <p className="flex gap-2 text-xs text-muted">
         <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-        Your document number, legal name and home address are encrypted on this device before they’re saved, and are never shown on
-        your profile. KashWise checks that the number is correctly formed; it can’t confirm it with Home Affairs.
+        Private. Never shown on your profile.
       </p>
       <fieldset>
         <legend className="mb-2 text-sm font-semibold">ID document</legend>

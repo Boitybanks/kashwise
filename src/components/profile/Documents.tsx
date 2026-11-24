@@ -97,7 +97,7 @@ export function DocumentsManager({ userId, readOnly }: { userId: string; readOnl
         <div>
           <h2 className="font-semibold">Documents (PDF)</h2>
           <p className="text-sm text-muted">
-            Qualifications, certificates, your ID or other paperwork. KashWise doesn’t check documents — anything you share is shown as uploaded by you.
+            Certificates and other paperwork. Shown as uploaded by you.
           </p>
         </div>
       </div>
@@ -143,7 +143,7 @@ export function DocumentsManager({ userId, readOnly }: { userId: string; readOnl
       {q.isError && <p role="alert" className="mt-3 text-sm text-clay-700">{friendlyError(q.error)}</p>}
 
       {readOnly ? (
-        <p className="mt-4 text-sm text-muted">Uploads are switched off on shared demo accounts.</p>
+        <p className="mt-4 text-sm text-muted">Uploads are off on sample accounts.</p>
       ) : docs.length >= MAX_DOCUMENTS ? (
         <p className="mt-4 text-sm text-muted">You’ve reached {MAX_DOCUMENTS} documents. Delete one to upload another.</p>
       ) : (

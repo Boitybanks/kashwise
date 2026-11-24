@@ -125,7 +125,7 @@ export default function ServiceDetail() {
       ) : !userId ? (
         <Card className="mt-4 space-y-3 p-5">
           <h2 className="text-lg font-semibold">Book {first}</h2>
-          <p className="text-sm text-muted">Create a free account to book. You choose the date, and your address stays encrypted until {first} needs it.</p>
+          <p className="text-sm text-muted">Create a free account to book. Your address stays private.</p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <ButtonLink to={`/signup?role=customer&next=${encodeURIComponent(`/services/${service.id}`)}`} size="lg">Join free to book</ButtonLink>
             <ButtonLink to={`/login?next=${encodeURIComponent(`/services/${service.id}`)}`} variant="secondary" size="lg">I have an account</ButtonLink>
@@ -155,7 +155,7 @@ export default function ServiceDetail() {
               <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
               <div>
                 <h2 className="text-lg font-semibold">Private details</h2>
-                <p className="text-sm text-muted">Stored encrypted. Only you and {first} can reveal them once the booking is made.</p>
+                <p className="text-sm text-muted">Private. Only you and {first} can see them.</p>
               </div>
             </div>
             <Field label="Street address" htmlFor="address" error={errors.address} optional>

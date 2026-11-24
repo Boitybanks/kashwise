@@ -187,8 +187,7 @@ export default function Wallet() {
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">Proof of income</h2>
             <p className="mt-1 text-sm text-muted">
-              No payslip? Get a statement of what you earned from confirmed jobs, month by month, signed by KashWise so a lender,
-              landlord or employer can check it is genuine.
+              No payslip? Get a statement of your earnings that anyone can check.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {STATEMENT_MONTHS.map((m) => (

@@ -4,7 +4,7 @@ import 'yet-another-react-lightbox/styles.css'
 import { evidenceUrl } from '../lib/supabase'
 
 /** A row of job photos that open full screen. */
-export function PhotoGallery({ paths, label, size = 'size-24' }: { paths: string[]; label: string; size?: string }) {
+export function PhotoGallery({ paths, label, size = 'size-28 sm:size-32' }: { paths: string[]; label: string; size?: string }) {
   const [index, setIndex] = useState(-1)
   if (paths.length === 0) return null
   return (

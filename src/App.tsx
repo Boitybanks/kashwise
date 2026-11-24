@@ -1,4 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
+import { InstallPrompt } from './components/InstallPrompt'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './lib/auth'
@@ -95,6 +96,7 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <RecoveryLinkRedirect />
+            <InstallPrompt />
             <Suspense fallback={<Spinner />}>
               <Routes>
                 <Route index element={<HomeRoute />} />

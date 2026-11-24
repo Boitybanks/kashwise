@@ -41,7 +41,7 @@ Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise.ne
   quote that isn't a review verbatim. No consent or key → a factual summary labelled "Summarised by SideGigs", never "AI".
 - Dictation (`src/lib/dictation.ts`, `netlify/functions/dictate.mts`, `DictatePanel`): speech to a draft bio, job post or earnings goal.
   It only returns a draft; the normal forms and RPCs save it. Claude (`claude-opus-5-5`) phrases it with the person's consent and
-  `ANTHROPIC_API_KEY`; `finalize*` rejects any number or credential the person did not say and strips contact details. No consent or
+  `ANTHROPIC_API_KEY`; if that is missing or fails, the open-weight `openai/gpt-oss-120b` on Groq's free tier (`GROQ_API_KEY`) does. `finalize*` rejects any number or credential the person did not say and strips contact details. No consent or
   key → the rules write it, labelled "Tidied up by KashWise", never "AI". The market rate (similar jobs, else `baselineFloor`) is a floor: clients posting a gig can offer more, not less. Enforced in the form only, not the database. Providers still set their own service prices.
 - ProofScript CV (`/w/:id/cv`): renders from the signed work history and only after its signature verifies in the browser. The person's
   own headline and bio appear only in the labelled "own words" panel, never as verified fact. Workers download a real PDF (`cv-pdf.ts`); signed JSON and record codes stay off the front end.

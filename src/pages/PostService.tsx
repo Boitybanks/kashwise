@@ -125,7 +125,7 @@ function ServiceForm({ existing }: { existing?: Service }) {
         </Card>
 
         {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
-        <p className="text-sm text-muted">You set your own price and choose your work. When a client books, the job appears in My work with their date, and you can decline before you start. Keep phone numbers out of the description.</p>
+        <p className="text-sm text-muted">You set your price and choose your work. Bookings appear in My work.</p>
         <Button type="submit" size="lg" block loading={busy}>{existing ? 'Save changes' : 'Publish service'}</Button>
       </form>
     </div>

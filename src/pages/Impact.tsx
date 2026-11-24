@@ -33,7 +33,7 @@ export default function Impact() {
             {[true, false].map((v) => (
               <button key={String(v)} type="button" aria-pressed={includeDemo === v} onClick={() => setIncludeDemo(v)}
                 className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${includeDemo === v ? 'bg-brand-600 text-white' : 'text-ink-soft'}`}>
-                {v ? 'All data (incl. demo)' : 'Real users only'}
+                {v ? 'All data' : 'Real users only'}
               </button>
             ))}
           </div>
@@ -41,8 +41,8 @@ export default function Impact() {
       />
       <p className="mb-5 rounded-xl bg-sun-50 px-4 py-3 text-sm text-sun-700 ring-1 ring-inset ring-sun-100">
         {includeDemo
-          ? 'Includes seeded demo accounts and activity from demo logins, clearly labelled across the app. Switch to “Real users only” to see genuine usage.'
-          : 'Only activity by real (non-demo) accounts.'}
+          ? 'Includes sample accounts.'
+          : 'Real accounts only.'}
       </p>
 
       {q.isPending ? (
@@ -51,11 +51,11 @@ export default function Impact() {
         <ErrorState error={q.error} onRetry={() => q.refetch()} />
       ) : m ? (
         <>
-          <Card className="kasi-pattern mb-4 bg-brand-700 p-6 text-white">
-            <p className="text-sm font-semibold text-brand-100">North Star — people who earned money because KashWise connected them to work</p>
+          <Card className="kasi-pattern mb-4 bg-deep p-6 text-white">
+            <p className="text-sm font-semibold text-white/80">North Star — people who earned money because KashWise connected them to work</p>
             <div className="mt-2 flex flex-wrap items-end gap-x-8 gap-y-2">
-              <p><span className="text-5xl font-semibold">{m.people_earned}</span> <span className="text-brand-100">people earned</span></p>
-              <p><span className="text-5xl font-semibold text-sun-400">{formatRand(m.income_earned_cents)}</span> <span className="text-brand-100">paid to workers</span></p>
+              <p><span className="text-5xl font-semibold">{m.people_earned}</span> <span className="text-white/80">people earned</span></p>
+              <p><span className="text-5xl font-semibold text-sun-400">{formatRand(m.income_earned_cents)}</span> <span className="text-white/80">paid to workers</span></p>
             </div>
           </Card>
 

@@ -44,7 +44,7 @@ export function IdentityCard({ userId, displayName, readOnly }: { userId: string
       setEditing(false)
       setDraft(EMPTY_IDENTITY)
       setWarnings([])
-      toast.show('Identity details encrypted and saved.')
+      toast.show('Identity details saved.')
     } catch (err) {
       toast.show(friendlyError(err), 'error')
     } finally {
@@ -59,7 +59,7 @@ export function IdentityCard({ userId, displayName, readOnly }: { userId: string
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><IdCard className="size-4" aria-hidden /></span>
         <div>
           <h2 className="font-semibold">Identity details (private)</h2>
-          <p className="text-sm text-muted">Your ID document (SA ID, passport or asylum / refugee permit), legal name, gender and home address. Encrypted, and never shown on your profile.</p>
+          <p className="text-sm text-muted">Private. Never shown on your profile.</p>
         </div>
       </div>
       {readOnly ? (

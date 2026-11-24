@@ -259,7 +259,7 @@ export default function GigDetail() {
             </label>
             <textarea id="apply-message" rows={3} maxLength={300} className="input" placeholder="e.g. I live nearby and did a similar job last month." value={message} onChange={(e) => setMessage(e.target.value)} />
             <Button type="submit" size="lg" block loading={applyBusy}>I’m interested in this job</Button>
-            <p className="text-sm text-muted">Applying is free. Check that the date, area and payout work for you. The customer reviews your profile before choosing a worker; applying does not book the job.</p>
+            <p className="text-sm text-muted">Applying is free. The customer picks who gets the job.</p>
             <Link to={`/profile?welcome=1&next=${encodeURIComponent(`/gigs/${gig.id}`)}`} className="inline-block text-sm font-semibold text-brand-500 underline">Improve your profile before applying</Link>
           </form>
         )}
@@ -359,7 +359,7 @@ export default function GigDetail() {
             <BadgeCheck className="size-6 shrink-0" aria-hidden />
             <span className="flex-1">
               <span className="block font-semibold">Verified record added</span>
-              <span className="block text-sm text-brand-50">{viewer === 'assigned_worker' ? 'Now on your portfolio — tap to see and share it.' : `Added to ${workerFirst}’s portfolio.`}</span>
+              <span className="block text-sm text-white/85">{viewer === 'assigned_worker' ? 'Now on your portfolio — tap to see and share it.' : `Added to ${workerFirst}’s portfolio.`}</span>
             </span>
           </Link>
         )}

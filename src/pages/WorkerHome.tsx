@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, BadgeCheck, Compass, MapPin, PlusCircle, ShieldCheck, TrendingUp } from 'lucide-react'
 import { discoverGigs, fetchWorkerStats } from '../lib/api'
@@ -38,6 +38,9 @@ export default function WorkerHome() {
   const availableGigs = useMemo(() => (gigsQ.data ?? []).slice(0, 3), [gigsQ.data])
   const totalNearby = gigsQ.data?.length ?? 0
 
+  // Clients have their own home: the gigs they posted.
+  if (profile && profile.role !== 'worker') return <Navigate to="/my-gigs" replace />
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 pb-12">
       {/* ── 1. Top Header: Greeting + Location ── */}
@@ -69,12 +72,14 @@ export default function WorkerHome() {
         <Card className="relative overflow-hidden border border-line bg-surface p-5 sm:p-6">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-sun-300 bg-sun-50 px-2.5 py-0.5 text-xs font-semibold text-gold-600">
-                  <BadgeCheck className="size-3.5 fill-gold-500/20 text-gold-600" aria-hidden />
-                  ProofScript Verified
-                </span>
-              </div>
+              {Boolean(stats?.completed) && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-sun-300 bg-sun-50 px-2.5 py-0.5 text-xs font-semibold text-gold-600">
+                    <BadgeCheck className="size-3.5 fill-gold-500/20 text-gold-600" aria-hidden />
+                    ProofScript Verified
+                  </span>
+                </div>
+              )}
               <h3 className="text-lg font-semibold text-ink">
                 Your ProofScript reputation
               </h3>

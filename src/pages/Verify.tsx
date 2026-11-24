@@ -54,7 +54,7 @@ export default function Verify() {
           Verification happens locally using KashWise’s public key — nothing is uploaded.
         </p>
         <label htmlFor="record-file" className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line p-6 font-semibold text-ink-soft hover:border-brand-200">
-          <FileJson className="size-5" aria-hidden /> Choose a KashWise file (.json)
+          <FileJson className="size-5" aria-hidden /> Choose a KashWise file
         </label>
         <input id="record-file" type="file" accept="application/json,.json" className="sr-only" onChange={async (e) => {
           const f = e.target.files?.[0]
@@ -65,7 +65,7 @@ export default function Verify() {
         }} />
         <details className="mt-3">
           <summary className="cursor-pointer text-sm font-semibold text-brand-500">Or paste the record</summary>
-          <label htmlFor="record-text" className="sr-only">Record JSON</label>
+          <label htmlFor="record-text" className="sr-only">Record</label>
           <textarea id="record-text" rows={6} className="input mt-2 font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} />
           <Button className="mt-2" size="sm" loading={busy} disabled={!text.trim()} onClick={() => run(text)}>Verify</Button>
         </details>
@@ -83,7 +83,7 @@ export default function Verify() {
           <ShieldCheck className="size-7 shrink-0" aria-hidden />
           <div>
             <p className="text-lg font-semibold">Genuine KashWise {st ? 'income statement' : sp ? 'skills profile' : 'record'}</p>
-            <p className="text-sm text-brand-50">Signature valid · issued {formatDate(doc.issued_at)} · unchanged since signing.</p>
+            <p className="text-sm text-white/85">Genuine · issued {formatDate(doc.issued_at)}</p>
           </div>
         </div>
       )}

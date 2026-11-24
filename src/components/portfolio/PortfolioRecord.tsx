@@ -82,16 +82,16 @@ export function PortfolioRecord({ item, isOwner, highlighted }: { item: Portfoli
               <div className="flex flex-wrap items-start gap-2">
                 {isOwner ? item.evidence_paths.map((p) => (
                   <div key={p} className="relative">
-                    <img src={evidenceUrl(p)} alt={`After photo for ${item.title}`} loading="lazy" className="size-24 rounded-lg object-cover ring-1 ring-line" />
-                    <button type="button" onClick={() => onRemove(p)} aria-label="Remove photo" className="absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-surface-elevated text-clay-700 shadow ring-1 ring-line">
+                    <img src={evidenceUrl(p)} alt={`After photo for ${item.title}`} loading="lazy" className="size-28 rounded-lg object-cover ring-1 ring-line sm:size-32" />
+                    {!p.startsWith('/samples/') && <button type="button" onClick={() => onRemove(p)} aria-label="Remove photo" className="absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-surface-elevated text-clay-700 shadow ring-1 ring-line">
                       <Trash2 className="size-3.5" aria-hidden />
-                    </button>
+                    </button>}
                   </div>
                 )) : <PhotoGallery paths={item.evidence_paths} label="After" />}
                 {isOwner && item.evidence_paths.length < 6 && (
                   <>
                     <input ref={fileRef} type="file" accept="image/*" className="sr-only" id={`ev-${item.id}`} onChange={(e) => onFile(e.target.files?.[0])} />
-                    <label htmlFor={`ev-${item.id}`} className={`grid size-24 cursor-pointer place-items-center rounded-lg border border-dashed border-line text-center text-xs text-muted hover:border-brand-200 hover:text-ink ${busy ? 'animate-pulse' : ''}`}>
+                    <label htmlFor={`ev-${item.id}`} className={`grid size-28 cursor-pointer sm:size-32 place-items-center rounded-lg border border-dashed border-line text-center text-xs text-muted hover:border-brand-200 hover:text-ink ${busy ? 'animate-pulse' : ''}`}>
                       <span><Camera className="mx-auto mb-1 size-5" aria-hidden />{busy ? 'Uploading…' : 'Add photo'}</span>
                     </label>
                   </>

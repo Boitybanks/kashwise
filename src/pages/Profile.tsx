@@ -194,7 +194,7 @@ function ProfileForm() {
             <div>
               <h2 className="font-semibold">Phone number (private)</h2>
               <p className="text-sm text-muted">
-                Stored encrypted and shared through the gig’s contact panel only after you are matched. Your phone number is never shown on your public profile.
+                Private. Shared only with your match.
               </p>
             </div>
           </div>

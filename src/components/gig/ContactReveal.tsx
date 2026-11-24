@@ -30,7 +30,7 @@ export function ContactReveal({ gigId, onRevealed }: { gigId: string; onRevealed
         <ShieldCheck className="size-5" aria-hidden /> Private contact details
       </p>
       <p className="mt-1 text-xs text-brand-300/80">
-        Stored encrypted (ML-KEM-768 + X25519 → AES-256-GCM). Only you and your matched partner can open them. Opening is logged.
+        Private. Only you and your match can see them.
       </p>
       {!data ? (
         <Button variant="secondary" size="sm" className="mt-3" loading={busy} onClick={reveal}>

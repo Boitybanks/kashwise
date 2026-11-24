@@ -402,8 +402,8 @@ export default function Money() {
         Payments are simulated for now. No real money moves.
       </p>
 
-      <Link to="/money/earn-goal" className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900 hover:bg-brand-100">
-        <span><strong className="block">Earn My Goal</strong><span className="text-sm">Set an income target. Find nearby work that fits your skills and time.</span></span>
+      <Link to="/money/earn-goal" className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 text-ink hover:bg-brand-100">
+        <span><strong className="block">Earn My Goal</strong><span className="text-sm text-ink-soft">Set an income target. Find nearby work that fits your skills and time.</span></span>
         <span aria-hidden>→</span>
       </Link>
 

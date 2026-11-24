@@ -68,7 +68,7 @@ export default function MyServices() {
         <ErrorState error={q.error} onRetry={() => q.refetch()} />
       ) : services.length === 0 ? (
         <EmptyState icon={<Store className="size-5" aria-hidden />} title="No services listed yet" action={<ButtonLink to="/services/new">List your first service</ButtonLink>}>
-          List something you do often — a haircut, a garden clean-up, a maths lesson — and clients nearby can book it without posting a gig.
+          List something you do often so clients nearby can book it.
         </EmptyState>
       ) : (
         <ul className="space-y-3">{services.map((s) => <li key={s.id}><ServiceRow service={s} /></li>)}</ul>

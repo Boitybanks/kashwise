@@ -247,7 +247,7 @@ function validDate(value: string | null, today: string, maxDays: number): string
   return value >= today && value <= addDays(today, maxDays) ? value : null
 }
 
-// Starting labour rates per category when KashWise has too few similar jobs to go by. Review these against real pricing.
+// Industry-estimated starting labour rates per category, used until KashWise has enough similar jobs to go by.
 const BASELINE_FLOOR: Record<string, number> = {
   cleaning: 300, gardening: 300, tutoring: 200, 'hair-beauty': 250, repairs: 400, painting: 500,
   catering: 400, photography: 600, moving: 400, 'tech-support': 300, automotive: 500, other: 250,
@@ -318,7 +318,9 @@ export function rulesJob(transcript: string, guides: PriceGuide[], today: string
   const need = clean.match(/\b(?:help(?: me)? (?:with|to)|someone (?:who can|to)|somebody (?:who can|to)|person (?:who can|to)|need (?:someone to|help with)?)\s+([^.,!?]{4,70})/i)?.[1]?.trim()
   const titleText = need ? need.split(/\s+(?:and|for|because)\s+/i)[0].replace(/^(?:someone|somebody)\s+who(?:'s| is)\s+going\s+to\s+/i, '').replace(/\b(today|tomorrow|this (?:morning|afternoon|evening|week)|on (?:mon|tues|wednes|thurs|fri|satur|sun)day)\b.*$/i, '').replace(/\bmy\b/gi, 'the').trim() : ''
   const title = clip(titleText.length >= 5 ? titleText.charAt(0).toUpperCase() + titleText.slice(1) : `${categoryLabel(category)} help needed`, 80)
-  const said = tidySentences(clean)
+  const said = tidySentences(clean
+    .replace(/^\s*(?:hey|hi|hello|okay|ok|sawubona|howzit)\b[,.]?\s*/i, '')
+    .replace(/^i (?:need|want|am looking for|'m looking for)\s+(?:help with\s+)?(?:someone|somebody|a person)\s+(?:who(?:'s| is) going to|who can|to)\s+/i, 'Looking for someone to '))
   return {
     title,
     category,

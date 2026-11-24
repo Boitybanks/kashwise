@@ -194,3 +194,10 @@ describe('without AI', () => {
     expect((draftByRules('goal', 'make R100 today', [], TODAY) as GoalDraft).target_rands).toBe(100)
   })
 })
+
+describe('rulesJob wording', () => {
+  it('drops the spoken greeting and opening', () => {
+    const job = rulesJob("hey I need help with someone who's going to mount my TV", [], '2026-11-02')
+    expect(job.description).toBe('Looking for someone to mount my TV.')
+  })
+})

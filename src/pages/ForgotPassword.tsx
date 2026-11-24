@@ -19,7 +19,7 @@ export default function ForgotPassword() {
     const parsed = emailSchema.safeParse(email)
     if (!parsed.success) return setError(parsed.error.issues[0].message)
     if (Object.values(DEMO_ACCOUNTS).some((a) => a.email === parsed.data)) {
-      return setError('Demo account passwords can’t be changed. Use the demo buttons on the sign-in page instead.')
+      return setError('Sample account passwords can’t be changed.')
     }
     setError('')
     setBusy(true)

@@ -15,6 +15,7 @@ export const AVATAR_BUCKET = 'avatars'
 export const DOCUMENT_BUCKET = 'documents'
 
 export function evidenceUrl(path: string): string {
+  if (path.startsWith('/samples/')) return path // Sample gallery photos ship with the site.
   return supabase.storage.from(EVIDENCE_BUCKET).getPublicUrl(path).data.publicUrl
 }
 

@@ -111,7 +111,7 @@ export function IdentityVerification({ onComplete, minimumAge = 18 }: {
       </form>}
       {step === 'camera' && <div className="space-y-4">
         <h2 ref={heading} tabIndex={-1} className="text-2xl font-semibold">Try a selfie, if you like</h2>
-        <p className="text-sm text-muted">ID format checked. The ID and birth-date inputs have been cleared. Your browser will ask permission only when you open the camera. A captured photo stays in this page’s memory and is discarded when you leave.</p>
+        <p className="text-sm text-muted">ID format checked. Nothing is uploaded.</p>
         {photo ? <img src={photo} alt="Your temporary selfie preview" className="aspect-square w-full rounded-lg object-cover" /> : camera === 'live' ? <video ref={video} autoPlay playsInline muted aria-label="Live camera preview" className="aspect-square w-full -scale-x-100 rounded-lg bg-ink object-cover" /> : <div className="grid min-h-44 place-items-center rounded-lg bg-brand-50 p-5 text-center text-brand-300"><Camera size={40} aria-hidden /><p>{camera === 'starting' ? 'Waiting for camera permission…' : 'Camera is off. No photo has been captured.'}</p></div>}
         {camera === 'live' ? <Button block onClick={snap}>Snap selfie</Button> : <Button block disabled={camera === 'starting'} onClick={() => void openCamera()}>{photo ? <><RefreshCw size={16} /> Retake selfie</> : camera === 'error' ? 'Try camera again' : 'Open camera'}</Button>}
         {photo && <Button block onClick={proceed}>Use this photo for the demo</Button>}
@@ -132,6 +132,6 @@ export function IdentityVerification({ onComplete, minimumAge = 18 }: {
       </div>}
       {error && <p id="identity-error" role="alert" className="mt-4 text-sm font-medium text-clay-700">{error}</p>}
     </div>
-    <p className="border-t border-line p-4 text-xs text-muted">Optional device-only demo. No ID number, birth date or selfie is uploaded or saved. Leaving this page clears the demo. You can use KashWise without completing it.</p>
+    <p className="border-t border-line p-4 text-xs text-muted">Optional demo. Nothing is saved.</p>
   </section>
 }

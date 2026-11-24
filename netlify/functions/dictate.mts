@@ -5,6 +5,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
 import type { Config } from '@netlify/functions'
+import { z } from 'zod'
 import {
   DICTATION_KINDS,
   DICTATION_SCHEMA,
@@ -69,6 +70,46 @@ async function writeWithClaude(apiKey: string, kind: DictationKind, transcript: 
   }
 }
 
+// Free fallback: an open-weight model on Groq's free tier (GROQ_API_KEY), used when Claude is not set up or fails.
+// Its output passes the same finalizeAi checks as Claude's.
+const GROQ_MODEL = 'openai/gpt-oss-120b'
+
+async function writeWithGroq(apiKey: string, kind: DictationKind, transcript: string, guides: PriceGuide[], today: string) {
+  const { system, user } = dictationPrompt(kind, transcript, guides, today)
+  const schema = z.toJSONSchema(DICTATION_SCHEMA[kind], { target: 'draft-7' })
+  delete (schema as { $schema?: string }).$schema
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
+      signal: AbortSignal.timeout(25_000),
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        max_completion_tokens: 4000,
+        reasoning_effort: 'low',
+        response_format: { type: 'json_schema', json_schema: { name: `${kind}_draft`, strict: true, schema } },
+        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      }),
+    })
+    if (res.status === 401 || res.status === 403) {
+      console.error(`dictation: GROQ_API_KEY was rejected (${res.status})`)
+      return { draft: null, status: 'auth' as const }
+    }
+    if (res.status === 429) return { draft: null, status: 'rate_limited' as const }
+    if (!res.ok) {
+      console.error(`dictation: Groq API error ${res.status}: ${(await res.text()).slice(0, 300)}`)
+      return { draft: null, status: 'api_error' as const }
+    }
+    const body = (await res.json()) as { choices?: { message?: { content?: string } }[] }
+    const draft = finalizeAi(kind, JSON.parse(body.choices?.[0]?.message?.content ?? 'null'), transcript, guides, today)
+    if (!draft) console.error('dictation: the draft failed the checks')
+    return { draft, status: draft ? 'ok' as const : 'rejected' as const }
+  } catch (e) {
+    console.error('dictation: Groq call failed:', (e as Error).message)
+    return { draft: null, status: 'failed' as const }
+  }
+}
+
 export default safe(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
   const jwt = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? ''
@@ -104,13 +145,15 @@ export default safe(async (req: Request) => {
   }
 
   const apiKey = optionalEnv('ANTHROPIC_API_KEY')
-  const ai = useAi && apiKey ? await writeWithClaude(apiKey, kind, transcript, guides, today) : null
+  const groqKey = optionalEnv('GROQ_API_KEY')
+  let ai = useAi && apiKey ? await writeWithClaude(apiKey, kind, transcript, guides, today) : null
+  if (useAi && groqKey && !ai?.draft) ai = await writeWithGroq(groqKey, kind, transcript, guides, today)
   const draft = ai?.draft ?? null
   const result: DictationResult = {
     kind,
     draft: draft ?? draftByRules(kind, transcript, guides, today),
     written_by: draft ? 'ai' : 'rules',
-    ai_available: Boolean(apiKey),
+    ai_available: Boolean(apiKey || groqKey),
     ai_status: ai?.status ?? 'off',
   }
   return json(result)
