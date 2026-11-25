@@ -13,7 +13,7 @@ import { CategoryIcon } from '../components/CategoryIcon'
 
 function WorkerRow({ w }: { w: WorkerHit }) {
   return (
-    <li>
+    <li className="min-w-0">
       <Link to={`/w/${w.id}`} className="group flex min-h-16 items-center gap-3 rounded-2xl border border-line bg-surface p-3 hover:border-brand-200">
         <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} />
         <span className="min-w-0 flex-1">
