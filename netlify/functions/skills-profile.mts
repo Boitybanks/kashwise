@@ -1,10 +1,5 @@
-// POST /api/skills-profile { useAi }  (Authorization: Bearer <Supabase access token>)
-// Writes the caller's skills profile from their customer-confirmed records, signs it with ML-DSA-65 and saves it
-// through the save_skills_profile RPC (as the caller). With the worker's consent and an ANTHROPIC_API_KEY, Claude
-// phrases it; every skill and quote is then checked against the records (bindToEvidence) before signing.
-// Without consent or a key, KashWise assembles a factual summary instead, and the profile says so.
-import Anthropic from '@anthropic-ai/sdk'
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+import { z } from 'zod'
+import { requestGroq, GROQ_MODEL } from '../lib/groq'
 import type { Config } from '@netlify/functions'
 import { signDocument, type CredentialRecord } from '../../src/lib/pq/credential'
 import { SIGN_KID } from '../../src/lib/pq-public-keys'
@@ -19,32 +14,20 @@ import {
 } from '../../src/lib/skills-profile'
 import { json, optionalEnv, safe, seed, supabaseAs } from '../lib/shared'
 
-const MODEL = 'claude-opus-5-5'
 const MAX_RECORDS = 60
 
-async function writeWithClaude(apiKey: string, name: string, records: CredentialRecord[]): Promise<{ content: ProfileContent; model: string } | null> {
-  const client = new Anthropic({ apiKey, timeout: 45_000, maxRetries: 1 })
-  const { system, user } = aiPrompt(name, records)
-  try {
-    const response = await client.beta.messages.parse({
-      model: MODEL,
-      max_tokens: 4000,
-      // If the request is declined, the API re-runs it on a fallback model chosen for the refusal category.
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low', format: betaZodOutputFormat(aiProfileSchema) },
-      system,
-      messages: [{ role: 'user', content: user }],
-    })
-    if (response.stop_reason === 'refusal' || !response.parsed_output) return null
-    const content = bindToEvidence(response.parsed_output, records)
-    return content ? { content, model: response.model } : null
-  } catch (e) {
-    if (e instanceof Anthropic.RateLimitError) console.error('skills profile: Claude rate limited')
-    else if (e instanceof Anthropic.APIError) console.error(`skills profile: Claude API error ${e.status}`)
-    else console.error('skills profile: Claude call failed:', (e as Error).message)
-    return null
-  }
+async function writeWithGroq(apiKey: string, name: string, records: CredentialRecord[]): Promise<ProfileContent | null> {
+  const result = await requestGroq({
+    apiKey,
+    name: 'skills_profile',
+    schema: z.toJSONSchema(aiProfileSchema, { target: 'draft-7' }),
+    ...aiPrompt(name, records),
+    maxTokens: 4000,
+    timeoutMs: 45_000,
+  })
+  if (result.status !== 'ok') return null
+  const parsed = aiProfileSchema.safeParse(result.output)
+  return parsed.success ? bindToEvidence(parsed.data, records) : null
 }
 
 export default safe(async (req: Request) => {
@@ -97,9 +80,9 @@ export default safe(async (req: Request) => {
   }))
   const averageRating: number | null = stats?.avg_rating ?? null
 
-  const apiKey = optionalEnv('ANTHROPIC_API_KEY')
-  const ai = useAi && apiKey ? await writeWithClaude(apiKey, profile.display_name, records) : null
-  const content = ai?.content ?? summaryProfile(profile.display_name, records, averageRating)
+  const apiKey = optionalEnv('GROQ_API_KEY')
+  const ai = useAi && apiKey ? await writeWithGroq(apiKey, profile.display_name, records) : null
+  const content = ai ?? summaryProfile(profile.display_name, records, averageRating)
   if (!content) return json({ error: 'Could not write a skills profile yet.' }, 400)
 
   const doc: SkillsProfile = {
@@ -108,7 +91,7 @@ export default safe(async (req: Request) => {
     issuer: 'SideGigs',
     issued_at: new Date().toISOString(),
     written_by: ai ? 'ai' : 'summary',
-    model: ai?.model ?? null,
+    model: ai ? GROQ_MODEL : null,
     demo_data: Boolean(profile.is_demo) || items.some((i) => i.is_demo),
     worker: { id: profile.id, name: profile.display_name, area: areaName(profile.area_slug) },
     based_on: { records: records.length, codes: records.map((r) => r.code), average_rating: averageRating },

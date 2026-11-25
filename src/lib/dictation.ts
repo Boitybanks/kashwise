@@ -1,6 +1,6 @@
 // Speak it, KashWise writes it. A person talks (in the browser's speech engine, or types) and gets a formal bio, job post
 // or earnings goal to check and edit. Nothing is saved or published from here: the normal forms and RPCs still do that.
-// Claude phrases it when allowed; every draft then passes the same checks, so a draft cannot claim a number, a credential
+// Groq phrases it when allowed; every draft then passes the same checks, so a draft cannot claim a number, a credential
 // or a contact detail the person did not say. Without consent or a key, the rules below write it and the draft says so.
 import { z } from 'zod'
 import { CATEGORIES, categoryLabel, isCategory } from './categories'
@@ -351,7 +351,7 @@ export function draftByRules(kind: DictationKind, transcript: string, guides: Pr
   return rulesGoal(transcript, today)
 }
 
-// ── Asking Claude ──────────────────────────────────────────────────────────
+// ── Asking Groq ──────────────────────────────────────────────────────────
 const CATEGORY_LIST = CATEGORIES.map((c) => `${c.slug} (${c.label})`).join(', ')
 const SHARED = [
   'The person is speaking into a phone, often in a second language, possibly in isiZulu, isiXhosa, Sesotho, Setswana, Afrikaans or a mix. Write in clear, formal South African English, whatever language they used, so that someone with little schooling can have it read back to them and recognise what they said.',

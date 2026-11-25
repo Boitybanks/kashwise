@@ -1,12 +1,12 @@
 // POST /api/ibanks/ask { question }  (Authorization: Bearer <Supabase access token>)
 // Ask iBanks: reads ONLY the caller's own rows (their JWT, so RLS decides), computes facts deterministically and
-// answers from them. With the worker's opt-in and IBANKS_LLM_PROVIDER=anthropic + ANTHROPIC_API_KEY, Claude may
+// answers from them. With the worker's opt-in and IBANKS_LLM_PROVIDER=groq + GROQ_API_KEY, Groq may
 // re-phrase the answer; any re-phrasing that states an amount not in the facts is thrown away.
 import type { Config } from '@netlify/functions'
 import { acceptAiOutput, allowedAmounts, answerDeterministic } from '../../src/lib/ibanks/agent'
 import { buildAgentFacts, toEntries, type LedgerRow } from '../../src/lib/ibanks/facts'
 import type { Insight } from '../../src/lib/ibanks/orchestrator'
-import { rephraseWithClaude } from '../lib/ibanks-llm'
+import { rephraseWithGroq } from '../lib/ibanks-llm'
 import { json, optionalEnv, safe, supabaseAs } from '../lib/shared'
 
 export default safe(async (req: Request) => {
@@ -52,12 +52,12 @@ export default safe(async (req: Request) => {
   })
   const { output, scenario } = answerDeterministic(question, facts)
 
-  const apiKey = optionalEnv('ANTHROPIC_API_KEY')
-  const aiEnabled = optionalEnv('IBANKS_LLM_PROVIDER') === 'anthropic' && Boolean(apiKey) && prefs.data?.ai_explanations_opt_in === true
+  const apiKey = optionalEnv('GROQ_API_KEY')
+  const aiEnabled = optionalEnv('IBANKS_LLM_PROVIDER') === 'groq' && Boolean(apiKey) && prefs.data?.ai_explanations_opt_in === true
   let final = output
   let model: string | null = null
   if (aiEnabled) {
-    const ai = await rephraseWithClaude(apiKey!, question, output, optionalEnv('IBANKS_LLM_MODEL') ?? 'claude-opus-5-5')
+    const ai = await rephraseWithGroq(apiKey!, question, output)
     if (ai) {
       final = acceptAiOutput({ ...ai, answered_by: 'ai' }, output, allowedAmounts(facts, scenario))
       if (final.answered_by === 'ai') model = ai.model

@@ -24,7 +24,7 @@ export interface SkillsProfile {
   version: 1
   issuer: 'SideGigs'
   issued_at: string
-  /** 'ai' = phrased by Claude from the records; 'summary' = assembled by KashWise without AI. */
+  /** 'ai' = phrased by Groq from the records; 'summary' = assembled by KashWise without AI. */
   written_by: 'ai' | 'summary'
   model: string | null
   demo_data: boolean

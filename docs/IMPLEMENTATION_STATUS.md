@@ -54,7 +54,7 @@ Parallel thread workers time out on OneDrive ("Failed to start threads worker");
 
 | Feature | Status | Evidence |
 |---|---|---|
-| Dictated bio, job post and earnings goal (`/api/dictate`, `DictatePanel`) | PARTIAL | Rules and checks: `dictation.test.ts`. Built and run in the browser with scripted speech input. **Real microphone not tested on a phone. The Claude path has never run against the API**: no `ANTHROPIC_API_KEY` was available. Run `tests/dictation-prompt-eval.mts` once a key exists |
+| Dictated bio, job post and earnings goal (`/api/dictate`, `DictatePanel`) | PARTIAL | Rules and checks: `dictation.test.ts`. Built and run in the browser with scripted speech input. **Real microphone not tested on a phone. Live Groq generation remains to be verified** when a test account and deployed key are available. Run `tests/dictation-prompt-eval.mts` once a key exists |
 | isiZulu, isiXhosa, Afrikaans, Sesotho, Setswana speech | PARTIAL | Depends on the browser's speech service; an unsupported language shows a message and typing still works |
 | Price suggestion: said → similar KashWise jobs → labelled AI estimate | WORKING (rules) | `dictation.test.ts` |
 | iBanks read-out on Earn My Goal | WORKING | `proofscript-cv.test.tsx` |

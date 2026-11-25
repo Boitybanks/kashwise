@@ -45,8 +45,8 @@ service-role/secret key as the publishable key. `.env`, `.env.local` and `.netli
 | `PQ_SIGN_SEED` | Server functions only | Required for signed ProofScript records, skills profiles and statements. |
 | `IBANKS_PROVIDER_WEBHOOK_SECRET` | Server functions only | Required for the payment simulator, iBanks ingestion and scheduled outbox; same value as the Supabase Vault secret `ibanks_provider_webhook_secret`, at least 32 random characters. |
 | `PAYMENTS_MODE` | Server functions only | `sandbox` enables labelled simulated payments. Leave unset to disable the simulator. |
-| `IBANKS_LLM_PROVIDER` | Server functions only | Use `none` for rules-based iBanks without an AI API key. |
-| `ANTHROPIC_API_KEY` | Server functions only | Optional; only for configured, worker-approved AI rephrasing/skills profiles. |
+| `IBANKS_LLM_PROVIDER` | Server functions only | Use `none` for rules-based iBanks or `groq` for opt-in AI explanations. |
+| `GROQ_API_KEY` | Server functions only | Optional; used for opt-in dictation, skills profiles and enabled iBanks explanations. |
 | `GRAPHITI_SERVICE_URL`, `GRAPHITI_SERVICE_TOKEN` | Server functions only | Optional preference-memory service. Core goal planning works without it. |
 
 Retain the existing production PQ seeds. Replacing them can break decryption of existing contacts or verification

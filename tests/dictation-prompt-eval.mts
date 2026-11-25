@@ -1,7 +1,6 @@
-// Runs the real dictation prompts and checks through Claude, for when the prompts change. Not part of `npm test`: it calls
-// the model and spends money. Usage: ANTHROPIC_API_KEY=... npx tsx tests/dictation-prompt-eval.mts
-import Anthropic from '@anthropic-ai/sdk'
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+// Run explicitly with GROQ_API_KEY set. Each case consumes provider quota.
+import { requestGroq } from '../netlify/lib/groq'
+import { z } from 'zod'
 import { DICTATION_SCHEMA, dictationPrompt, finalizeAi, type DictationKind, type PriceGuide } from '../src/lib/dictation'
 
 const today = '2026-11-02'
@@ -16,16 +15,19 @@ const CASES: [DictationKind, string][] = [
   ['goal', 'Ngifuna ukwenza u-R1500 ngaphambi kwangoLwesihlanu, ngiyahlanza izindlu'],
 ]
 
-const client = new Anthropic()
+const apiKey = process.env.GROQ_API_KEY
+if (!apiKey) throw new Error('Set GROQ_API_KEY before running the live evaluation.')
 for (const [kind, transcript] of CASES) {
-  const { system, user } = dictationPrompt(kind, transcript, guides, today)
-  const response = await client.beta.messages.parse({
-    model: 'claude-opus-5-5',
-    max_tokens: 4000,
-    output_config: { effort: 'low', format: betaZodOutputFormat(DICTATION_SCHEMA[kind]) },
-    system,
-    messages: [{ role: 'user', content: user }],
+  const result = await requestGroq({
+    apiKey,
+    name: `${kind}_draft`,
+    schema: z.toJSONSchema(DICTATION_SCHEMA[kind], { target: 'draft-7' }),
+    ...dictationPrompt(kind, transcript, guides, today),
+    maxTokens: 4000,
+    timeoutMs: 25_000,
   })
-  const final = response.parsed_output ? finalizeAi(kind, response.parsed_output, transcript, guides, today) : null
-  console.log(JSON.stringify({ kind, transcript, raw: response.parsed_output, final, passed_checks: final !== null }, null, 2))
+  const parsed = result.status === 'ok' ? DICTATION_SCHEMA[kind].safeParse(result.output) : null
+  const final = parsed?.success ? finalizeAi(kind, parsed.data, transcript, guides, today) : null
+  console.log(JSON.stringify({ kind, status: result.status, passed_checks: final !== null }))
+  if (!final) process.exitCode = 1
 }
