@@ -94,6 +94,29 @@ export async function discoverWorkers(params: { area?: string | null; skill?: st
   })
 }
 
+export type WorkerHit = Pick<Profile, 'id' | 'display_name' | 'headline' | 'area_slug' | 'skills' | 'avatar_path' | 'is_demo'>
+
+/** Find a worker by name (profiles are public). Wildcards typed by the person are treated as plain text. */
+export async function searchWorkersByName(query: string): Promise<WorkerHit[]> {
+  const q = query.trim().replace(/[\\%_]/g, (c) => `\\${c}`).slice(0, 60)
+  if (q.length < 2) return []
+  return must(
+    await supabase.from('profiles').select('id, display_name, headline, area_slug, skills, avatar_path, is_demo')
+      .eq('role', 'worker').ilike('display_name', `%${q}%`).order('display_name').limit(20),
+  ) as WorkerHit[]
+}
+
+/** Workers this client has hired before, most recent first (their own gigs, so RLS allows it). */
+export async function fetchHiredBefore(clientId: string): Promise<WorkerHit[]> {
+  const rows = must(
+    await supabase.from('gigs')
+      .select('created_at, worker:profiles!gigs_assigned_worker_id_fkey(id, display_name, headline, area_slug, skills, avatar_path, is_demo)')
+      .eq('customer_id', clientId).not('assigned_worker_id', 'is', null).order('created_at', { ascending: false }).limit(50),
+  ) as unknown as { worker: WorkerHit | null }[]
+  const seen = new Set<string>()
+  return rows.flatMap((r) => (r.worker && !seen.has(r.worker.id) && seen.add(r.worker.id) ? [r.worker] : [])).slice(0, 8)
+}
+
 // ── Profiles & portfolio ───────────────────────────────────────────────────
 export async function fetchProfile(id: string): Promise<Profile | null> {
   return must(await supabase.from('profiles').select(PUBLIC_PROFILE).eq('id', id).maybeSingle())

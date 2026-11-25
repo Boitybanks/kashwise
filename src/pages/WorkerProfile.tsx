@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { BadgeCheck, CalendarCheck, ChevronRight, Copy, Eye, EyeOff, FileBadge, MapPin, QrCode as QrIcon, Share2, Star } from 'lucide-react'
-import { fetchClientActivity, fetchPortfolio, fetchProfile, fetchWorkerStats } from '../lib/api'
+import { discoverServices, fetchClientActivity, fetchPortfolio, fetchProfile, fetchWorkerStats } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryLabel } from '../lib/categories'
 import { formatDay, formatMonthYear } from '../lib/format'
@@ -154,6 +154,7 @@ export default function WorkerProfile() {
   const profileQ = useQuery({ queryKey: ['profile', id], queryFn: () => fetchProfile(id) })
   const statsQ = useQuery({ queryKey: ['worker-stats', id], queryFn: () => fetchWorkerStats(id) })
   const portfolioQ = useQuery({ queryKey: ['portfolio', id], queryFn: () => fetchPortfolio(id) })
+  const servicesQ = useQuery({ queryKey: ['services', 'worker', id], queryFn: () => discoverServices({ worker: id, page: 0 }), enabled: profileQ.data?.role === 'worker' })
   const clientQ = useQuery({ queryKey: ['client-activity', id], queryFn: () => fetchClientActivity(id), enabled: profileQ.data?.role === 'customer' })
   const highlighted = hash ? decodeURIComponent(hash.slice(1)) : ''
 
@@ -252,7 +253,10 @@ export default function WorkerProfile() {
             </p>
           </div>
           <div className="flex w-full flex-wrap justify-center gap-2 sm:w-auto sm:flex-col sm:items-stretch">
-            {isWorker && <ButtonLink to={`/w/${p.id}/cv`}><FileBadge className="size-4" aria-hidden /> View verified CV</ButtonLink>}
+            {isWorker && !isOwner && (servicesQ.data?.length
+              ? <Button onClick={() => document.getElementById('services-h')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Book {first}</Button>
+              : <ButtonLink to="/gigs/new">Post a job</ButtonLink>)}
+            {isWorker && <ButtonLink to={`/w/${p.id}/cv`} variant={isOwner ? 'primary' : 'secondary'}><FileBadge className="size-4" aria-hidden /> View verified CV</ButtonLink>}
             <Button variant="secondary" onClick={share}><Share2 className="size-4" aria-hidden /> {isWorker ? 'Share ProofScript' : 'Share profile'}</Button>
             {isWorker && (
               <Button variant="sun" className="lg:hidden" aria-expanded={showQr} aria-controls="passport-qr" onClick={() => setShowQr((v) => !v)}>

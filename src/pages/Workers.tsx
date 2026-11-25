@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { BadgeCheck, MapPin, Star, Users } from 'lucide-react'
-import { discoverWorkers, PAGE_SIZE } from '../lib/api'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { BadgeCheck, MapPin, Search, Star, Users } from 'lucide-react'
+import { discoverWorkers, fetchHiredBefore, PAGE_SIZE, searchWorkersByName, type WorkerHit } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORIES, categoryLabel } from '../lib/categories'
 import { formatDistance } from '../lib/geo'
@@ -11,8 +11,32 @@ import { avatarUrl } from '../lib/supabase'
 import { AreaSelect } from '../components/AreaSelect'
 import { CategoryIcon } from '../components/CategoryIcon'
 
+function WorkerRow({ w }: { w: WorkerHit }) {
+  return (
+    <li>
+      <Link to={`/w/${w.id}`} className="group flex min-h-16 items-center gap-3 rounded-2xl border border-line bg-surface p-3 hover:border-brand-200">
+        <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold group-hover:text-brand-400">{w.display_name}</span>
+          <span className="block truncate text-xs text-ink-soft">{w.headline || w.skills.map(categoryLabel).join(' · ')}</span>
+        </span>
+      </Link>
+    </li>
+  )
+}
+
 export default function Workers() {
-  const { profile } = useAuth()
+  const { profile, userId } = useAuth()
+  const [query, setQuery] = useState('')
+  const [term, setTerm] = useState('')
+  useEffect(() => {
+    const t = window.setTimeout(() => setTerm(query.trim()), 300)
+    return () => window.clearTimeout(t)
+  }, [query])
+  const searching = term.length >= 2
+  const searchQ = useQuery({ queryKey: ['worker-search', term], queryFn: () => searchWorkersByName(term), enabled: searching })
+  const hiredQ = useQuery({ queryKey: ['hired-before', userId], queryFn: () => fetchHiredBefore(userId!), enabled: Boolean(userId) && profile?.role === 'customer' })
+  const hired = hiredQ.data ?? []
   const [areaOverride, setAreaOverride] = useState<string | null>(null)
   const [skill, setSkill] = useState<string | null>(null)
   const area = areaOverride ?? profile?.area_slug ?? ''
@@ -32,6 +56,27 @@ export default function Workers() {
         title={<>Skilled hands. <em>Proven results.</em></>}
         subtitle="Every rating and verified count comes from a customer-confirmed KashWise job."
       />
+
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
+        <input type="search" aria-label="Search workers by name" placeholder="Search by name" className="input pl-10"
+          value={query} onChange={(e) => setQuery(e.target.value)} />
+      </div>
+
+      {searching ? (
+        searchQ.isPending ? <Skeleton className="h-20" /> : searchQ.isError ? <ErrorState error={searchQ.error} onRetry={() => searchQ.refetch()} /> : (searchQ.data ?? []).length === 0 ? (
+          <EmptyState icon={<Search className="size-5" aria-hidden />} title={`No worker called “${term}”`}>Check the spelling, or browse by skill below.</EmptyState>
+        ) : (
+          <ul className="space-y-2" aria-label="Search results">{searchQ.data!.map((w) => <WorkerRow key={w.id} w={w} />)}</ul>
+        )
+      ) : (
+      <>
+      {hired.length > 0 && (
+        <section aria-labelledby="hired-h" className="mb-6">
+          <h2 id="hired-h" className="mb-2 text-sm font-semibold">Hired before</h2>
+          <ul className="grid gap-2 sm:grid-cols-2">{hired.map((w) => <WorkerRow key={w.id} w={w} />)}</ul>
+        </section>
+      )}
 
       <div className="relative mb-6 overflow-hidden rounded-2xl border border-deep-soft bg-deep p-5 space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -149,6 +194,8 @@ export default function Workers() {
             </div>
           )}
         </>
+      )}
+      </>
       )}
     </div>
   )
