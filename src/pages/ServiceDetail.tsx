@@ -116,7 +116,7 @@ export default function ServiceDetail() {
           {!service.is_active && (
             <p className="flex items-center gap-2 rounded-xl bg-sun-50 px-4 py-3 text-sm font-semibold text-sun-700"><PauseCircle className="size-5" aria-hidden /> Paused — clients can’t find or book this service.</p>
           )}
-          <p className="text-sm text-muted">This is how clients see your service. When someone books it, the job appears in My work.</p>
+          <p className="text-sm text-muted">This is how clients see it. Bookings appear in My work.</p>
           <div className="flex flex-wrap gap-2">
             <ButtonLink to={`/services/${service.id}/edit`}><Pencil className="size-4" aria-hidden /> Edit service</ButtonLink>
             <ButtonLink to="/my-services" variant="secondary">All my services</ButtonLink>

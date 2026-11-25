@@ -43,10 +43,10 @@ describe('ProofScript CV page', () => {
     mocks.verify.mockResolvedValue(true)
   })
 
-  it('shows the record only after the signature verifies, and marks it verified by KashWise', async () => {
+  it('shows the record only after the signature verifies, and marks it customer-verified', async () => {
     show()
     expect(await screen.findByRole('heading', { name: /Sipho Dlamini/ })).toBeInTheDocument()
-    expect(screen.getByText('Verified by KashWise')).toBeInTheDocument()
+    expect(screen.getByText('Customer-verified')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Paint a lounge' })).toBeInTheDocument()
     expect(screen.queryByText(/ML-DSA-65|SG-1/)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Download CV \(PDF\)/ })).toBeInTheDocument()
@@ -61,9 +61,10 @@ describe('ProofScript CV page', () => {
   it('keeps self-written words apart from the proof, and never lists an unproven skill', async () => {
     show()
     await screen.findByRole('heading', { name: /Sipho Dlamini/ })
-    expect(screen.getByText('Written by Sipho.')).toBeInTheDocument()
-    expect(screen.getByRole('rowheader', { name: 'Painting' })).toBeInTheDocument()
-    expect(screen.queryByRole('rowheader', { name: 'Tutoring' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Personal statement' })).toBeInTheDocument()
+    expect(screen.queryByText(/not verified/)).not.toBeInTheDocument()
+    expect(screen.getByText('Painting', { selector: 'strong' })).toBeInTheDocument()
+    expect(screen.queryByText('Tutoring', { selector: 'strong' })).not.toBeInTheDocument()
   })
 
   it('refuses to show a document whose signature does not verify', async () => {
@@ -71,7 +72,7 @@ describe('ProofScript CV page', () => {
     show()
     expect(await screen.findByRole('heading', { name: /could not be verified/ })).toBeInTheDocument()
     expect(screen.queryByText('Paint a lounge')).not.toBeInTheDocument()
-    expect(screen.queryByText('Verified by KashWise')).not.toBeInTheDocument()
+    expect(screen.queryByText('Customer-verified')).not.toBeInTheDocument()
   })
 
   it('refuses a validly signed record that belongs to someone else', async () => {

@@ -60,7 +60,7 @@ export interface DictationResult<K extends DictationKind = DictationKind> {
   written_by: 'ai' | 'rules'
   ai_available: boolean
   /** Why the AI draft was not used, for diagnosis. */
-  ai_status?: 'ok' | 'off' | 'rejected' | 'refused' | 'auth' | 'rate_limited' | 'api_error' | 'failed'
+  ai_status?: 'ok' | 'off' | 'disabled' | 'no_key' | 'quota' | 'busy' | 'unavailable' | 'rejected' | 'refused' | 'auth' | 'rate_limited' | 'api_error' | 'timeout' | 'failed'
 }
 
 // ── What the model returns ─────────────────────────────────────────────────

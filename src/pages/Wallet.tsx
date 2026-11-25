@@ -11,7 +11,7 @@ import { STATEMENT_MONTHS } from '../lib/income-statement'
 import { Badge, Button, ButtonLink, Card, ErrorState, Field, PageHeader, SimulationNote, Skeleton } from '../components/ui'
 import { useToast } from '../components/ui/toast'
 
-const BANKS = ['Capitec', 'FNB', 'Standard Bank', 'Absa', 'Nedbank', 'TymeBank', 'African Bank', 'Discovery Bank', 'Other bank']
+const BANKS = ['FNB', 'Capitec', 'Standard Bank', 'Absa', 'Nedbank', 'TymeBank', 'African Bank', 'Discovery Bank', 'Other bank']
 const CASH_SHOPS = 'Boxer, Shoprite, Checkers, Usave, Pick n Pay, PEP, Spar and spaza shops with Flash, Kazang or OTT terminals'
 
 function MethodOption({ method, current, onPick, title, body, fee, icon }: {
@@ -77,7 +77,7 @@ export default function Wallet() {
   const queryClient = useQueryClient()
   const toast = useToast()
   const q = useQuery({ queryKey: ['wallet'], queryFn: fetchWallet })
-  const [method, setMethod] = useState<CashoutMethod>('cash')
+  const [picked, setMethod] = useState<CashoutMethod | null>(null)
   const [amount, setAmount] = useState('')
   const [bank, setBank] = useState('')
   const [last4, setLast4] = useState('')
@@ -91,6 +91,8 @@ export default function Wallet() {
 
   // The iBanks ledger migration adds payout_pending_cents; until then the Wallet keeps its original two methods.
   const ibanks = w.payout_pending_cents !== undefined
+  // FNB eWallet first: it needs only a South African cellphone number, so it works for people without a bank account.
+  const method: CashoutMethod = picked ?? (ibanks ? 'ewallet' : 'cash')
   const isCash = method === 'cash' || method === 'ewallet'
   const cents = amount === '' ? 0 : randsToCents(Number(amount))
   const fee = cashoutFee(method, w.free_cashout_available)
@@ -204,7 +206,9 @@ export default function Wallet() {
           <p className="mt-1 text-sm text-brand-300">
             {done.method === 'cash'
               ? `In the live version you get an SMS with a voucher number. Take it to ${CASH_SHOPS}, and enter your PIN at the till to collect your cash.`
-              : `In the live version our licensed payment partner sends this to ${done.destination}.`}
+              : done.method === 'ewallet'
+                ? `In the live version FNB sends this to your cellphone, and an SMS PIN lets you withdraw it at an FNB ATM.`
+                : `In the live version a licensed bank pays this to ${done.destination}.`}
           </p>
         </div>
       )}
@@ -215,18 +219,18 @@ export default function Wallet() {
             <h2 className="text-lg font-semibold">Cash out</h2>
             <fieldset className="space-y-3">
               <legend className="mb-2 text-sm font-semibold">How do you want your money?</legend>
-              <MethodOption method="cash" current={method} onPick={setMethod} icon={<Store className="size-5" aria-hidden />} title="Cash at a shop" fee={feeLabel('cash')}
-                body={`No bank account needed. Get an SMS voucher and collect cash with your PIN at ${CASH_SHOPS}.`} />
               {ibanks && (
                 <>
-                  <MethodOption method="payshap" current={method} onPick={setMethod} icon={<Zap className="size-5" aria-hidden />} title="PayShap (instant)" fee={feeLabel('payshap')}
-                    body="Instant payment to a bank account or ShapID." />
-                  <MethodOption method="ewallet" current={method} onPick={setMethod} icon={<Smartphone className="size-5" aria-hidden />} title="eWallet to my cellphone" fee={feeLabel('ewallet')}
-                    body={`Money sent to your cellphone number, withdrawable as cash. Up to ${formatRand(EWALLET_MAX_CENTS)}.`} />
+                  <MethodOption method="ewallet" current={method} onPick={setMethod} icon={<Smartphone className="size-5" aria-hidden />} title="FNB eWallet to my cellphone" fee={feeLabel('ewallet')}
+                    body={`No bank account needed, just a South African cellphone number. Withdraw cash at an FNB ATM with the PIN sent by SMS. Up to ${formatRand(EWALLET_MAX_CENTS)}.`} />
+                  <MethodOption method="payshap" current={method} onPick={setMethod} icon={<Zap className="size-5" aria-hidden />} title="FNB PayShap (instant)" fee={feeLabel('payshap')}
+                    body="Instant payment to any bank account or ShapID." />
                 </>
               )}
               <MethodOption method="bank" current={method} onPick={setMethod} icon={<Landmark className="size-5" aria-hidden />} title="My bank account" fee={feeLabel('bank')}
-                body="Any South African bank account. Some banks, such as TymeBank, open a free account with just your ID at kiosks in Boxer and Pick n Pay." />
+                body="FNB or any South African bank account." />
+              <MethodOption method="cash" current={method} onPick={setMethod} icon={<Store className="size-5" aria-hidden />} title="Cash at a shop" fee={feeLabel('cash')}
+                body={`No bank account needed. Get an SMS voucher and collect cash with your PIN at ${CASH_SHOPS}.`} />
             </fieldset>
 
             {method === 'bank' && (
@@ -266,7 +270,7 @@ export default function Wallet() {
             )}
             {error && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{error}</p>}
             <Button type="submit" size="lg" block loading={busy}>
-              {{ cash: 'Send me a cash voucher', bank: 'Pay into my bank account', payshap: 'Pay me with PayShap', ewallet: 'Send to my eWallet' }[method]}
+              {{ cash: 'Send me a cash voucher', bank: 'Pay into my bank account', payshap: 'Pay me with PayShap', ewallet: 'Send to my FNB eWallet' }[method]}
             </Button>
           </Card>
         </form>

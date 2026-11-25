@@ -31,7 +31,7 @@ export function ReviewForm({ workerName, onSubmit }: { workerName: string; onSub
     <form onSubmit={submit} className="space-y-3">
       <fieldset>
         <legend className="font-semibold">How did {workerName} do?</legend>
-        <p className="text-xs text-muted">Your review is added to their verified portfolio and helps them get their next job.</p>
+        <p className="text-xs text-muted">Your review goes on their verified record.</p>
         <div className="mt-2 flex items-center gap-1" role="radiogroup" aria-label="Rating">
           {[1, 2, 3, 4, 5].map((n) => (
             <button

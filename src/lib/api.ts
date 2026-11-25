@@ -94,6 +94,29 @@ export async function discoverWorkers(params: { area?: string | null; skill?: st
   })
 }
 
+export type WorkerHit = Pick<Profile, 'id' | 'display_name' | 'headline' | 'area_slug' | 'skills' | 'avatar_path' | 'is_demo'>
+
+/** Find a worker by name (profiles are public). Wildcards typed by the person are treated as plain text. */
+export async function searchWorkersByName(query: string): Promise<WorkerHit[]> {
+  const q = query.trim().replace(/[\\%_]/g, (c) => `\\${c}`).slice(0, 60)
+  if (q.length < 2) return []
+  return must(
+    await supabase.from('profiles').select('id, display_name, headline, area_slug, skills, avatar_path, is_demo')
+      .eq('role', 'worker').ilike('display_name', `%${q}%`).order('display_name').limit(20),
+  ) as WorkerHit[]
+}
+
+/** Workers this client has hired before, most recent first (their own gigs, so RLS allows it). */
+export async function fetchHiredBefore(clientId: string): Promise<WorkerHit[]> {
+  const rows = must(
+    await supabase.from('gigs')
+      .select('created_at, worker:profiles!gigs_assigned_worker_id_fkey(id, display_name, headline, area_slug, skills, avatar_path, is_demo)')
+      .eq('customer_id', clientId).not('assigned_worker_id', 'is', null).order('created_at', { ascending: false }).limit(50),
+  ) as unknown as { worker: WorkerHit | null }[]
+  const seen = new Set<string>()
+  return rows.flatMap((r) => (r.worker && !seen.has(r.worker.id) && seen.add(r.worker.id) ? [r.worker] : [])).slice(0, 8)
+}
+
 // ── Profiles & portfolio ───────────────────────────────────────────────────
 export async function fetchProfile(id: string): Promise<Profile | null> {
   return must(await supabase.from('profiles').select(PUBLIC_PROFILE).eq('id', id).maybeSingle())
@@ -225,6 +248,24 @@ export async function fetchPostedGigs(userId: string): Promise<(Gig & { applican
     ...g,
     applicant_count: gig_applications.filter((a) => a.status === 'pending').length,
   }))
+}
+
+export type ClientReview = Pick<Review, 'id' | 'rating' | 'comment' | 'created_at'> & {
+  worker: Pick<Profile, 'id' | 'display_name' | 'avatar_path'> | null
+}
+
+/** What anyone can see about a client: their open gigs and the reviews they have left (both public by RLS). */
+export async function fetchClientActivity(clientId: string): Promise<{ openGigs: Gig[]; reviews: ClientReview[] }> {
+  const [gigs, reviews] = await Promise.all([
+    supabase.from('gigs').select('*').eq('customer_id', clientId).eq('status', 'open').order('scheduled_date').limit(6),
+    supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, worker:profiles!reviews_worker_id_fkey(id, display_name, avatar_path)')
+      .eq('reviewer_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ])
+  return { openGigs: must(gigs) as Gig[], reviews: must(reviews) as unknown as ClientReview[] }
 }
 
 export async function fetchAssignedGigs(userId: string): Promise<Gig[]> {
@@ -609,7 +650,7 @@ export async function fetchSkillsProfile(workerId: string): Promise<StoredSkills
 }
 
 export async function writeSkillsProfile(useAi: boolean) {
-  return callFunction<{ signed: SignedDocument<SkillsProfile>; aiAvailable: boolean; aiUsed: boolean }>('/api/skills-profile', {
+  return callFunction<{ signed: SignedDocument<SkillsProfile>; aiAvailable: boolean; aiUsed: boolean; cached?: boolean; aiStatus?: string }>('/api/skills-profile', {
     method: 'POST',
     headers: await bearer(),
     body: JSON.stringify({ useAi }),
@@ -634,7 +675,7 @@ export interface MoneyData {
 export async function fetchMoney(userId: string): Promise<MoneyData> {
   const [ledger, insights, gigs, items, reviews, prefs] = await Promise.all([
     supabase.from('financial_ledger_entries').select('*').eq('worker_id', userId).order('id').limit(5000),
-    supabase.from('ibanks_insights').select('*').eq('worker_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(20),
+    supabase.from('ibanks_insights').select('*').eq('worker_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(100),
     supabase.from('gigs').select('id, title, category, completed_at, customer_id').eq('assigned_worker_id', userId).eq('status', 'completed').limit(1000),
     supabase.from('portfolio_items').select('record_code').eq('worker_id', userId).limit(1000),
     supabase.from('reviews').select('rating').eq('worker_id', userId).limit(1000),

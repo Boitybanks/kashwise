@@ -6,7 +6,7 @@ import { fetchProfile, fetchSkillsProfile, fetchWorkCredential } from '../lib/ap
 import { categoryLabel } from '../lib/categories'
 import { friendlyError } from '../lib/errors'
 import { formatDate, formatMonthYear } from '../lib/format'
-import { cvFacts, cvSkills, cvSummary } from '../lib/proofscript-cv'
+import { cvFacts, cvReference, cvSkills, cvSummary } from '../lib/proofscript-cv'
 import { verifySigned } from '../lib/pq/verify-client'
 import { LogoMark } from '../components/layout/Logo'
 import { Button, ErrorState, Skeleton } from '../components/ui'
@@ -67,7 +67,7 @@ export default function ProofScriptCv() {
     setSaving(true)
     try {
       const { buildCvPdf, downloadPdf } = await import('../lib/cv-pdf')
-      const bytes = await buildCvPdf({ credential: credential!, summary: content!.summary, skills: content!.skills, facts: content!.facts, headline: p.headline, bio: p.bio, url })
+      const bytes = await buildCvPdf({ credential: credential!, summary: content!.summary, skills: content!.skills, facts: content!.facts, headline: p.headline, bio: p.bio, url, reference: cvReference(signed!.signature, w.id) })
       downloadPdf(bytes, `${w.name.replace(/[^a-zA-Z0-9]+/g, '-')}-Verified-CV.pdf`)
     } catch (e) {
       toast.show(friendlyError(e), 'error')
@@ -84,55 +84,40 @@ export default function ProofScriptCv() {
       </div>
 
       <article aria-labelledby="cv-name" className="cv-sheet">
-        <header className="cv-masthead">
-          <div className="flex items-center gap-2.5">
-            <LogoMark className="size-8" />
-            <p className="cv-brand">KashWise <span>ProofScript</span></p>
-          </div>
-          <div className="cv-seal"><BadgeCheck className="size-4" aria-hidden /> Verified by KashWise</div>
-        </header>
-
-        <section className="cv-identity" aria-label="Who this record belongs to">
+        <header className="cv-identity">
           <div className="min-w-0">
-            <p className="cv-kicker">Verified work record</p>
             <h1 id="cv-name" className="cv-name">{w.name}</h1>
             {content.skills.length > 0 && <p className="cv-headline">{content.skills.slice(0, 3).map((s) => s.name).join(' · ')}</p>}
-            <p className="cv-meta">{w.area} · On KashWise since {formatMonthYear(w.member_since)}</p>
+            <p className="cv-meta">{w.area} · Independent service provider since {formatMonthYear(w.member_since)}</p>
           </div>
-          <div className="cv-qr">
-            <QrCode value={url} label={`QR code that opens the live, verified copy of ${first}’s record`} className="size-24" />
-            <p>Scan to check it live</p>
-          </div>
-        </section>
+          <div className="cv-seal"><BadgeCheck className="size-4" aria-hidden /> Customer-verified</div>
+        </header>
 
-        <dl className="cv-facts" aria-label="Record at a glance">
+        <dl className="cv-facts" aria-label="At a glance">
           {content.facts.map((f) => <div key={f.label}><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
         </dl>
 
         <section className="cv-section" aria-labelledby="cv-summary-h">
-          <h2 id="cv-summary-h">Professional summary</h2>
+          <h2 id="cv-summary-h">Profile</h2>
           <p className="cv-lede">{content.summary}</p>
         </section>
 
-        <section className="cv-section" aria-labelledby="cv-skills-h">
-          <h2 id="cv-skills-h">Proven skills</h2>
-          <p className="cv-source">Every skill here comes from jobs customers confirmed.</p>
-          <table className="cv-table">
-            <thead><tr><th scope="col">Skill</th><th scope="col" className="text-right">Confirmed jobs</th><th scope="col">Recent work</th></tr></thead>
-            <tbody>
+        {content.skills.length > 0 && (
+          <section className="cv-section" aria-labelledby="cv-skills-h">
+            <h2 id="cv-skills-h">Key skills</h2>
+            <ul className="cv-skills">
               {content.skills.map((s) => (
-                <tr key={s.name}>
-                  <th scope="row">{s.name}</th>
-                  <td className="text-right tabular-nums">{s.jobs}</td>
-                  <td className="cv-examples">{s.examples.slice(0, 2).join(', ')}</td>
-                </tr>
+                <li key={s.name}>
+                  <p><strong>{s.name}</strong><span>{s.jobs} job{s.jobs === 1 ? '' : 's'}</span></p>
+                  {s.examples.length > 0 && <p className="cv-examples">{s.examples.slice(0, 2).join(', ')}</p>}
+                </li>
               ))}
-            </tbody>
-          </table>
-        </section>
+            </ul>
+          </section>
+        )}
 
         <section className="cv-section" aria-labelledby="cv-history-h">
-          <h2 id="cv-history-h">Work history</h2>
+          <h2 id="cv-history-h">Experience</h2>
           {credential.records.length === 0 ? <p className="cv-source">No confirmed jobs yet.</p> : (
             <ol className="cv-history">
               {credential.records.map((r) => (
@@ -140,10 +125,10 @@ export default function ProofScriptCv() {
                   <p className="cv-history-date">{formatMonthYear(r.completed_at)}</p>
                   <div className="min-w-0">
                     <h3>{r.title}</h3>
-                    <p className="cv-history-meta">{categoryLabel(r.category)} · {r.area} · for {r.customer}</p>
+                    <p className="cv-history-meta">{categoryLabel(r.category)} · {r.area} · Client: {r.customer}</p>
                     {r.review && <blockquote>“{r.review}”</blockquote>}
                     <p className="cv-history-proof">
-                      <BadgeCheck className="size-3.5" aria-hidden /> Confirmed by customer {formatDate(r.completed_at)}
+                      <BadgeCheck className="size-3.5" aria-hidden /> Confirmed by client {formatDate(r.completed_at)}
                       {r.rating != null && <span className="inline-flex items-center gap-0.5"> · <Star className="size-3 fill-gold-500 text-gold-500" aria-hidden />{r.rating}/5</span>}
                     </p>
                   </div>
@@ -155,16 +140,22 @@ export default function ProofScriptCv() {
 
         {(p.bio || p.headline) && (
           <section className="cv-section cv-own-words" aria-labelledby="cv-words-h">
-            <h2 id="cv-words-h">In {first}’s own words</h2>
+            <h2 id="cv-words-h">Personal statement</h2>
             {p.headline && <p className="font-semibold">{p.headline}</p>}
             {p.bio && <p>{p.bio}</p>}
-            <p className="cv-source">Written by {first}.</p>
           </section>
         )}
 
         <footer className="cv-footer">
-          <p>“Verified” means the customer confirmed the job was done. It is not an identity or qualification check.</p>
-          <p>Issued {formatDate(credential.issued_at)}.{credential.demo_data ? ' Sample profile.' : ''}</p>
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 font-semibold text-[#11252a]"><LogoMark className="size-5" /> Verified work history · KashWise ProofScript</p>
+            <p>Each job above was confirmed by the client who paid for it. This is not an identity or qualification check.</p>
+            <p>Reference {cvReference(signed!.signature, w.id)} · Issued {formatDate(credential.issued_at)}{credential.demo_data ? ' · Sample profile' : ''}</p>
+          </div>
+          <div className="cv-qr">
+            <QrCode value={url} label={`QR code that opens the live, verified copy of ${first}’s CV`} className="size-20" />
+            <p>Scan to verify</p>
+          </div>
         </footer>
       </article>
     </div>

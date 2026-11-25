@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQueries } from '@tanstack/react-query'
-import { BadgeCheck, MessageSquare, Star } from 'lucide-react'
+import { BadgeCheck, MessageSquare, Sparkles, Star } from 'lucide-react'
+import { bestFitIndex, fitScore } from '../../lib/ibanks/match'
 import { fetchWorkerStats, type ApplicationWithWorker } from '../../lib/api'
 import { categoryLabel } from '../../lib/categories'
 import { distanceKm, formatDistance } from '../../lib/geo'
@@ -13,11 +14,12 @@ import { avatarUrl } from '../../lib/supabase'
 interface Props {
   applications: ApplicationWithWorker[]
   gigArea: string
+  category?: string
   totalCents: number
   onSelect: (applicationId: string) => Promise<void>
 }
 
-export function Applicants({ applications, gigArea, totalCents, onSelect }: Props) {
+export function Applicants({ applications, gigArea, category, totalCents, onSelect }: Props) {
   const areaOf = useAreaLookup()
   const pending = applications.filter((a) => a.status === 'pending' && a.worker)
   const stats = useQueries({
@@ -35,6 +37,11 @@ export function Applicants({ applications, gigArea, totalCents, onSelect }: Prop
   }
 
   const gigA = areaOf(gigArea)
+  const distanceTo = (slug: string) => { const wa = areaOf(slug); return gigA && wa ? distanceKm(gigA, wa) : null }
+  // iBanks flags one standout only once every applicant's record has loaded.
+  const best = category && stats.every((q) => q.data)
+    ? bestFitIndex(pending.map((a, i) => fitScore({ skills: a.worker!.skills, category, stats: stats[i].data, distanceKm: distanceTo(a.worker!.area_slug) })))
+    : null
   return (
     <ul className="space-y-3">
       {pending.map((app, i) => {
@@ -51,6 +58,7 @@ export function Applicants({ applications, gigArea, totalCents, onSelect }: Prop
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold">{w.display_name}</p>
                   {w.is_demo && <DemoBadge />}
+                  {best === i && <span className="inline-flex items-center gap-1 rounded-full bg-sun-50 px-2 py-0.5 text-[11px] font-semibold text-gold-600"><Sparkles className="size-3" aria-hidden /> Best fit</span>}
                 </div>
                 {w.headline && <p className="text-sm text-muted">{w.headline}</p>}
                 <p className="mt-1 text-xs text-muted">

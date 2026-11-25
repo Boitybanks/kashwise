@@ -40,6 +40,9 @@ const SPEECH_ERRORS: Record<string, string> = {
   'language-not-supported': 'Your browser cannot listen in this language yet. Try English, or type instead.',
 }
 
+/** How long listening waits with nothing said before it stops on its own. */
+export const SILENCE_MS = 8_000
+
 /** Live dictation. `transcript` holds everything said so far and stays editable by the caller through setTranscript. */
 export function useDictation(language: string) {
   const supported = Boolean(recognitionCtor())
@@ -50,9 +53,20 @@ export function useDictation(language: string) {
   const wantListening = useRef(false)
   const base = useRef('')
   const runRef = useRef<() => void>(() => {})
+  const silence = useRef<number | undefined>(undefined)
+
+  // Stop by itself after a stretch of silence, so the microphone isn't left listening.
+  const armSilenceTimer = useCallback(() => {
+    window.clearTimeout(silence.current)
+    silence.current = window.setTimeout(() => {
+      wantListening.current = false
+      recognition.current?.stop()
+    }, SILENCE_MS)
+  }, [])
 
   useEffect(() => () => {
     wantListening.current = false
+    window.clearTimeout(silence.current)
     recognition.current?.abort()
   }, [])
 
@@ -65,6 +79,7 @@ export function useDictation(language: string) {
     r.interimResults = true
     r.lang = language
     r.onresult = (e) => {
+      armSilenceTimer()
       const heard = Array.from(e.results).map((x) => x[0].transcript).join(' ').replace(/\s+/g, ' ').trim()
       setTranscript([base.current, heard].filter(Boolean).join(' '))
     }
@@ -77,11 +92,14 @@ export function useDictation(language: string) {
       if (wantListening.current) {
         setTranscript((current) => { base.current = current; return current })
         runRef.current()
-      } else setListening(false)
+      } else {
+        window.clearTimeout(silence.current)
+        setListening(false)
+      }
     }
     recognition.current = r
     r.start()
-  }, [language])
+  }, [language, armSilenceTimer])
 
   useEffect(() => {
     runRef.current = run
@@ -92,6 +110,7 @@ export function useDictation(language: string) {
     setTranscript((current) => { base.current = current; return current })
     wantListening.current = true
     setListening(true)
+    armSilenceTimer()
     try {
       run()
     } catch {
@@ -99,10 +118,11 @@ export function useDictation(language: string) {
       setListening(false)
       setError('Listening could not start. Please try again, or type instead.')
     }
-  }, [run])
+  }, [run, armSilenceTimer])
 
   const stop = useCallback(() => {
     wantListening.current = false
+    window.clearTimeout(silence.current)
     recognition.current?.stop()
   }, [])
 

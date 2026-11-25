@@ -1,9 +1,8 @@
 // POST /api/dictate { kind, transcript, useAi }  (Authorization: Bearer <Supabase access token>)
 // Turns what someone said into a draft bio, job post or earnings goal. It only returns a draft: saving and publishing
-// stay with the existing forms and RPCs. With the person's consent and an ANTHROPIC_API_KEY, Claude phrases it and the
-// checks in src/lib/dictation.ts decide whether it may be used. Otherwise the rules write it, and the draft says so.
-import Anthropic from '@anthropic-ai/sdk'
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+// stay with the existing forms and RPCs. With the person's consent, Groq's free tier phrases it (3 a day per person,
+// within global budgets), and the checks in src/lib/dictation.ts decide whether it may be used. Otherwise, or if
+// anything fails, the rules write it, and the draft says so.
 import type { Config } from '@netlify/functions'
 import { z } from 'zod'
 import {
@@ -14,101 +13,17 @@ import {
   finalizeAi,
   MAX_TRANSCRIPT,
   priceGuides,
+  withoutContactDetails,
   type DictationKind,
   type DictationResult,
   type PriceGuide,
 } from '../../src/lib/dictation'
 import { todayInSA } from '../../src/lib/validation'
-import { json, optionalEnv, safe, supabaseAs } from '../lib/shared'
+import { aiKillSwitchOn, groqKey, runAi } from '../lib/ai'
+import { json, safe, supabaseAs } from '../lib/shared'
 
-const MODEL = 'claude-opus-5-5'
-const WINDOW_MS = 10 * 60_000
-const MAX_PER_WINDOW = 20
-
-// Best effort per function instance: it stops a stuck client or a script, and the transcript size cap bounds the rest.
-const recent = new Map<string, number[]>()
-function overLimit(uid: string, now = Date.now()): boolean {
-  const times = (recent.get(uid) ?? []).filter((t) => now - t < WINDOW_MS)
-  if (times.length >= MAX_PER_WINDOW) return true
-  recent.set(uid, [...times, now])
-  return false
-}
-
-async function writeWithClaude(apiKey: string, kind: DictationKind, transcript: string, guides: PriceGuide[], today: string) {
-  const client = new Anthropic({ apiKey, timeout: 25_000, maxRetries: 1 })
-  const { system, user } = dictationPrompt(kind, transcript, guides, today)
-  try {
-    const response = await client.beta.messages.parse({
-      model: MODEL,
-      max_tokens: 4000,
-      // If the request is declined, the API re-runs it on a fallback model chosen for the refusal category.
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low', format: betaZodOutputFormat(DICTATION_SCHEMA[kind]) },
-      system,
-      messages: [{ role: 'user', content: user }],
-    })
-    if (response.stop_reason === 'refusal' || !response.parsed_output) return { draft: null, status: 'refused' as const }
-    const draft = finalizeAi(kind, response.parsed_output, transcript, guides, today)
-    if (!draft) console.error('dictation: the draft failed the checks')
-    return { draft, status: draft ? 'ok' as const : 'rejected' as const }
-  } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) {
-      console.error(`dictation: ANTHROPIC_API_KEY was rejected (${e.status})`)
-      return { draft: null, status: 'auth' as const }
-    }
-    if (e instanceof Anthropic.RateLimitError) {
-      console.error('dictation: Claude rate limited')
-      return { draft: null, status: 'rate_limited' as const }
-    }
-    if (e instanceof Anthropic.APIError) {
-      console.error(`dictation: Claude API error ${e.status}: ${e.message}`)
-      return { draft: null, status: 'api_error' as const }
-    }
-    console.error('dictation: Claude call failed:', (e as Error).message)
-    return { draft: null, status: 'failed' as const }
-  }
-}
-
-// Free fallback: an open-weight model on Groq's free tier (GROQ_API_KEY), used when Claude is not set up or fails.
-// Its output passes the same finalizeAi checks as Claude's.
-const GROQ_MODEL = 'openai/gpt-oss-120b'
-
-async function writeWithGroq(apiKey: string, kind: DictationKind, transcript: string, guides: PriceGuide[], today: string) {
-  const { system, user } = dictationPrompt(kind, transcript, guides, today)
-  const schema = z.toJSONSchema(DICTATION_SCHEMA[kind], { target: 'draft-7' })
-  delete (schema as { $schema?: string }).$schema
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-      signal: AbortSignal.timeout(25_000),
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        max_completion_tokens: 4000,
-        reasoning_effort: 'low',
-        response_format: { type: 'json_schema', json_schema: { name: `${kind}_draft`, strict: true, schema } },
-        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-      }),
-    })
-    if (res.status === 401 || res.status === 403) {
-      console.error(`dictation: GROQ_API_KEY was rejected (${res.status})`)
-      return { draft: null, status: 'auth' as const }
-    }
-    if (res.status === 429) return { draft: null, status: 'rate_limited' as const }
-    if (!res.ok) {
-      console.error(`dictation: Groq API error ${res.status}: ${(await res.text()).slice(0, 300)}`)
-      return { draft: null, status: 'api_error' as const }
-    }
-    const body = (await res.json()) as { choices?: { message?: { content?: string } }[] }
-    const draft = finalizeAi(kind, JSON.parse(body.choices?.[0]?.message?.content ?? 'null'), transcript, guides, today)
-    if (!draft) console.error('dictation: the draft failed the checks')
-    return { draft, status: draft ? 'ok' as const : 'rejected' as const }
-  } catch (e) {
-    console.error('dictation: Groq call failed:', (e as Error).message)
-    return { draft: null, status: 'failed' as const }
-  }
-}
+const MAX_BODY = 8_192
+const MAX_OUTPUT = 1_500
 
 export default safe(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -119,7 +34,9 @@ export default safe(async (req: Request) => {
   let transcript: string
   let useAi: boolean
   try {
-    const body = (await req.json()) as { kind?: unknown; transcript?: unknown; useAi?: unknown }
+    const raw = await req.text()
+    if (raw.length > MAX_BODY) return json({ error: 'That is a bit long. Please keep it under a few minutes of speech.' }, 413)
+    const body = JSON.parse(raw) as { kind?: unknown; transcript?: unknown; useAi?: unknown }
     if (!DICTATION_KINDS.includes(body.kind as DictationKind) || typeof body.transcript !== 'string') return json({ error: 'Invalid request.' }, 400)
     kind = body.kind as DictationKind
     transcript = body.transcript.trim()
@@ -134,7 +51,6 @@ export default safe(async (req: Request) => {
   const { data: userData, error: userError } = await db.auth.getUser(jwt)
   if (userError || !userData.user) return json({ error: 'Your session has expired. Please sign in again.' }, 401)
   const uid = userData.user.id
-  if (overLimit(uid)) return json({ error: 'Please wait a few minutes before trying again.' }, 429)
 
   const today = todayInSA()
   let guides: PriceGuide[] = []
@@ -144,17 +60,26 @@ export default safe(async (req: Request) => {
     guides = priceGuides(rows ?? [])
   }
 
-  const apiKey = optionalEnv('ANTHROPIC_API_KEY')
-  const groqKey = optionalEnv('GROQ_API_KEY')
-  let ai = useAi && apiKey ? await writeWithClaude(apiKey, kind, transcript, guides, today) : null
-  if (useAi && groqKey && !ai?.draft) ai = await writeWithGroq(groqKey, kind, transcript, guides, today)
-  const draft = ai?.draft ?? null
+  let draft: DictationResult['draft'] | null = null
+  let status: DictationResult['ai_status'] = 'off'
+  if (useAi) {
+    const { system, user } = dictationPrompt(kind, withoutContactDetails(transcript), guides, today)
+    const schema = z.toJSONSchema(DICTATION_SCHEMA[kind], { target: 'draft-7' }) as Record<string, unknown>
+    delete schema.$schema
+    const ai = await runAi(db, 'dictation', { system, user, schemaName: `${kind}_draft`, schema, maxOutput: MAX_OUTPUT })
+    if (ai.status === 'ok') {
+      draft = finalizeAi(kind, ai.output, transcript, guides, today)
+      status = draft ? 'ok' : 'rejected'
+    } else {
+      status = ai.status
+    }
+  }
   const result: DictationResult = {
     kind,
     draft: draft ?? draftByRules(kind, transcript, guides, today),
     written_by: draft ? 'ai' : 'rules',
-    ai_available: Boolean(apiKey || groqKey),
-    ai_status: ai?.status ?? 'off',
+    ai_available: !aiKillSwitchOn() && Boolean(groqKey()),
+    ai_status: status,
   }
   return json(result)
 })

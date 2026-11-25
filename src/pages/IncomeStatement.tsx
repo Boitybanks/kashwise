@@ -58,7 +58,7 @@ export default function IncomeStatement() {
             <TriangleAlert className="size-6 shrink-0" aria-hidden />
             <div>
               <p className="font-semibold uppercase tracking-wide">Simulated payments: not valid proof of income</p>
-              <p className="text-sm">In this version of KashWise no real money moves. When payments go live through a licensed payment partner, this statement will show real earnings.</p>
+              <p className="text-sm">No real money moves yet, so this shows sample earnings.</p>
             </div>
           </div>
         )}

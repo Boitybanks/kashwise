@@ -33,16 +33,21 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
   if (isOwner && codes.length === 0 && !p) return null
 
   async function write() {
+    if (busy) return // one request at a time
     setBusy('write')
     try {
       const res = await writeSkillsProfile(useAi)
       await qc.invalidateQueries({ queryKey: ['skills-profile', workerId] })
       toast.show(
-        useAi && !res.aiAvailable
-          ? 'AI writing isn’t switched on yet, so KashWise wrote a factual summary from your jobs instead.'
-          : useAi && !res.aiUsed
-            ? 'The AI couldn’t back its wording with your records, so KashWise wrote a factual summary instead.'
-            : 'Your skills profile is ready.',
+        res.cached
+          ? 'Your profile is already up to date with your confirmed jobs.'
+          : !useAi || res.aiUsed
+            ? 'Your skills profile is ready.'
+            : res.aiStatus === 'quota'
+              ? 'You’ve used today’s AI summary, so KashWise wrote a factual one. Try AI again tomorrow.'
+              : res.aiStatus === 'rejected'
+                ? 'The AI couldn’t back its wording with your records, so KashWise wrote a factual summary.'
+                : 'AI is unavailable right now, so KashWise wrote a factual summary from your jobs.',
       )
     } catch (e) {
       toast.show(friendlyError(e), 'error')
@@ -84,8 +89,7 @@ export function SkillsProfile({ workerId, first, isOwner, codes }: { workerId: s
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1 size-4 accent-brand-600" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />
         <span>
-          <strong>AI summary.</strong> Generates a professional summary from your completed jobs and reviews. No private contact details are shared.
-
+          <strong>AI summary</strong> (once a day). Written from your confirmed jobs and reviews only. No names or contact details are shared.
         </span>
       </label>
       <div className="flex flex-wrap gap-2">

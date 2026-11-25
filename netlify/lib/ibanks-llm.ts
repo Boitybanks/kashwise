@@ -3,7 +3,9 @@
 // the server-computed facts (acceptAiOutput). IBANKS_LLM_PROVIDER=none (default) keeps iBanks fully rules-based.
 import Anthropic from '@anthropic-ai/sdk'
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import { GROQ_TEXT_MODEL, runAi } from './ai'
 import type { AgentOutput } from '../../src/lib/ibanks/agent'
 
 const rephraseSchema = z.object({ answer: z.string() })
@@ -48,4 +50,23 @@ export async function rephraseWithClaude(
     else console.error('ibanks ask: Claude call failed:', (e as Error).message)
     return null
   }
+}
+
+/** The free option (IBANKS_LLM_PROVIDER=groq): the same re-phrasing on Groq, inside the per-person and global quotas. */
+export async function rephraseWithGroq(
+  db: SupabaseClient,
+  question: string,
+  draft: AgentOutput,
+): Promise<(AgentOutput & { model: string }) | null> {
+  const schema = z.toJSONSchema(rephraseSchema, { target: 'draft-7' }) as Record<string, unknown>
+  delete schema.$schema
+  const ai = await runAi(db, 'ask', {
+    system: SYSTEM,
+    user: `<question>${question.slice(0, 500)}</question>\n<draft_answer>${draft.answer}</draft_answer>\n<limitations>${draft.limitations.join('; ')}</limitations>`,
+    schemaName: 'rephrase',
+    schema,
+    maxOutput: 800,
+  })
+  const parsed = ai.status === 'ok' ? rephraseSchema.safeParse(ai.output) : null
+  return parsed?.success ? { ...draft, answer: parsed.data.answer, model: GROQ_TEXT_MODEL } : null
 }

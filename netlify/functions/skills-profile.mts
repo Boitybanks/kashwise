@@ -1,11 +1,12 @@
 // POST /api/skills-profile { useAi }  (Authorization: Bearer <Supabase access token>)
-// Writes the caller's skills profile from their customer-confirmed records, signs it with ML-DSA-65 and saves it
-// through the save_skills_profile RPC (as the caller). With the worker's consent and an ANTHROPIC_API_KEY, Claude
-// phrases it; every skill and quote is then checked against the records (bindToEvidence) before signing.
-// Without consent or a key, KashWise assembles a factual summary instead, and the profile says so.
-import Anthropic from '@anthropic-ai/sdk'
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod'
+// Writes the caller's skills profile (the summary and skills on their CV) from their customer-confirmed records,
+// signs it with ML-DSA-65 and saves it through the save_skills_profile RPC (as the caller). With the worker's consent,
+// Groq's free tier phrases it (once a day per person); every skill and quote is then checked against the records
+// (bindToEvidence) before signing. A saved profile is reused until the confirmed records change. Without consent, or
+// if the AI is off, used up or fails, KashWise assembles a factual summary instead, and the profile says so.
 import type { Config } from '@netlify/functions'
+import { z } from 'zod'
+import { withoutContactDetails } from '../../src/lib/dictation'
 import { signDocument, type CredentialRecord } from '../../src/lib/pq/credential'
 import { SIGN_KID } from '../../src/lib/pq-public-keys'
 import {
@@ -14,38 +15,16 @@ import {
   bindToEvidence,
   REFRESH_MINUTES,
   summaryProfile,
-  type ProfileContent,
+  withName,
   type SkillsProfile,
 } from '../../src/lib/skills-profile'
-import { json, optionalEnv, safe, seed, supabaseAs } from '../lib/shared'
+import { aiKillSwitchOn, GROQ_TEXT_MODEL, groqKey, runAi, type AiStatus } from '../lib/ai'
+import { json, safe, seed, supabaseAs } from '../lib/shared'
 
-const MODEL = 'claude-opus-5-5'
 const MAX_RECORDS = 60
+const MAX_OUTPUT = 1_500
 
-async function writeWithClaude(apiKey: string, name: string, records: CredentialRecord[]): Promise<{ content: ProfileContent; model: string } | null> {
-  const client = new Anthropic({ apiKey, timeout: 45_000, maxRetries: 1 })
-  const { system, user } = aiPrompt(name, records)
-  try {
-    const response = await client.beta.messages.parse({
-      model: MODEL,
-      max_tokens: 4000,
-      // If the request is declined, the API re-runs it on a fallback model chosen for the refusal category.
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low', format: betaZodOutputFormat(aiProfileSchema) },
-      system,
-      messages: [{ role: 'user', content: user }],
-    })
-    if (response.stop_reason === 'refusal' || !response.parsed_output) return null
-    const content = bindToEvidence(response.parsed_output, records)
-    return content ? { content, model: response.model } : null
-  } catch (e) {
-    if (e instanceof Anthropic.RateLimitError) console.error('skills profile: Claude rate limited')
-    else if (e instanceof Anthropic.APIError) console.error(`skills profile: Claude API error ${e.status}`)
-    else console.error('skills profile: Claude call failed:', (e as Error).message)
-    return null
-  }
-}
+const sameCodes = (a: string[], b: string[]) => a.length === b.length && [...a].sort().join() === [...b].sort().join()
 
 export default safe(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -54,7 +33,9 @@ export default safe(async (req: Request) => {
 
   let useAi = false
   try {
-    useAi = ((await req.json()) as { useAi?: unknown }).useAi === true
+    const raw = await req.text()
+    if (raw.length > 256) return json({ error: 'Invalid request.' }, 413)
+    useAi = (JSON.parse(raw) as { useAi?: unknown }).useAi === true
   } catch {
     return json({ error: 'Invalid request.' }, 400)
   }
@@ -66,12 +47,9 @@ export default safe(async (req: Request) => {
 
   const [{ data: profile }, { data: existing }] = await Promise.all([
     db.from('profiles').select('id, display_name, role, area_slug, is_demo').eq('id', uid).maybeSingle(),
-    db.from('skills_profiles').select('created_at').eq('worker_id', uid).maybeSingle(),
+    db.from('skills_profiles').select('created_at, written_by, signed').eq('worker_id', uid).maybeSingle(),
   ])
   if (!profile || profile.role !== 'worker') return json({ error: 'Skills profiles are for service providers.' }, 403)
-  if (existing && Date.now() - Date.parse(existing.created_at) < REFRESH_MINUTES * 60_000) {
-    return json({ error: `You can refresh your skills profile once every ${REFRESH_MINUTES} minutes.` }, 429)
-  }
 
   const [{ data: items }, { data: stats }] = await Promise.all([
     db.from('portfolio_items').select('*').eq('worker_id', uid).order('completed_at', { ascending: false }).limit(MAX_RECORDS),
@@ -96,10 +74,32 @@ export default safe(async (req: Request) => {
     customer: i.customer_label as string,
   }))
   const averageRating: number | null = stats?.avg_rating ?? null
+  const aiAvailable = !aiKillSwitchOn() && Boolean(groqKey())
 
-  const apiKey = optionalEnv('ANTHROPIC_API_KEY')
-  const ai = useAi && apiKey ? await writeWithClaude(apiKey, profile.display_name, records) : null
-  const content = ai?.content ?? summaryProfile(profile.display_name, records, averageRating)
+  // Cache: the saved profile stands while it covers exactly the current confirmed records. No AI call, no quota used.
+  const savedCodes = (existing?.signed as { credential?: SkillsProfile } | null)?.credential?.based_on?.codes ?? null
+  if (existing && savedCodes && sameCodes(savedCodes, records.map((r) => r.code)) && (existing.written_by === 'ai' || !useAi)) {
+    return json({ signed: existing.signed, aiAvailable, aiUsed: existing.written_by === 'ai', cached: true })
+  }
+  if (existing && Date.now() - Date.parse(existing.created_at) < REFRESH_MINUTES * 60_000) {
+    return json({ error: `You can refresh your skills profile once every ${REFRESH_MINUTES} minutes.` }, 429)
+  }
+
+  let aiContent = null
+  let aiStatus: AiStatus = 'off'
+  if (useAi) {
+    const { system, user } = aiPrompt(records, profile.display_name, withoutContactDetails)
+    const schema = z.toJSONSchema(aiProfileSchema, { target: 'draft-7' }) as Record<string, unknown>
+    delete schema.$schema
+    const ai = await runAi(db, 'cv', { system, user, schemaName: 'skills_profile', schema, maxOutput: MAX_OUTPUT })
+    aiStatus = ai.status
+    if (ai.status === 'ok') {
+      const parsed = aiProfileSchema.safeParse(ai.output)
+      aiContent = parsed.success ? bindToEvidence(withName(parsed.data, profile.display_name), records) : null
+      if (!aiContent) aiStatus = 'rejected'
+    }
+  }
+  const content = aiContent ?? summaryProfile(profile.display_name, records, averageRating)
   if (!content) return json({ error: 'Could not write a skills profile yet.' }, 400)
 
   const doc: SkillsProfile = {
@@ -107,8 +107,8 @@ export default safe(async (req: Request) => {
     version: 1,
     issuer: 'SideGigs',
     issued_at: new Date().toISOString(),
-    written_by: ai ? 'ai' : 'summary',
-    model: ai?.model ?? null,
+    written_by: aiContent ? 'ai' : 'summary',
+    model: aiContent ? GROQ_TEXT_MODEL : null,
     demo_data: Boolean(profile.is_demo) || items.some((i) => i.is_demo),
     worker: { id: profile.id, name: profile.display_name, area: areaName(profile.area_slug) },
     based_on: { records: records.length, codes: records.map((r) => r.code), average_rating: averageRating },
@@ -125,7 +125,7 @@ export default safe(async (req: Request) => {
   }
   const { error } = await db.rpc('save_skills_profile', { p_signed: signed })
   if (error) return json({ error: error.message }, error.code === '42501' ? 403 : 400)
-  return json({ signed, aiAvailable: Boolean(apiKey), aiUsed: Boolean(ai) })
+  return json({ signed, aiAvailable, aiUsed: Boolean(aiContent), aiStatus })
 })
 
 export const config: Config = { path: '/api/skills-profile' }
