@@ -1,7 +1,9 @@
 import { z } from 'zod'
-import { CATEGORIES, categoryLabel } from './categories'
+import { CATEGORIES, categoryLabel, isCategory } from './categories'
+import type { CvSuggestedJob } from './cv-parser'
 import type { GoalContext, GoalMemory, GoalPlan, GoalSuggestion } from './earn-goal-types'
-import type { TimeWindow } from './types'
+import { workerNetCents } from './money'
+import type { DiscoverGig, TimeWindow } from './types'
 
 export function southAfricaToday(now = new Date()): string {
   return new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -92,8 +94,8 @@ export function buildGoalPlan(context: GoalContext, memory: GoalMemory, now = ne
   })
   const suggestions: GoalSuggestion[] = []
   let needed = Math.max(0, remaining - booked)
-  // A bounded, explainable shortlist; not an assertion of the globally optimal schedule.
-  while (suggestions.length < 3 && needed > 0) {
+  // Keep matching non-conflicting jobs until the worker's remaining goal is covered (up to 10 jobs).
+  while (suggestions.length < 10 && needed > 0) {
     const available = possible.filter((c) => !suggestions.some((s) => s.id === c.id || windowsConflict(c, s)))
     available.sort((a, b) => Math.abs(needed - a.worker_net_cents) - Math.abs(needed - b.worker_net_cents) ||
       a.scheduled_date.localeCompare(b.scheduled_date) || a.distance_km - b.distance_km || a.id.localeCompare(b.id))
@@ -132,5 +134,242 @@ export function buildGoalPlan(context: GoalContext, memory: GoalMemory, now = ne
       ...(context.bookings.some((b) => b.status === 'completed') ? ['Completed jobs awaiting settlement do not count as earned progress yet.'] : []),
       ...(goal.deadline < today ? ['This goal has ended. Choose a new target and deadline to start another period.'] : []),
     ],
+  }
+}
+
+// ── iBanks CV & Goal Matching Roadmap ───────────────────────────────────────
+
+export interface IbanksRoadmapStep {
+  order: number
+  id: string
+  title: string
+  category: string
+  category_label: string
+  scheduled_date: string
+  time_window: TimeWindow
+  worker_net_cents: number
+  cumulative_cents: number
+  percent_of_goal: number
+  reaches_goal: boolean
+  source: 'plan' | 'cv_expansion'
+  note: string
+}
+
+export interface IbanksCvMixItem {
+  category: string
+  category_label: string
+  job_title: string
+  jobs_count: number
+  net_per_job_cents: number
+  total_net_cents: number
+}
+
+export interface IbanksGoalRoadmap {
+  target_cents: number
+  settled_cents: number
+  booked_cents: number
+  planned_cents: number
+  extra_cv_cents: number
+  projected_total_cents: number
+  remaining_after_all_cents: number
+  goal_met_by_plan: boolean
+  goal_met_with_cv_expansion: boolean
+  steps: IbanksRoadmapStep[]
+  extra_cv_gigs: (DiscoverGig & { worker_net_cents: number; match_note: string })[]
+  unselected_cv_skills: string[]
+  cv_mix_to_close_gap: IbanksCvMixItem[]
+  summary: string
+}
+
+/**
+ * Deterministic iBanks matching roadmap:
+ * 1. Traces how each matched job builds cumulative net income toward the target.
+ * 2. If the strict filter leaves a shortfall, scans wider marketplace gigs matching the worker's CV skills
+ *    to find additional non-conflicting jobs that close the gap.
+ * 3. Computes a CV job-mix blueprint (how many jobs of each CV skill cover any remaining gap).
+ */
+export function buildIbanksGoalRoadmap(input: {
+  targetCents: number
+  deadline?: string | null
+  settledCents?: number
+  bookedCents?: number
+  suggestions?: readonly GoalSuggestion[]
+  cvSuggestedJobs: readonly CvSuggestedJob[]
+  openMarketplaceGigs?: readonly DiscoverGig[]
+  selectedSkills: readonly string[]
+  allWorkerSkills: readonly string[]
+}): IbanksGoalRoadmap {
+  const targetCents = Math.max(100, Math.round(input.targetCents || 0))
+  const settledCents = input.settledCents ?? 0
+  const bookedCents = input.bookedCents ?? 0
+  const suggestions = input.suggestions ?? []
+  const allSkills = [...new Set([...input.allWorkerSkills, ...input.selectedSkills].filter(isCategory))]
+  const unselectedCvSkills = allSkills.filter((s) => !input.selectedSkills.includes(s))
+
+  const steps: IbanksRoadmapStep[] = []
+  let runningCents = Math.max(0, settledCents) + Math.max(0, bookedCents)
+  let crossedGoal = runningCents >= targetCents
+
+  for (const s of suggestions) {
+    runningCents += s.worker_net_cents
+    const hitsNow = !crossedGoal && runningCents >= targetCents
+    if (hitsNow) crossedGoal = true
+    steps.push({
+      order: steps.length + 1,
+      id: s.id,
+      title: s.title,
+      category: s.category,
+      category_label: categoryLabel(s.category),
+      scheduled_date: s.scheduled_date,
+      time_window: s.time_window,
+      worker_net_cents: s.worker_net_cents,
+      cumulative_cents: runningCents,
+      percent_of_goal: Math.min(100, Math.round((runningCents / targetCents) * 100)),
+      reaches_goal: hitsNow,
+      source: 'plan',
+      note: s.reasons[0] ?? `Matches your ${categoryLabel(s.category).toLowerCase()} skill`,
+    })
+  }
+
+  const plannedCents = suggestions.reduce((sum, s) => sum + s.worker_net_cents, 0)
+  const goalMetByPlan = runningCents >= targetCents
+
+  // If still short, look for extra open gigs from the worker's CV skills or wider area/dates
+  const extraCvGigs: (DiscoverGig & { worker_net_cents: number; match_note: string })[] = []
+  let extraCvCents = 0
+
+  if (!goalMetByPlan && input.openMarketplaceGigs && input.openMarketplaceGigs.length > 0) {
+    const takenIds = new Set(suggestions.map((s) => s.id))
+    const takenSlots: { scheduled_date: string; time_window: TimeWindow }[] = suggestions.map((s) => ({
+      scheduled_date: s.scheduled_date,
+      time_window: s.time_window,
+    }))
+
+    const pool = input.openMarketplaceGigs
+      .filter((g) => !takenIds.has(g.id) && allSkills.includes(g.category))
+      .map((g) => ({
+        ...g,
+        worker_net_cents: workerNetCents(g.payout_cents),
+      }))
+      .filter((g) => g.worker_net_cents > 0)
+
+    while (runningCents < targetCents && extraCvGigs.length < 6) {
+      const neededNow = targetCents - runningCents
+      const available = pool.filter(
+        (g) =>
+          !extraCvGigs.some((x) => x.id === g.id) &&
+          !takenSlots.some((slot) => windowsConflict(slot, g)),
+      )
+      available.sort(
+        (a, b) =>
+          Math.abs(neededNow - a.worker_net_cents) - Math.abs(neededNow - b.worker_net_cents) ||
+          a.scheduled_date.localeCompare(b.scheduled_date) ||
+          (a.distance_km ?? 99) - (b.distance_km ?? 99),
+      )
+      const pick = available[0]
+      if (!pick) break
+
+      const fromExtraSkill = !input.selectedSkills.includes(pick.category)
+      const matchNote = fromExtraSkill
+        ? `Matches ${categoryLabel(pick.category)} from your CV — add this skill to your goal filter`
+        : input.deadline && pick.scheduled_date > input.deadline
+          ? `Scheduled ${pick.scheduled_date} — extend your deadline to include this job`
+          : `In ${pick.area_name} — widen your area or available days to include this job`
+
+      runningCents += pick.worker_net_cents
+      extraCvCents += pick.worker_net_cents
+      const hitsNow = !crossedGoal && runningCents >= targetCents
+      if (hitsNow) crossedGoal = true
+
+      extraCvGigs.push({ ...pick, match_note: matchNote })
+      takenSlots.push({ scheduled_date: pick.scheduled_date, time_window: pick.time_window })
+
+      steps.push({
+        order: steps.length + 1,
+        id: pick.id,
+        title: pick.title,
+        category: pick.category,
+        category_label: categoryLabel(pick.category),
+        scheduled_date: pick.scheduled_date,
+        time_window: pick.time_window,
+        worker_net_cents: pick.worker_net_cents,
+        cumulative_cents: runningCents,
+        percent_of_goal: Math.min(100, Math.round((runningCents / targetCents) * 100)),
+        reaches_goal: hitsNow,
+        source: 'cv_expansion',
+        note: matchNote,
+      })
+    }
+  }
+
+  const remainingAfterAllCents = Math.max(0, targetCents - runningCents)
+  const goalMetWithCvExpansion = runningCents >= targetCents
+
+  // Build CV job-mix blueprint for covering either the remaining shortfall or the full goal from CV skills
+  const gapForMix = remainingAfterAllCents > 0 ? remainingAfterAllCents : Math.max(0, targetCents - Math.max(0, settledCents) - Math.max(0, bookedCents))
+  const cvMix: IbanksCvMixItem[] = []
+  const cvJobs = input.cvSuggestedJobs.length > 0 ? input.cvSuggestedJobs : []
+
+  if (cvJobs.length > 0 && gapForMix > 0) {
+    // Distribute across the worker's top CV job types so they see a balanced mix to hit their target
+    let stillToCover = gapForMix
+    const counts = new Map<string, number>()
+    let safety = 0
+    while (stillToCover > 0 && safety < 50) {
+      for (const cj of cvJobs.slice(0, 3)) {
+        if (stillToCover <= 0) break
+        counts.set(cj.category, (counts.get(cj.category) ?? 0) + 1)
+        stillToCover = Math.max(0, stillToCover - cj.typical_net_cents)
+      }
+      safety++
+    }
+    for (const cj of cvJobs.slice(0, 3)) {
+      const count = counts.get(cj.category) ?? 0
+      if (count > 0) {
+        cvMix.push({
+          category: cj.category,
+          category_label: cj.category_label,
+          job_title: cj.title,
+          jobs_count: count,
+          net_per_job_cents: cj.typical_net_cents,
+          total_net_cents: count * cj.typical_net_cents,
+        })
+      }
+    }
+  }
+
+  let summary = ''
+  if (goalMetByPlan) {
+    summary =
+      steps.length === 0
+        ? `Your settled and booked earnings already cover your ${rand(targetCents)} goal.`
+        : `iBanks matched ${suggestions.length} open ${suggestions.length === 1 ? 'job' : 'jobs'} worth ${rand(plannedCents)} net — enough to reach 100% of your ${rand(targetCents)} goal.`
+  } else if (goalMetWithCvExpansion) {
+    summary = `Your strict filter covers ${rand(plannedCents)}, and iBanks found ${extraCvGigs.length} more CV-matched ${extraCvGigs.length === 1 ? 'job' : 'jobs'} (+${rand(extraCvCents)}) that bring you to ${rand(runningCents)} and meet your ${rand(targetCents)} goal.`
+  } else if (cvMix.length > 0) {
+    const mixParts = cvMix.map((m) => `${m.jobs_count} × ${m.job_title.toLowerCase()} (~${rand(m.total_net_cents)})`).join(' + ')
+    summary =
+      steps.length > 0
+        ? `Open matches cover ${rand(plannedCents + extraCvCents)}. Based on your CV, you can close the remaining ${rand(remainingAfterAllCents)} gap with ${mixParts}.`
+        : `Based on your extracted CV skills, iBanks worked out a practical mix to reach ${rand(targetCents)}: ${mixParts}.`
+  } else {
+    summary = `Add more skills from your CV or widen your area and available days so iBanks can match more jobs toward ${rand(targetCents)}.`
+  }
+
+  return {
+    target_cents: targetCents,
+    settled_cents: settledCents,
+    booked_cents: bookedCents,
+    planned_cents: plannedCents,
+    extra_cv_cents: extraCvCents,
+    projected_total_cents: runningCents,
+    remaining_after_all_cents: remainingAfterAllCents,
+    goal_met_by_plan: goalMetByPlan,
+    goal_met_with_cv_expansion: goalMetWithCvExpansion,
+    steps,
+    extra_cv_gigs: extraCvGigs,
+    unselected_cv_skills: unselectedCvSkills,
+    cv_mix_to_close_gap: cvMix,
+    summary,
   }
 }

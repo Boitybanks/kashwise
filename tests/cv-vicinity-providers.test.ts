@@ -3,9 +3,12 @@ import { PDFDocument, StandardFonts } from 'pdf-lib'
 import {
   extractSkillsFromCvText,
   extractTextFromCvFile,
+  formatCleanBio,
   mergeCompletedJobSkills,
   parseCvText,
+  suggestJobsFromCv,
 } from '../src/lib/cv-parser'
+import { buildIbanksGoalRoadmap } from '../src/lib/earn-goal'
 import { createLocalDb, seedUser } from './helpers/local-db'
 
 describe('CV upload & profile auto-update', () => {
@@ -62,6 +65,95 @@ describe('CV upload & profile auto-update', () => {
       'repairs',
       'gardening',
     ])
+  })
+
+  it('stitches wrapped CV lines into a clean About Me bio without mid-sentence periods or form-field noise', () => {
+    const messyCv = `
+      CURRICULUM VITAE OF BOITUMELO MBHELE
+      Surname: Mbhele
+      First Names: Boitumelo
+      Marital Status: Single
+      Gender: Male
+      Nationality: South African
+      Criminal Record: None
+      Driver's Licence: Code 10
+
+      ABOUT ME
+      Hardworking and reliable technician with 5 years of experience in
+      house painting, plumbing repairs and laptop tech support
+      around Soweto and Johannesburg.
+      I pride myself on arriving early and leaving every client satisfied.
+
+      EDUCATION
+      Highest Grade Passed: Grade 12
+      Subjects Passed: English, isiZulu, Mathematics
+      REFERENCES
+      Mr S Khumalo - 082 111 2222
+    `
+    const draft = parseCvText(messyCv, [], [{ slug: 'soweto', name: 'Soweto', city: 'Johannesburg' }])
+    expect(draft.display_name).toBe('BOITUMELO MBHELE')
+    expect(draft.bio).toContain('Hardworking and reliable technician with 5 years of experience in house painting, plumbing repairs and laptop tech support around Soweto and Johannesburg.')
+    expect(draft.bio).not.toContain('experience in. House')
+    expect(draft.bio).not.toContain('Marital Status')
+    expect(draft.bio).not.toContain('Subjects Passed')
+    expect(draft.bio).not.toContain('082 111 2222')
+    expect(draft.suggested_jobs.map((j) => j.category)).toEqual(
+      expect.arrayContaining(['painting', 'repairs', 'tech-support', 'moving']),
+    )
+  })
+
+  it('heals a legacy mangled bio that had mid-sentence periods or PDF artifacts', () => {
+    const mangled =
+      'Experienced painter and handyman with 6 years of experience in. House painting and plumbing repairs around. Soweto. FlateDecode endstream Marital Status: Single.'
+    const healed = formatCleanBio(mangled, { skills: ['painting', 'repairs'], areaName: 'Soweto' })
+    expect(healed).toContain('experience in house painting and plumbing repairs around Soweto.')
+    expect(healed).not.toContain('FlateDecode')
+    expect(healed).not.toContain('Marital Status')
+  })
+
+  it('suggests concrete jobs from extracted CV and builds an iBanks roadmap to meet an earning goal', () => {
+    const cvJobs = suggestJobsFromCv(
+      'Experienced house painter, plumbing handyman and garden landscaper.',
+      ['painting', 'repairs', 'gardening'],
+    )
+    expect(cvJobs.length).toBe(3)
+    expect(cvJobs[0].typical_net_cents).toBeGreaterThan(0)
+
+    const roadmap = buildIbanksGoalRoadmap({
+      targetCents: 150_000,
+      settledCents: 20_000,
+      bookedCents: 0,
+      suggestions: [
+        {
+          id: 'g1',
+          title: 'Paint a 2-bedroom flat',
+          category: 'painting',
+          area_slug: 'soweto',
+          scheduled_date: '2026-11-28',
+          time_window: 'morning',
+          payout_cents: 60_000,
+          fee_cents: 6_000,
+          worker_net_cents: 54_000,
+          distance_km: 1.5,
+          is_demo: false,
+          poster_eligible: true,
+          application_status: null,
+          reasons: ['Matches your painting skill'],
+          schedule_note: 'Confirm timing with client.',
+        },
+      ],
+      cvSuggestedJobs: cvJobs,
+      selectedSkills: ['painting'],
+      allWorkerSkills: ['painting', 'repairs', 'gardening'],
+    })
+
+    expect(roadmap.unselected_cv_skills).toEqual(['repairs', 'gardening'])
+    expect(roadmap.steps).toHaveLength(1)
+    expect(roadmap.steps[0].cumulative_cents).toBe(74_000)
+    expect(roadmap.remaining_after_all_cents).toBe(76_000)
+    expect(roadmap.cv_mix_to_close_gap.length).toBeGreaterThan(0)
+    const mixSum = roadmap.cv_mix_to_close_gap.reduce((acc, m) => acc + m.total_net_cents, 0)
+    expect(mixSum).toBeGreaterThanOrEqual(roadmap.remaining_after_all_cents)
   })
 })
 

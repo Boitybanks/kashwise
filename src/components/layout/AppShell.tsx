@@ -1,7 +1,9 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { Briefcase, Compass, PlusCircle, Store, User, Users, Home, LogIn, Wallet, BadgeCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { discoverGigs, fetchAreas } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { Logo } from './Logo'
 import { buttonClass, Spinner } from '../ui'
@@ -44,9 +46,32 @@ function useNavItems(): NavItem[] {
 
 export function AppShell() {
   const items = useNavItems()
-  const { userId, profile } = useAuth()
+  const { userId, profile, session } = useAuth()
   const { pathname } = useLocation()
+  const queryClient = useQueryClient()
   const isLanding = pathname === '/' || pathname === '/welcome'
+
+  // Warm the areas and open gigs cache in the background so clicking "Find work" renders immediately.
+  useEffect(() => {
+    void queryClient.prefetchQuery({ queryKey: ['areas'], queryFn: fetchAreas, staleTime: Infinity })
+    void queryClient.prefetchQuery({
+      queryKey: ['discover-gigs', 0],
+      queryFn: () => discoverGigs({ area: null, category: null, skills: null, page: 0, limit: 50 }),
+      staleTime: 60_000,
+    })
+  }, [queryClient])
+  const headerProfile =
+    profile ??
+    (userId
+      ? {
+          id: userId,
+          display_name:
+            (session?.user.user_metadata?.display_name as string | undefined) ||
+            session?.user.email?.split('@')[0] ||
+            'Me',
+          avatar_path: null,
+        }
+      : null)
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -55,17 +80,23 @@ export function AppShell() {
       </a>
       <header className="sticky top-0 z-30 border-b border-line/80 bg-canvas/95 backdrop-blur">
         <div className="page-width flex h-[76px] items-center justify-between gap-4">
-          <Logo to={userId ? (profile?.role === 'customer' ? '/my-gigs' : '/home') : '/welcome'} />
-          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+          <Logo
+            to={userId ? (profile?.role === 'customer' ? '/my-gigs' : '/home') : '/welcome'}
+            profile={headerProfile}
+          />
+          <nav aria-label="Main" className="hidden items-center gap-1.5 md:flex">
             {items.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `rounded-lg px-3 py-2 text-xs font-semibold transition ${isActive ? 'bg-brand-50 text-brand-500' : 'text-ink-soft hover:text-ink hover:bg-surface'}`
+                  `inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition lg:text-sm ${
+                    isActive ? 'bg-brand-50 text-brand-400 ring-1 ring-brand-500/30' : 'text-ink-soft hover:bg-surface hover:text-ink'
+                  }`
                 }
               >
+                <item.icon className="size-4 shrink-0" aria-hidden />
                 {item.label}
               </NavLink>
             ))}

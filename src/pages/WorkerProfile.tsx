@@ -15,6 +15,7 @@ import {
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryLabel } from '../lib/categories'
+import { formatCleanBio } from '../lib/cv-parser'
 import { friendlyError } from '../lib/errors'
 import { formatDay, formatMonthYear } from '../lib/format'
 import { useAreaLookup } from '../lib/hooks'
@@ -95,7 +96,7 @@ function ClientSections({ clientId, first, bio, isOwner }: { clientId: string; f
         {bio && (
           <Card className="p-5">
             <h2 className="text-lg font-semibold">About {first}</h2>
-            <p className="mt-1 whitespace-pre-line text-ink-soft">{bio}</p>
+            <p className="mt-1.5 whitespace-pre-line leading-relaxed text-ink-soft">{formatCleanBio(bio)}</p>
           </Card>
         )}
         <Card className="p-5">
@@ -358,7 +359,9 @@ export default function WorkerProfile() {
             {p.bio && (
               <Card className="p-5">
                 <h2 className="text-lg font-semibold">About {first}</h2>
-                <p className="mt-1 whitespace-pre-line text-ink-soft">{p.bio}</p>
+                <p className="mt-1.5 whitespace-pre-line leading-relaxed text-ink-soft">
+                  {formatCleanBio(p.bio, { skills: allSkills, headline: p.headline, areaName: area?.name })}
+                </p>
               </Card>
             )}
             <SkillsProfile workerId={p.id} first={first} isOwner={isOwner} codes={items.map((i) => i.record_code)} />

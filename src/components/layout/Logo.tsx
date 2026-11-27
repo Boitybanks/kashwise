@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import { avatarUrl } from '../../lib/supabase'
+import type { Profile } from '../../lib/types'
+import { Avatar } from '../ui'
 
 /** Mark: bold K monogram with a verified gold checkmark and coin (Earn it. Prove it. Grow it.). */
 export function LogoMark({ className = 'size-8' }: { className?: string }) {
@@ -24,10 +27,25 @@ export function LogoMark({ className = 'size-8' }: { className?: string }) {
   )
 }
 
-export function Logo({ to = '/' }: { to?: string }) {
+export function Logo({
+  to = '/',
+  profile,
+}: {
+  to?: string
+  profile?: Pick<Profile, 'id' | 'display_name' | 'avatar_path'> | null
+}) {
   return (
-    <Link to={to} className="flex items-center gap-2 rounded-lg" aria-label="KashWise home">
-      <LogoMark />
+    <Link to={to} className="group flex items-center gap-2.5 rounded-lg" aria-label="KashWise home">
+      {profile ? (
+        <span
+          className="rounded-full ring-2 ring-brand-500/50 transition group-hover:ring-brand-400"
+          title={`${profile.display_name} — Home`}
+        >
+          <Avatar name={profile.display_name} id={profile.id} src={avatarUrl(profile.avatar_path)} size="sm" />
+        </span>
+      ) : (
+        <LogoMark />
+      )}
       <span className="text-[23px] font-semibold tracking-[-.06em] text-ink">
         Kash<span className="text-brand-500">Wise</span>
       </span>

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, BadgeCheck, Download, ShieldCheck, Star } from 'lucide-react'
 import { fetchProfile, fetchSkillsProfile, fetchWorkCredential } from '../lib/api'
 import { categoryLabel } from '../lib/categories'
+import { formatCleanBio } from '../lib/cv-parser'
 import { friendlyError } from '../lib/errors'
 import { formatDate, formatMonthYear } from '../lib/format'
 import { cvFacts, cvReference, cvSkills, cvSummary } from '../lib/proofscript-cv'
@@ -142,7 +143,7 @@ export default function ProofScriptCv() {
           <section className="cv-section cv-own-words" aria-labelledby="cv-words-h">
             <h2 id="cv-words-h">Personal statement</h2>
             {p.headline && <p className="font-semibold">{p.headline}</p>}
-            {p.bio && <p>{p.bio}</p>}
+            {p.bio && <p>{formatCleanBio(p.bio, { skills: p.skills, headline: p.headline, areaName: w.area })}</p>}
           </section>
         )}
 

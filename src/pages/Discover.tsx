@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { Compass, MapPin } from 'lucide-react'
 import { discoverGigs, updateProfile } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORIES } from '../lib/categories'
+import { loadStoredCvDraft } from '../lib/cv-parser'
 import {
+  distanceKm,
   filterGigsByVicinity,
   nextVicinityRadius,
   VICINITY_STEPS,
@@ -24,8 +26,9 @@ export default function Discover() {
   const { profile, userId, refreshProfile } = useAuth()
   const areaOf = useAreaLookup()
   const [areaOverride, setAreaOverride] = useState<string | null>(null)
-  // Check gigs in my area first (radiusKm = 0), then let the user expand the vicinity step by step.
-  const [radiusKm, setRadiusKm] = useState<VicinityRadius>(0)
+  // 'auto' picks the closest vicinity step that has gigs so workers see local work immediately without getting stuck on an empty screen.
+  const [radiusChoice, setRadiusChoice] = useState<VicinityRadius | 'auto'>('auto')
+  const [extraPages, setExtraPages] = useState(0)
   const [params, setParams] = useSearchParams()
   const category = CATEGORIES.some((c) => c.slug === params.get('category')) ? params.get('category') : null
   const setCategory = (value: string | null) =>
@@ -35,8 +38,14 @@ export default function Discover() {
       else next.delete('category')
       return next
     })
+
+  const storedCv = useMemo(() => loadStoredCvDraft(userId), [userId])
+  const workerSkills = useMemo(
+    () => [...new Set([...(profile?.skills ?? []), ...(storedCv?.skills ?? [])])],
+    [profile?.skills, storedCv?.skills],
+  )
   const isWorker = profile?.role === 'worker'
-  const hasSkills = isWorker && Boolean(profile?.skills?.length)
+  const hasSkills = isWorker && workerSkills.length > 0
   const [showAll, setShowAll] = useState(false)
   const paused = isWorker && profile?.open_to_work === false
 
@@ -45,41 +54,81 @@ export default function Discover() {
   const myArea = areaOf(profile?.area_slug)
   // Workers see work that fits their skills first. Choosing a category or "All work" widens it.
   const matched = hasSkills && !showAll && !category
-  const skills = matched ? profile!.skills : null
 
-  const query = useInfiniteQuery({
-    queryKey: ['discover', area, category, skills],
-    queryFn: ({ pageParam }) =>
-      discoverGigs({ area: area || null, category, skills, page: pageParam, limit: DISCOVER_BATCH }),
-    initialPageParam: 0,
-    getNextPageParam: (last, pages) => (last.length === DISCOVER_BATCH ? pages.length : undefined),
+  // Fetch the full open-gigs batch once with a distinct queryKey (never colliding with useInfiniteQuery)
+  // and filter in memory so switching tabs, categories, skills or vicinity is instant (0ms).
+  const query = useQuery({
+    queryKey: ['discover-gigs', extraPages],
+    queryFn: async () => {
+      const pages = await Promise.all(
+        Array.from({ length: extraPages + 1 }, (_, page) =>
+          discoverGigs({ area: null, category: null, skills: null, page, limit: DISCOVER_BATCH }),
+        ),
+      )
+      return pages.flat()
+    },
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
   })
-  const allGigs = useMemo(() => query.data?.pages.flat() ?? [], [query.data])
 
-  const effectiveRadius: VicinityRadius = area ? radiusKm : null
+  // Enrich each gig with distance from the currently selected area and filter by category/skills in memory
+  const filteredBySkillAndCat = useMemo(() => {
+    const raw = query.data ?? []
+    const origin = area ? areaOf(area) : undefined
+    const enriched = raw.map((g) => {
+      if (!origin) return g
+      if (g.area_slug === area) return { ...g, distance_km: 0 }
+      const target = areaOf(g.area_slug)
+      const computedDist = target ? Math.round(distanceKm(origin, target) * 10) / 10 : g.distance_km
+      return { ...g, distance_km: computedDist }
+    })
+
+    // Sort nearby first, then newest
+    enriched.sort((a, b) => (a.distance_km ?? 9999) - (b.distance_km ?? 9999))
+
+    return enriched.filter((g) => {
+      if (category && g.category !== category) return false
+      if (matched && !workerSkills.includes(g.category)) return false
+      return true
+    })
+  }, [query.data, area, areaOf, category, matched, workerSkills])
+
+  // When radiusChoice is 'auto', pick the tightest radius step that has at least 1 gig (or 0 if none exist anywhere)
+  const effectiveRadius: VicinityRadius = useMemo(() => {
+    if (!area) return null
+    if (radiusChoice !== 'auto') return radiusChoice
+    for (const step of VICINITY_STEPS) {
+      if (filterGigsByVicinity(filteredBySkillAndCat, area, step, areaOf).length > 0) {
+        return step
+      }
+    }
+    return 0
+  }, [area, radiusChoice, filteredBySkillAndCat, areaOf])
+
   const gigs = useMemo(
-    () => filterGigsByVicinity(allGigs, area, effectiveRadius, areaOf),
-    [allGigs, area, effectiveRadius, areaOf],
+    () => filterGigsByVicinity(filteredBySkillAndCat, area, effectiveRadius, areaOf),
+    [filteredBySkillAndCat, area, effectiveRadius, areaOf],
   )
 
   const nextRadius = area ? nextVicinityRadius(effectiveRadius) : undefined
   const nextRadiusCount = useMemo(() => {
     if (!area || nextRadius === undefined) return 0
-    return filterGigsByVicinity(allGigs, area, nextRadius, areaOf).length
-  }, [allGigs, area, nextRadius, areaOf])
+    return filterGigsByVicinity(filteredBySkillAndCat, area, nextRadius, areaOf).length
+  }, [filteredBySkillAndCat, area, nextRadius, areaOf])
+
+  const hasMorePages = (query.data?.length ?? 0) >= (extraPages + 1) * DISCOVER_BATCH
 
   function handleAreaChange(newArea: string) {
     setAreaOverride(newArea)
-    // When choosing a specific area, check gigs in that area first; when choosing "Anywhere", show all.
-    setRadiusKm(newArea ? 0 : null)
+    setRadiusChoice(newArea ? 'auto' : null)
   }
 
   function expandVicinity() {
     if (nextRadius !== undefined) {
-      setRadiusKm(nextRadius)
+      setRadiusChoice(nextRadius)
     } else {
       setAreaOverride('')
-      setRadiusKm(null)
+      setRadiusChoice(null)
     }
   }
 
@@ -88,6 +137,11 @@ export default function Discover() {
     await updateProfile(userId, { open_to_work: true })
     await refreshProfile()
   }
+
+  const profileWithCvSkills = useMemo(
+    () => (profile ? { ...profile, skills: workerSkills } : null),
+    [profile, workerSkills],
+  )
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -175,7 +229,7 @@ export default function Discover() {
                 type="button"
                 onClick={() => {
                   setAreaOverride(profile.area_slug)
-                  setRadiusKm(0)
+                  setRadiusChoice('auto')
                 }}
                 className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-2.5 py-1 text-xs font-semibold text-brand-300 transition hover:bg-brand-500/25"
               >
@@ -185,13 +239,13 @@ export default function Discover() {
             {area ? (
               VICINITY_STEPS.map((step) => {
                 const active = effectiveRadius === step
-                const count = filterGigsByVicinity(allGigs, area, step, areaOf).length
+                const count = filterGigsByVicinity(filteredBySkillAndCat, area, step, areaOf).length
                 return (
                   <button
                     key={step === null ? 'all' : step}
                     type="button"
                     aria-pressed={active}
-                    onClick={() => setRadiusKm(step)}
+                    onClick={() => setRadiusChoice(step)}
                     className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                       active
                         ? 'bg-brand-600 text-white'
@@ -223,7 +277,7 @@ export default function Discover() {
         </div>
       </div>
 
-      {query.isPending ? (
+      {query.isPending && !query.data ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, i) => (
             <Skeleton key={i} className="h-44" />
@@ -254,7 +308,7 @@ export default function Discover() {
                   setCategory(null)
                   setShowAll(true)
                   setAreaOverride('')
-                  setRadiusKm(null)
+                  setRadiusChoice(null)
                 }}
               >
                 See all work
@@ -270,7 +324,7 @@ export default function Discover() {
         <>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {gigs.map((g) => (
-              <GigCard key={g.id} gig={g} reasons={isWorker ? matchReasons(g, profile) : []} />
+              <GigCard key={g.id} gig={g} reasons={isWorker ? matchReasons(g, profileWithCvSkills) : []} />
             ))}
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -283,12 +337,12 @@ export default function Discover() {
                 </Button>
               )}
             </div>
-            {query.hasNextPage && (
+            {hasMorePages && (
               <Button
                 variant="secondary"
                 size="sm"
-                loading={query.isFetchingNextPage}
-                onClick={() => query.fetchNextPage()}
+                loading={query.isFetching}
+                onClick={() => setExtraPages((p) => p + 1)}
               >
                 Load more
               </Button>
