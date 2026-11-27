@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { MapPin } from 'lucide-react'
 import { categoryLabel } from '../../lib/categories'
 import { CategoryIcon } from '../CategoryIcon'
 import { formatDay } from '../../lib/format'
+import { formatDistance } from '../../lib/geo'
 import { TIME_WINDOW_LABEL } from '../../lib/gig-rules'
 import { formatRand, workerNetCents } from '../../lib/money'
 import { evidenceUrl } from '../../lib/supabase'
@@ -9,11 +11,15 @@ import type { DiscoverGig } from '../../lib/types'
 
 export function GigCard({ gig, reasons = [] }: { gig: DiscoverGig; reasons?: string[] }) {
   const photo = gig.photo_paths?.[0]
+  const distLabel = formatDistance(gig.distance_km)
   return (
     <Link to={`/gigs/${gig.id}`} className="group flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-brand-200">
       {photo && <img src={evidenceUrl(photo)} alt="" loading="lazy" className="aspect-[16/10] w-full object-cover" />}
       <div className="flex flex-1 flex-col p-4">
-        <p className="flex items-center gap-1.5 text-xs text-muted"><CategoryIcon category={gig.category} className="size-3.5" /> {categoryLabel(gig.category)}</p>
+        <div className="flex items-center justify-between gap-2 text-xs text-muted">
+          <span className="flex items-center gap-1.5"><CategoryIcon category={gig.category} className="size-3.5" /> {categoryLabel(gig.category)}</span>
+          {distLabel && <span className="inline-flex items-center gap-1 font-medium text-ink-soft"><MapPin className="size-3 text-brand-500" aria-hidden />{distLabel}</span>}
+        </div>
         <h3 className="mt-1.5 line-clamp-2 text-[17px] font-semibold leading-snug">{gig.title}</h3>
         {reasons.length > 0 && (
           <ul aria-label="Why this matches you" className="mt-2 flex flex-wrap gap-1.5">

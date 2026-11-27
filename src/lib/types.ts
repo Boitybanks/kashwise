@@ -241,6 +241,15 @@ export interface DiscoverWorker {
   avatar_path: string | null
 }
 
+/** A service provider saved by a client so they can retain their regular people and easily request a service. */
+export interface SavedProvider {
+  client_id: string
+  worker_id: string
+  label: string | null
+  created_at: string
+  worker: Pick<Profile, 'id' | 'display_name' | 'headline' | 'area_slug' | 'skills' | 'avatar_path' | 'is_demo' | 'open_to_work'> | null
+}
+
 export interface ImpactMetrics {
   gigs_posted: number
   gigs_matched: number

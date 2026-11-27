@@ -21,6 +21,7 @@ import type {
   ProfileDocument,
   RevealedContact,
   Review,
+  SavedProvider,
   Service,
   Transaction,
   WalletSummary,
@@ -75,13 +76,15 @@ export async function discoverGigs(params: {
   category?: string | null
   skills?: string[] | null
   page: number
+  limit?: number
 }): Promise<DiscoverGig[]> {
+  const limit = params.limit ?? PAGE_SIZE
   return rpc<DiscoverGig[]>('discover_gigs', {
     p_area: params.area ?? null,
     p_category: params.category ?? null,
     p_skills: params.skills?.length ? params.skills : null,
-    p_limit: PAGE_SIZE,
-    p_offset: params.page * PAGE_SIZE,
+    p_limit: limit,
+    p_offset: params.page * limit,
   })
 }
 
@@ -115,6 +118,129 @@ export async function fetchHiredBefore(clientId: string): Promise<WorkerHit[]> {
   ) as unknown as { worker: WorkerHit | null }[]
   const seen = new Set<string>()
   return rows.flatMap((r) => (r.worker && !seen.has(r.worker.id) && seen.add(r.worker.id) ? [r.worker] : [])).slice(0, 8)
+}
+
+// ── Saved service providers (clients retain their regular providers & request services) ──
+const SAVED_PROVIDERS_KEY = (clientId: string) => `kashwise_saved_providers_${clientId}`
+
+interface LocalSavedEntry {
+  worker_id: string
+  label: string | null
+  created_at: string
+}
+
+function readLocalSavedProviders(clientId: string): LocalSavedEntry[] {
+  if (typeof window === 'undefined' || !window.localStorage) return []
+  try {
+    const raw = window.localStorage.getItem(SAVED_PROVIDERS_KEY(clientId))
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeLocalSavedProviders(clientId: string, entries: LocalSavedEntry[]) {
+  if (typeof window === 'undefined' || !window.localStorage) return
+  try {
+    window.localStorage.setItem(SAVED_PROVIDERS_KEY(clientId), JSON.stringify(entries.slice(0, 50)))
+  } catch {
+    /* ignore storage quota errors */
+  }
+}
+
+export async function fetchSavedProviders(clientId: string): Promise<SavedProvider[]> {
+  const localEntries = readLocalSavedProviders(clientId)
+  const { data, error } = await supabase
+    .from('client_saved_providers')
+    .select('client_id, worker_id, label, created_at, worker:profiles!client_saved_providers_worker_id_fkey(id, display_name, headline, area_slug, skills, avatar_path, is_demo, open_to_work)')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+
+  if (!error && data) {
+    const dbRows = data as unknown as SavedProvider[]
+    const dbWorkerIds = new Set(dbRows.map((r) => r.worker_id))
+    const missingLocal = localEntries.filter((e) => !dbWorkerIds.has(e.worker_id))
+    if (missingLocal.length === 0) return dbRows
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, headline, area_slug, skills, avatar_path, is_demo, open_to_work')
+      .in('id', missingLocal.map((e) => e.worker_id))
+    const byId = new Map((profiles ?? []).map((p) => [p.id as string, p as SavedProvider['worker']]))
+    const merged: SavedProvider[] = [
+      ...dbRows,
+      ...missingLocal
+        .map((e) => ({ client_id: clientId, worker_id: e.worker_id, label: e.label, created_at: e.created_at, worker: byId.get(e.worker_id) ?? null }))
+        .filter((r) => r.worker !== null),
+    ]
+    return merged
+  }
+
+  // Fallback before migration 20261127000100 is applied on live Supabase
+  if (localEntries.length === 0) return []
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, display_name, headline, area_slug, skills, avatar_path, is_demo, open_to_work')
+    .in('id', localEntries.map((e) => e.worker_id))
+  const byId = new Map((profiles ?? []).map((p) => [p.id as string, p as SavedProvider['worker']]))
+  return localEntries
+    .map((e) => ({
+      client_id: clientId,
+      worker_id: e.worker_id,
+      label: e.label,
+      created_at: e.created_at,
+      worker: byId.get(e.worker_id) ?? null,
+    }))
+    .filter((r) => r.worker !== null)
+}
+
+export async function saveClientProvider(clientId: string, workerId: string, label?: string | null): Promise<void> {
+  const cleanLabel = label?.trim() ? label.trim().slice(0, 60) : null
+  const existing = readLocalSavedProviders(clientId).filter((e) => e.worker_id !== workerId)
+  writeLocalSavedProviders(clientId, [{ worker_id: workerId, label: cleanLabel, created_at: new Date().toISOString() }, ...existing])
+  const { error } = await supabase.rpc('save_client_provider', { p_worker: workerId, p_label: cleanLabel })
+  // Ignore missing-RPC error on unmigrated live database since localStorage already saved it
+  if (error && !/save_client_provider|function|schema cache/i.test(error.message ?? '')) throw error
+}
+
+export async function removeClientProvider(clientId: string, workerId: string): Promise<void> {
+  const existing = readLocalSavedProviders(clientId).filter((e) => e.worker_id !== workerId)
+  writeLocalSavedProviders(clientId, existing)
+  const { error } = await supabase.rpc('remove_client_provider', { p_worker: workerId })
+  if (error && !/remove_client_provider|function|schema cache/i.test(error.message ?? '')) throw error
+}
+
+/** Direct service request from a client to one of their retained/chosen service providers. */
+export async function requestProviderService(workerId: string, input: GigInput): Promise<string> {
+  const id = crypto.randomUUID()
+  const envelope = await encryptGigPrivate(id, input)
+  const { data, error } = await supabase.rpc('request_provider_service', {
+    p_id: id,
+    p_worker: workerId,
+    p_title: input.title,
+    p_category: input.category,
+    p_description: input.description,
+    p_area: input.area_slug,
+    p_date: input.scheduled_date,
+    p_time_window: input.time_window,
+    p_payout_cents: input.payout_cents,
+    p_envelope: envelope,
+  })
+  if (!error && data) return data as string
+  if (error && !/request_provider_service|function|schema cache/i.test(error.message ?? '')) throw error
+  // Fallback before migration 20261127000100 is applied on live Supabase: create the gig via create_gig
+  return rpc<string>('create_gig', {
+    p_id: id,
+    p_title: input.title,
+    p_category: input.category,
+    p_description: input.description,
+    p_area: input.area_slug,
+    p_date: input.scheduled_date,
+    p_time_window: input.time_window,
+    p_payout_cents: input.payout_cents,
+    p_envelope: envelope,
+  })
 }
 
 // ── Profiles & portfolio ───────────────────────────────────────────────────

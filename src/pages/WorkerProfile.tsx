@@ -2,10 +2,20 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { BadgeCheck, CalendarCheck, ChevronRight, Copy, Eye, EyeOff, FileBadge, MapPin, QrCode as QrIcon, Share2, Star } from 'lucide-react'
-import { discoverServices, fetchClientActivity, fetchPortfolio, fetchProfile, fetchWorkerStats } from '../lib/api'
+import { BadgeCheck, CalendarCheck, CalendarDays, ChevronRight, Copy, Eye, EyeOff, FileBadge, MapPin, Plus, QrCode as QrIcon, Share2, Star, UserCheck } from 'lucide-react'
+import {
+  discoverServices,
+  fetchClientActivity,
+  fetchPortfolio,
+  fetchProfile,
+  fetchSavedProviders,
+  fetchWorkerStats,
+  removeClientProvider,
+  saveClientProvider,
+} from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryLabel } from '../lib/categories'
+import { friendlyError } from '../lib/errors'
 import { formatDay, formatMonthYear } from '../lib/format'
 import { useAreaLookup } from '../lib/hooks'
 import { formatRand, workerNetCents } from '../lib/money'
@@ -18,6 +28,7 @@ import { SharedDocuments } from '../components/profile/Documents'
 import { PortfolioRecord } from '../components/portfolio/PortfolioRecord'
 import { ProofScriptEmptyState } from '../components/portfolio/ProofScriptEmptyState'
 import { SkillsProfile } from '../components/portfolio/SkillsProfile'
+import { RequestServiceModal } from '../components/service/SavedProvidersSection'
 import { WorkerServices } from '../components/service/WorkerServices'
 import { ReportButton } from '../components/ReportButton'
 import NotFound from './NotFound'
@@ -144,18 +155,26 @@ function ClientSections({ clientId, first, bio, isOwner }: { clientId: string; f
 export default function WorkerProfile() {
   const { id = '' } = useParams()
   const { hash } = useLocation()
-  const { userId } = useAuth()
+  const { userId, profile: viewerProfile } = useAuth()
   const toast = useToast()
   const areaOf = useAreaLookup()
   const [showQr, setShowQr] = useState(false)
   const [hideEarnings, setHideEarnings] = useState(false)
+  const [requestOpen, setRequestOpen] = useState(false)
+  const [saveBusy, setSaveBusy] = useState(false)
   const isOwner = userId === id
+  const isClientViewer = Boolean(userId) && !isOwner && viewerProfile?.role === 'customer'
 
   const profileQ = useQuery({ queryKey: ['profile', id], queryFn: () => fetchProfile(id) })
   const statsQ = useQuery({ queryKey: ['worker-stats', id], queryFn: () => fetchWorkerStats(id) })
   const portfolioQ = useQuery({ queryKey: ['portfolio', id], queryFn: () => fetchPortfolio(id) })
   const servicesQ = useQuery({ queryKey: ['services', 'worker', id], queryFn: () => discoverServices({ worker: id, page: 0 }), enabled: profileQ.data?.role === 'worker' })
   const clientQ = useQuery({ queryKey: ['client-activity', id], queryFn: () => fetchClientActivity(id), enabled: profileQ.data?.role === 'customer' })
+  const savedQ = useQuery({
+    queryKey: ['saved-providers', userId],
+    queryFn: () => fetchSavedProviders(userId!),
+    enabled: isClientViewer,
+  })
   const highlighted = hash ? decodeURIComponent(hash.slice(1)) : ''
 
   useEffect(() => {
@@ -173,8 +192,30 @@ export default function WorkerProfile() {
   const first = p.display_name.split(' ')[0]
   const url = `${window.location.origin}/w/${p.id}`
   const isWorker = p.role === 'worker' || items.length > 0
-  const tagline = p.headline || p.skills.slice(0, 3).map(categoryLabel).join(' • ')
+  const provenSlugs = (s?.categories ?? []).map((c) => c.category)
+  const allSkills = [...new Set([...p.skills, ...provenSlugs])]
+  const tagline = p.headline || allSkills.slice(0, 3).map(categoryLabel).join(' • ')
   const decided = s ? s.completed + s.cancelled_after_match : 0
+  const isSavedProvider = (savedQ.data ?? []).some((x) => x.worker_id === p.id)
+
+  async function toggleSaved() {
+    if (!userId || !p) return
+    setSaveBusy(true)
+    try {
+      if (isSavedProvider) {
+        await removeClientProvider(userId, p.id)
+        toast.show(`${p.display_name} removed from your service providers.`)
+      } else {
+        await saveClientProvider(userId, p.id, null)
+        toast.show(`${p.display_name} added to your service providers.`)
+      }
+      await savedQ.refetch()
+    } catch (err) {
+      toast.show(friendlyError(err), 'error')
+    } finally {
+      setSaveBusy(false)
+    }
+  }
 
   const stats: { value: ReactNode; label: string }[] = [
     { value: s?.completed ?? '—', label: 'Completed gigs' },
@@ -253,9 +294,26 @@ export default function WorkerProfile() {
             </p>
           </div>
           <div className="flex w-full flex-wrap justify-center gap-2 sm:w-auto sm:flex-col sm:items-stretch">
-            {isWorker && !isOwner && (servicesQ.data?.length
-              ? <Button onClick={() => document.getElementById('services-h')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Book {first}</Button>
-              : <ButtonLink to="/gigs/new">Post a job</ButtonLink>)}
+            {isWorker && !isOwner && (
+              isClientViewer ? (
+                <>
+                  <Button onClick={() => setRequestOpen(true)}>
+                    <CalendarDays className="size-4" aria-hidden /> Request service
+                  </Button>
+                  <Button variant="secondary" loading={saveBusy} onClick={toggleSaved}>
+                    {isSavedProvider ? (
+                      <><UserCheck className="size-4" aria-hidden /> In my providers</>
+                    ) : (
+                      <><Plus className="size-4" aria-hidden /> Add service provider</>
+                    )}
+                  </Button>
+                </>
+              ) : servicesQ.data?.length ? (
+                <Button onClick={() => document.getElementById('services-h')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Book {first}</Button>
+              ) : (
+                <ButtonLink to="/gigs/new">Post a job</ButtonLink>
+              )
+            )}
             {isWorker && <ButtonLink to={`/w/${p.id}/cv`} variant={isOwner ? 'primary' : 'secondary'}><FileBadge className="size-4" aria-hidden /> View verified CV</ButtonLink>}
             <Button variant="secondary" onClick={share}><Share2 className="size-4" aria-hidden /> {isWorker ? 'Share ProofScript' : 'Share profile'}</Button>
             {isWorker && (
@@ -304,16 +362,13 @@ export default function WorkerProfile() {
               </Card>
             )}
             <SkillsProfile workerId={p.id} first={first} isOwner={isOwner} codes={items.map((i) => i.record_code)} />
-            <ProvenSkills stats={s} claimed={p.skills} />
+            <ProvenSkills stats={s} claimed={allSkills} />
             <WorkerServices workerId={p.id} first={first} isOwner={isOwner} />
             <section id="experience" aria-labelledby="records-h">
               <h2 id="records-h" className="text-lg font-semibold text-ink">Work gallery</h2>
               <div className="mb-3" />
               {portfolioQ.isPending ? <Spinner /> : portfolioQ.isError ? <ErrorState error={portfolioQ.error} onRetry={() => portfolioQ.refetch()} /> : items.length === 0 ? (
                 <ProofScriptEmptyState isOwner={isOwner} firstName={first} />
-
-
-
               ) : (
                 <div className="space-y-3">
                   {items.map((item) => <PortfolioRecord key={item.id} item={item} isOwner={isOwner} highlighted={item.record_code === highlighted} />)}
@@ -330,6 +385,21 @@ export default function WorkerProfile() {
         </div>
       ) : (
         <ClientSections clientId={p.id} first={first} bio={p.bio} isOwner={isOwner} />
+      )}
+
+      {requestOpen && (
+        <RequestServiceModal
+          worker={{
+            id: p.id,
+            display_name: p.display_name,
+            headline: p.headline,
+            area_slug: p.area_slug,
+            skills: allSkills,
+            avatar_path: p.avatar_path,
+            is_demo: p.is_demo,
+          }}
+          onClose={() => setRequestOpen(false)}
+        />
       )}
     </div>
   )

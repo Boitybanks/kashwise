@@ -1,14 +1,16 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Lock, LogOut } from 'lucide-react'
-import { createProfile, hasSavedPhone, removePhone, savePhone, updateProfile } from '../lib/api'
+import { BadgeCheck, FileUp, Lock, LogOut, RotateCcw } from 'lucide-react'
+import { createProfile, fetchWorkerStats, hasSavedPhone, removePhone, savePhone, updateProfile, uploadDocument } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { CATEGORIES } from '../lib/categories'
+import { CATEGORIES, categoryLabel } from '../lib/categories'
+import { extractTextFromCvFile, mergeCompletedJobSkills, parseCvText } from '../lib/cv-parser'
 import { friendlyError } from '../lib/errors'
+import { useAreas } from '../lib/hooks'
 import type { Role } from '../lib/types'
-import { firstError, phoneSchema, profileSchema } from '../lib/validation'
-import { Button, ButtonLink, Card, Field, PageHeader } from '../components/ui'
+import { firstError, phoneSchema, profileSchema, validatePdf } from '../lib/validation'
+import { Badge, Button, ButtonLink, Card, Field, PageHeader } from '../components/ui'
 import { AreaSelect } from '../components/AreaSelect'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { DictatePanel } from '../components/DictatePanel'
@@ -26,6 +28,7 @@ export default function Profile() {
 
 function ProfileForm() {
   const { userId, profile, refreshProfile, signOut, session } = useAuth()
+  const { data: areas } = useAreas()
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))
   const navigate = useNavigate()
@@ -46,14 +49,118 @@ function ProfileForm() {
   const [phone, setPhone] = useState('')
   const [phoneError, setPhoneError] = useState('')
   const [phoneBusy, setPhoneBusy] = useState(false)
+
+  // CV upload state
+  const cvInputRef = useRef<HTMLInputElement>(null)
+  const [cvBusy, setCvBusy] = useState(false)
+  const [cvFileName, setCvFileName] = useState<string | null>(null)
+  const [cvSummaryNote, setCvSummaryNote] = useState<string | null>(null)
+  const [cvUndoState, setCvUndoState] = useState<typeof form | null>(null)
+  const [saveCvToDocs, setSaveCvToDocs] = useState(true)
+
   const phoneQ = useQuery({ queryKey: ['has-phone', userId], queryFn: () => hasSavedPhone(userId!), enabled: Boolean(userId) && !isSetup })
+  const statsQ = useQuery({
+    queryKey: ['worker-stats', userId],
+    queryFn: () => fetchWorkerStats(userId!),
+    enabled: Boolean(userId) && !isSetup,
+  })
+
+  const completedCategories = useMemo(
+    () => (statsQ.data?.categories ?? []).filter((c) => c.count > 0).map((c) => c.category),
+    [statsQ.data?.categories],
+  )
+  const displayedSkills = useMemo(
+    () => mergeCompletedJobSkills(form.skills, completedCategories),
+    [form.skills, completedCategories],
+  )
+
+  // Automatically persist any new skills earned from completed jobs to the worker's profile in Supabase
+  useEffect(() => {
+    if (!userId || isSetup || readOnly || completedCategories.length === 0) return
+    const currentSkills = profile?.skills ?? []
+    const merged = mergeCompletedJobSkills(currentSkills, completedCategories)
+    if (merged.length > currentSkills.length) {
+      updateProfile(userId, { skills: merged })
+        .then(() => refreshProfile())
+        .catch(() => {})
+    }
+  }, [userId, isSetup, readOnly, profile?.skills, completedCategories, refreshProfile])
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }))
-  const toggleSkill = (slug: string) => set('skills', form.skills.includes(slug) ? form.skills.filter((s) => s !== slug) : [...form.skills, slug])
+  const toggleSkill = (slug: string) =>
+    set('skills', displayedSkills.includes(slug) ? displayedSkills.filter((s) => s !== slug) : [...displayedSkills, slug])
+
+  async function onCvFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCvBusy(true)
+    setCvSummaryNote(null)
+    try {
+      const rawText = await extractTextFromCvFile(file)
+      const draft = parseCvText(rawText || file.name.replace(/\.[^.]+$/, ''), form.skills, areas ?? [])
+      const snapshot = { ...form }
+      const nextForm = {
+        ...form,
+        display_name: form.display_name || draft.display_name || '',
+        area_slug: form.area_slug || draft.area_slug || '',
+        headline: draft.headline || form.headline,
+        bio: draft.bio || form.bio,
+        skills: mergeCompletedJobSkills(draft.skills, completedCategories),
+      }
+      setCvUndoState(snapshot)
+      setForm(nextForm)
+      setCvFileName(file.name)
+
+      // If profile already exists and isn't read-only, save the updated profile right away
+      let savedToProfile = false
+      if (!isSetup && !readOnly && userId && nextForm.display_name && nextForm.area_slug) {
+        try {
+          await updateProfile(userId, {
+            headline: nextForm.headline || null,
+            bio: nextForm.bio || null,
+            skills: nextForm.skills,
+          })
+          await refreshProfile()
+          await queryClient.invalidateQueries({ queryKey: ['profile', userId] })
+          savedToProfile = true
+        } catch {
+          // Form is still updated for manual review & save
+        }
+      }
+
+      // Optionally also upload the CV PDF to the user's Documents if it's a valid PDF
+      let uploadedDoc = false
+      if (!isSetup && !readOnly && userId && saveCvToDocs && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
+        const pdfProblem = await validatePdf(file)
+        if (!pdfProblem) {
+          try {
+            await uploadDocument(userId, { file, kind: 'qualification', title: 'CV / Resume', isPublic: true })
+            await queryClient.invalidateQueries({ queryKey: ['documents', userId] })
+            uploadedDoc = true
+          } catch {
+            // Ignore if document limit reached
+          }
+        }
+      }
+
+      const addedLabels = draft.added_skills.map(categoryLabel)
+      const skillMsg = addedLabels.length > 0 ? `Added skills: ${addedLabels.join(', ')}.` : `Matched ${nextForm.skills.length} skill${nextForm.skills.length === 1 ? '' : 's'}.`
+      setCvSummaryNote(
+        `${savedToProfile ? 'Profile updated from your CV.' : 'Drafted profile from your CV.'} ${skillMsg}${uploadedDoc ? ' CV PDF also saved to your documents.' : ''}`,
+      )
+      toast.show(savedToProfile ? 'CV uploaded and profile updated!' : 'CV read! Review and save your profile.')
+    } catch (err) {
+      toast.show(friendlyError(err), 'error')
+    } finally {
+      setCvBusy(false)
+      if (cvInputRef.current) cvInputRef.current.value = ''
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const parsed = profileSchema.safeParse(form)
+    const mergedSkills = mergeCompletedJobSkills(form.skills, completedCategories)
+    const parsed = profileSchema.safeParse({ ...form, skills: mergedSkills })
     if (!parsed.success) {
       const fields = firstError(parsed.error)
       setErrors(fields)
@@ -120,6 +227,73 @@ function ProfileForm() {
       )}
       <PageHeader title={isSetup ? 'Set up your profile' : 'Your profile'} action={!isSetup && userId ? <ButtonLink to={`/w/${userId}`} variant="secondary" size="sm">View ProofScript</ButtonLink> : undefined} />
       {profile && <ProfilePhoto profile={profile} readOnly={readOnly} onChanged={refreshProfile} />}
+
+      <Card className="mb-4 p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500">
+              <FileUp className="size-4" aria-hidden />
+            </span>
+            <div>
+              <h2 className="font-semibold">Upload your CV to update your profile</h2>
+              <p className="text-sm text-muted">
+                Upload a PDF or text CV and KashWise will extract your bio, headline and skills automatically.
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <label
+              htmlFor="cv-upload-input"
+              className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-brand-500/40 bg-brand-50 px-3.5 py-2 text-xs font-semibold text-brand-400 transition hover:bg-brand-100 ${
+                readOnly || cvBusy ? 'pointer-events-none opacity-60' : ''
+              }`}
+            >
+              <FileUp className="size-4" aria-hidden />
+              {cvBusy ? 'Reading CV…' : cvFileName ? 'Upload another CV' : 'Upload CV'}
+              <input
+                id="cv-upload-input"
+                ref={cvInputRef}
+                type="file"
+                accept="application/pdf,.pdf,.txt,text/plain"
+                className="sr-only"
+                disabled={readOnly || cvBusy}
+                onChange={onCvFileChange}
+              />
+            </label>
+            {cvUndoState && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setForm(cvUndoState)
+                  setCvUndoState(null)
+                  setCvSummaryNote(null)
+                  setCvFileName(null)
+                }}
+              >
+                <RotateCcw className="size-3.5" aria-hidden /> Undo
+              </Button>
+            )}
+          </div>
+        </div>
+        {!isSetup && !readOnly && (
+          <label className="mt-3 flex items-center gap-2 text-xs text-muted">
+            <input
+              type="checkbox"
+              className="size-3.5 accent-brand-600"
+              checked={saveCvToDocs}
+              onChange={(e) => setSaveCvToDocs(e.target.checked)}
+            />
+            Also save uploaded PDF CV to my profile documents
+          </label>
+        )}
+        {cvSummaryNote && (
+          <p role="status" className="mt-3 rounded-xl bg-brand-50/70 px-3.5 py-2.5 text-xs font-medium text-brand-300 ring-1 ring-brand-200">
+            {cvSummaryNote}
+          </p>
+        )}
+      </Card>
+
       <DictatePanel
         kind="bio"
         title="Say who you are and what you do"
@@ -127,7 +301,7 @@ function ProfileForm() {
         action="Write my profile"
         onDraft={(draft) => {
           const before = form
-          setForm((f) => ({ ...f, headline: draft.headline || f.headline, bio: draft.bio, skills: f.skills.length ? f.skills : draft.skills }))
+          setForm((f) => ({ ...f, headline: draft.headline || f.headline, bio: draft.bio, skills: f.skills.length ? mergeCompletedJobSkills(f.skills, draft.skills) : draft.skills }))
           return () => setForm(before)
         }}
         readBack={(draft) => `${draft.headline}. ${draft.bio}`}
@@ -172,15 +346,30 @@ function ProfileForm() {
 
         <Card className="p-5">
           <fieldset>
-            <legend className="font-semibold">Your skills</legend>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <legend className="font-semibold">Your skills</legend>
+              <span className="text-xs text-muted">New skills are appended automatically when you complete jobs.</span>
+            </div>
             <div className="mb-3" />
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <button key={c.slug} type="button" className="chip" aria-pressed={form.skills.includes(c.slug)} onClick={() => toggleSkill(c.slug)}>
-                  <CategoryIcon category={c.slug} className="size-4" /> {c.label}
-                </button>
-              ))}
+              {CATEGORIES.map((c) => {
+                const isProven = completedCategories.includes(c.slug)
+                return (
+                  <button key={c.slug} type="button" className="chip" aria-pressed={displayedSkills.includes(c.slug)} onClick={() => toggleSkill(c.slug)}>
+                    <CategoryIcon category={c.slug} className="size-4" /> {c.label}
+                    {isProven && <BadgeCheck className="size-3.5 text-gold-500" aria-label="Earned from completed job" />}
+                  </button>
+                )
+              })}
             </div>
+            {completedCategories.length > 0 && (
+              <p className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                <Badge tone="sun">
+                  <BadgeCheck className="size-3" aria-hidden /> Proven in completed jobs:
+                </Badge>
+                <span>{completedCategories.map(categoryLabel).join(' · ')}</span>
+              </p>
+            )}
           </fieldset>
         </Card>
         <Button type="submit" size="lg" block loading={busy}>{isSetup || params.get('welcome') ? next ? 'Save and return to your task' : form.role === 'worker' ? 'Save and find work' : 'Save and post a gig' : 'Save profile'}</Button>

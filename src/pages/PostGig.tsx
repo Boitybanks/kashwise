@@ -1,12 +1,14 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { Lock } from 'lucide-react'
+import { Lock, MapPin } from 'lucide-react'
 import { addGigPhoto, createGig } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORIES } from '../lib/categories'
 import { baselineFloor } from '../lib/dictation'
 import { friendlyError } from '../lib/errors'
+import { resolveAreaFromAddress } from '../lib/geo'
+import { useAreaLookup, useAreas } from '../lib/hooks'
 import { randsToCents } from '../lib/money'
 import { addDays, firstError, gigSchema, todayInSA } from '../lib/validation'
 import { Button, Card, Field, PageHeader } from '../components/ui'
@@ -26,6 +28,8 @@ const windows = [
 
 export default function PostGig() {
   const { profile, userId } = useAuth()
+  const { data: areas } = useAreas()
+  const areaOf = useAreaLookup()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -41,6 +45,7 @@ export default function PostGig() {
     address: '',
     access_notes: '',
   })
+  const [showAreaOverride, setShowAreaOverride] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState('')
   const [draftFloor, setDraftFloor] = useState<number | null>(null)
@@ -49,6 +54,17 @@ export default function PostGig() {
   const [photos, setPhotos] = useState<File[]>([])
   const preview = useRef<HTMLDivElement>(null)
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }))
+
+  // The poster's area is where the job takes place (or auto-matched if their street address names a known area).
+  // Publicly, only the area is shown — never the actual street address.
+  function onAddressChange(address: string) {
+    const resolvedArea = resolveAreaFromAddress(address, profile?.area_slug || form.area_slug, areas ?? [])
+    setForm((f) => ({ ...f, address, area_slug: resolvedArea || f.area_slug }))
+  }
+
+  const effectiveAreaSlug = form.area_slug || profile?.area_slug || ''
+  const publicArea = areaOf(effectiveAreaSlug)
+
   const payoutCents = form.payout_rands === '' ? 0 : randsToCents(Number(form.payout_rands))
   // Clients may offer more than the market rate for the work, not less.
   const floor = draftFloor ?? (form.category ? baselineFloor(form.category) : 0)
@@ -58,6 +74,7 @@ export default function PostGig() {
     setFormError('')
     const parsed = gigSchema(today).safeParse({
       ...form,
+      area_slug: effectiveAreaSlug,
       payout_cents: form.payout_rands === '' || Number.isNaN(payoutCents) ? undefined : payoutCents,
     })
     if (!parsed.success) {
@@ -175,10 +192,66 @@ export default function PostGig() {
         )}
 
         <Card className="space-y-4 p-5">
-          <h2 className="text-lg font-semibold">Where and when</h2>
-          <Field label="Area" htmlFor="area_slug" error={errors.area_slug}>
-            <AreaSelect id="area_slug" value={form.area_slug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} placeholder="Choose the area" />
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">Where and when</h2>
+              <p className="text-sm text-muted">
+                Enter the address where the job will take place. Only your area is shown publicly — never your actual street address.
+              </p>
+            </div>
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500">
+              <Lock className="size-4" aria-hidden />
+            </span>
+          </div>
+
+          <Field
+            label="Street address"
+            htmlFor="address"
+            error={errors.address}
+            hint="Encrypted. Only the worker you choose can unlock your street address."
+          >
+            <input
+              id="address"
+              autoComplete="street-address"
+              className="input"
+              maxLength={200}
+              placeholder="e.g. 14 Vilakazi Street, Orlando West"
+              value={form.address}
+              onChange={(e) => onAddressChange(e.target.value)}
+              {...invalid('address')}
+            />
           </Field>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200/40 bg-brand-50/50 px-3.5 py-2.5 text-xs">
+            <span className="flex items-center gap-1.5 text-ink-soft">
+              <MapPin className="size-4 text-brand-500" aria-hidden />
+              <span>
+                Public area shown on listing:{' '}
+                <strong className="text-ink">
+                  {publicArea ? `${publicArea.name}, ${publicArea.city}` : effectiveAreaSlug || 'Choose area below'}
+                </strong>{' '}
+                <span className="text-muted">(street address stays private)</span>
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowAreaOverride((v) => !v)}
+              className="font-semibold text-brand-500 hover:underline"
+            >
+              {showAreaOverride ? 'Hide area list' : 'Change area'}
+            </button>
+          </div>
+
+          {(showAreaOverride || !effectiveAreaSlug || errors.area_slug) && (
+            <Field label="Area" htmlFor="area_slug" error={errors.area_slug} hint="Only this area name appears on your job post.">
+              <AreaSelect id="area_slug" value={effectiveAreaSlug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} placeholder="Choose the area" />
+            </Field>
+          )}
+
+          <Field label="Access notes" htmlFor="access_notes" error={errors.access_notes} optional hint="Gate code, complex name, or directions for the chosen worker.">
+            <input id="access_notes" className="input" maxLength={300} value={form.access_notes} onChange={(e) => set('access_notes', e.target.value)} {...invalid('access_notes')} />
+          </Field>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Date" htmlFor="scheduled_date" error={errors.scheduled_date}>
               <input id="scheduled_date" type="date" className="input" min={today} max={addDays(today, 180)} value={form.scheduled_date} onChange={(e) => set('scheduled_date', e.target.value)} {...invalid('scheduled_date')} />
@@ -197,22 +270,6 @@ export default function PostGig() {
             {budgetFields}
           </Card>
         )}
-
-        <Card className="space-y-4 p-5">
-          <div className="flex items-start gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
-            <div>
-              <h2 className="text-lg font-semibold">Private details</h2>
-              <p className="text-sm text-muted">Only the worker you choose can see these.</p>
-            </div>
-          </div>
-          <Field label="Street address" htmlFor="address" error={errors.address} optional>
-            <input id="address" autoComplete="street-address" className="input" maxLength={200} value={form.address} onChange={(e) => set('address', e.target.value)} {...invalid('address')} />
-          </Field>
-          <Field label="Access notes" htmlFor="access_notes" error={errors.access_notes} optional>
-            <input id="access_notes" className="input" maxLength={300} value={form.access_notes} onChange={(e) => set('access_notes', e.target.value)} {...invalid('access_notes')} />
-          </Field>
-        </Card>
 
         {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
         <Button type="submit" size="lg" block loading={busy}>Post gig</Button>

@@ -6,8 +6,9 @@ import { bookService, fetchService } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { categoryLabel } from '../lib/categories'
 import { friendlyError } from '../lib/errors'
+import { resolveAreaFromAddress } from '../lib/geo'
 import { TIME_WINDOW_LABEL } from '../lib/gig-rules'
-import { areaLabel, useAreaLookup } from '../lib/hooks'
+import { areaLabel, useAreaLookup, useAreas } from '../lib/hooks'
 import { formatRand } from '../lib/money'
 import { avatarUrl } from '../lib/supabase'
 import { addDays, bookingSchema, firstError, todayInSA } from '../lib/validation'
@@ -23,6 +24,7 @@ type TimeWindow = keyof typeof TIME_WINDOW_LABEL
 export default function ServiceDetail() {
   const { id = '' } = useParams()
   const { userId, profile } = useAuth()
+  const { data: areas } = useAreas()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -35,10 +37,16 @@ export default function ServiceDetail() {
     address: '',
     access_notes: '',
   })
+  const [showAreaOverride, setShowAreaOverride] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState('')
   const [busy, setBusy] = useState(false)
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }))
+
+  function onAddressChange(address: string) {
+    const resolvedArea = resolveAreaFromAddress(address, profile?.area_slug || form.area_slug, areas ?? [])
+    setForm((f) => ({ ...f, address, area_slug: resolvedArea || f.area_slug }))
+  }
 
   const q = useQuery({ queryKey: ['service', id], queryFn: () => fetchService(id) })
   if (q.isPending) return <Spinner label="Loading service…" />
@@ -48,12 +56,14 @@ export default function ServiceDetail() {
 
   const isOwner = userId === service.worker_id
   const first = service.worker?.display_name.split(' ')[0] ?? 'the provider'
+  const effectiveAreaSlug = form.area_slug || profile?.area_slug || service.area_slug
+  const publicArea = areaOf(effectiveAreaSlug)
   const invalid = (k: string) => (errors[k] ? { 'aria-invalid': true as const, 'aria-describedby': `${k}-error` } : {})
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setFormError('')
-    const parsed = bookingSchema(today).safeParse(form)
+    const parsed = bookingSchema(today).safeParse({ ...form, area_slug: effectiveAreaSlug })
     if (!parsed.success) {
       const errs = firstError(parsed.error)
       setErrors(errs)
@@ -134,10 +144,50 @@ export default function ServiceDetail() {
       ) : (
         <form onSubmit={onSubmit} noValidate className="mt-4 space-y-4">
           <Card className="space-y-4 p-5">
-            <h2 className="text-lg font-semibold">Book {first}</h2>
-            <Field label="Where is the job?" htmlFor="area_slug" error={errors.area_slug}>
-              <AreaSelect id="area_slug" value={form.area_slug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} placeholder="Choose the area" />
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">Book {first}</h2>
+                <p className="text-sm text-muted">
+                  Enter the address where the job will take place. Only the area is shown on the job record; your street address is encrypted for {first}.
+                </p>
+              </div>
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
+            </div>
+
+            <Field label="Street address" htmlFor="address" error={errors.address} hint={`Private. Only you and ${first} can see your street address.`}>
+              <input id="address" autoComplete="street-address" className="input" maxLength={200} placeholder="e.g. 14 Vilakazi Street, Orlando West" value={form.address} onChange={(e) => onAddressChange(e.target.value)} {...invalid('address')} />
             </Field>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200/40 bg-brand-50/50 px-3.5 py-2.5 text-xs">
+              <span className="flex items-center gap-1.5 text-ink-soft">
+                <MapPin className="size-4 text-brand-500" aria-hidden />
+                <span>
+                  Public area shown:{' '}
+                  <strong className="text-ink">
+                    {publicArea ? `${publicArea.name}, ${publicArea.city}` : effectiveAreaSlug || 'Choose area'}
+                  </strong>{' '}
+                  <span className="text-muted">(actual address is hidden)</span>
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAreaOverride((v) => !v)}
+                className="font-semibold text-brand-500 hover:underline"
+              >
+                {showAreaOverride ? 'Hide area list' : 'Change area'}
+              </button>
+            </div>
+
+            {(showAreaOverride || !effectiveAreaSlug || errors.area_slug) && (
+              <Field label="Where is the job?" htmlFor="area_slug" error={errors.area_slug}>
+                <AreaSelect id="area_slug" value={effectiveAreaSlug} onChange={(v) => set('area_slug', v)} invalid={Boolean(errors.area_slug)} placeholder="Choose the area" />
+              </Field>
+            )}
+
+            <Field label="Access notes" htmlFor="access_notes" error={errors.access_notes} optional hint={`Gate code, parking, what ${first} should know.`}>
+              <input id="access_notes" className="input" maxLength={300} value={form.access_notes} onChange={(e) => set('access_notes', e.target.value)} {...invalid('access_notes')} />
+            </Field>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Date" htmlFor="scheduled_date" error={errors.scheduled_date}>
                 <input id="scheduled_date" type="date" className="input" min={today} max={addDays(today, 180)} value={form.scheduled_date} onChange={(e) => set('scheduled_date', e.target.value)} {...invalid('scheduled_date')} />
@@ -150,21 +200,6 @@ export default function ServiceDetail() {
             </div>
           </Card>
 
-          <Card className="space-y-4 p-5">
-            <div className="flex items-start gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500"><Lock className="size-4" aria-hidden /></span>
-              <div>
-                <h2 className="text-lg font-semibold">Private details</h2>
-                <p className="text-sm text-muted">Private. Only you and {first} can see them.</p>
-              </div>
-            </div>
-            <Field label="Street address" htmlFor="address" error={errors.address} optional>
-              <input id="address" autoComplete="street-address" className="input" maxLength={200} value={form.address} onChange={(e) => set('address', e.target.value)} {...invalid('address')} />
-            </Field>
-            <Field label="Access notes" htmlFor="access_notes" error={errors.access_notes} optional hint={`Gate code, parking, what ${first} should know.`}>
-              <input id="access_notes" className="input" maxLength={300} value={form.access_notes} onChange={(e) => set('access_notes', e.target.value)} {...invalid('access_notes')} />
-            </Field>
-          </Card>
           {formError && <p role="alert" className="rounded-lg bg-clay-50 px-3 py-2 text-sm font-medium text-clay-700">{formError}</p>}
           <Button type="submit" size="lg" block loading={busy}>Book for {formatRand(service.price_cents)}</Button>
           <p className="text-sm text-muted">{first} can decline if the date doesn’t work, and you can cancel before the job starts. Either way the held payment is refunded.</p>

@@ -1,42 +1,89 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { BadgeCheck, MapPin, Search, Star, Users } from 'lucide-react'
-import { discoverWorkers, fetchHiredBefore, PAGE_SIZE, searchWorkersByName, type WorkerHit } from '../lib/api'
+import { BadgeCheck, CalendarDays, MapPin, Plus, Search, Star, UserCheck, Users } from 'lucide-react'
+import {
+  discoverWorkers,
+  fetchHiredBefore,
+  fetchSavedProviders,
+  PAGE_SIZE,
+  removeClientProvider,
+  saveClientProvider,
+  searchWorkersByName,
+  type WorkerHit,
+} from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORIES, categoryLabel } from '../lib/categories'
+import { friendlyError } from '../lib/errors'
 import { formatDistance } from '../lib/geo'
 import { Avatar, Button, DemoBadge, EmptyState, ErrorState, PageHeader, Skeleton } from '../components/ui'
+import { useToast } from '../components/ui/toast'
 import { avatarUrl } from '../lib/supabase'
 import { AreaSelect } from '../components/AreaSelect'
 import { CategoryIcon } from '../components/CategoryIcon'
+import { RequestServiceModal, SavedProvidersSection, type RequestableWorker } from '../components/service/SavedProvidersSection'
 
-function WorkerRow({ w }: { w: WorkerHit }) {
+function WorkerRow({
+  w,
+  isClient,
+  isSaved,
+  onToggleSave,
+  onRequest,
+}: {
+  w: WorkerHit
+  isClient: boolean
+  isSaved: boolean
+  onToggleSave: (w: WorkerHit) => void
+  onRequest: (w: WorkerHit) => void
+}) {
   return (
     <li className="min-w-0">
-      <Link to={`/w/${w.id}`} className="group flex min-h-16 items-center gap-3 rounded-2xl border border-line bg-surface p-3 hover:border-brand-200">
-        <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold group-hover:text-brand-400">{w.display_name}</span>
-          <span className="block truncate text-xs text-ink-soft">{w.headline || w.skills.map(categoryLabel).join(' · ')}</span>
-        </span>
-      </Link>
+      <div className="flex min-h-16 items-center gap-3 rounded-2xl border border-line bg-surface p-3 hover:border-brand-200">
+        <Link to={`/w/${w.id}`} className="group flex min-w-0 flex-1 items-center gap-3">
+          <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-semibold group-hover:text-brand-400">{w.display_name}</span>
+            <span className="block truncate text-xs text-ink-soft">{w.headline || w.skills.map(categoryLabel).join(' · ')}</span>
+          </span>
+        </Link>
+        {isClient && (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Button size="sm" variant="secondary" onClick={() => onToggleSave(w)}>
+              {isSaved ? <><UserCheck className="size-3.5" aria-hidden /> Saved</> : <><Plus className="size-3.5" aria-hidden /> Add</>}
+            </Button>
+            <Button size="sm" onClick={() => onRequest(w)}>
+              Request service
+            </Button>
+          </div>
+        )}
+      </div>
     </li>
   )
 }
 
 export default function Workers() {
   const { profile, userId } = useAuth()
+  const toast = useToast()
+  const isClient = Boolean(userId) && profile?.role === 'customer'
   const [query, setQuery] = useState('')
   const [term, setTerm] = useState('')
+  const [requestingWorker, setRequestingWorker] = useState<RequestableWorker | null>(null)
   useEffect(() => {
     const t = window.setTimeout(() => setTerm(query.trim()), 300)
     return () => window.clearTimeout(t)
   }, [query])
   const searching = term.length >= 2
   const searchQ = useQuery({ queryKey: ['worker-search', term], queryFn: () => searchWorkersByName(term), enabled: searching })
-  const hiredQ = useQuery({ queryKey: ['hired-before', userId], queryFn: () => fetchHiredBefore(userId!), enabled: Boolean(userId) && profile?.role === 'customer' })
+  const hiredQ = useQuery({ queryKey: ['hired-before', userId], queryFn: () => fetchHiredBefore(userId!), enabled: isClient })
+  const savedQ = useQuery({
+    queryKey: ['saved-providers', userId],
+    queryFn: () => fetchSavedProviders(userId!),
+    enabled: isClient,
+  })
   const hired = hiredQ.data ?? []
+  const savedProviders = useMemo(() => savedQ.data ?? [], [savedQ.data])
+  const savedIds = useMemo(() => new Set(savedProviders.map((p) => p.worker_id)), [savedProviders])
+
   const [areaOverride, setAreaOverride] = useState<string | null>(null)
   const [skill, setSkill] = useState<string | null>(null)
   const area = areaOverride ?? profile?.area_slug ?? ''
@@ -49,6 +96,22 @@ export default function Workers() {
   })
   const workers = useMemo(() => q.data?.pages.flat() ?? [], [q.data])
 
+  async function toggleSavedProvider(w: { id: string; display_name: string }) {
+    if (!userId) return
+    try {
+      if (savedIds.has(w.id)) {
+        await removeClientProvider(userId, w.id)
+        toast.show(`${w.display_name} removed from your service providers.`)
+      } else {
+        await saveClientProvider(userId, w.id, null)
+        toast.show(`${w.display_name} added to your service providers.`)
+      }
+      await savedQ.refetch()
+    } catch (err) {
+      toast.show(friendlyError(err), 'error')
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -56,6 +119,17 @@ export default function Workers() {
         title={<>Skilled hands. <em>Proven results.</em></>}
         subtitle="Every rating and verified count comes from a customer-confirmed KashWise job."
       />
+
+      {isClient && userId && (
+        <div className="mb-8 rounded-2xl border border-line bg-surface/60 p-5">
+          <SavedProvidersSection
+            clientId={userId}
+            providers={savedProviders}
+            isLoading={savedQ.isPending}
+            onChanged={() => savedQ.refetch()}
+          />
+        </div>
+      )}
 
       <div className="relative mb-4">
         <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
@@ -67,14 +141,36 @@ export default function Workers() {
         searchQ.isPending ? <Skeleton className="h-20" /> : searchQ.isError ? <ErrorState error={searchQ.error} onRetry={() => searchQ.refetch()} /> : (searchQ.data ?? []).length === 0 ? (
           <EmptyState icon={<Search className="size-5" aria-hidden />} title={`No worker called “${term}”`}>Check the spelling, or browse by skill below.</EmptyState>
         ) : (
-          <ul className="space-y-2" aria-label="Search results">{searchQ.data!.map((w) => <WorkerRow key={w.id} w={w} />)}</ul>
+          <ul className="space-y-2" aria-label="Search results">
+            {searchQ.data!.map((w) => (
+              <WorkerRow
+                key={w.id}
+                w={w}
+                isClient={isClient}
+                isSaved={savedIds.has(w.id)}
+                onToggleSave={toggleSavedProvider}
+                onRequest={(worker) => setRequestingWorker(worker)}
+              />
+            ))}
+          </ul>
         )
       ) : (
       <>
       {hired.length > 0 && (
         <section aria-labelledby="hired-h" className="mb-6">
           <h2 id="hired-h" className="mb-2 text-sm font-semibold">Hired before</h2>
-          <ul className="grid gap-2 sm:grid-cols-2">{hired.map((w) => <WorkerRow key={w.id} w={w} />)}</ul>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {hired.map((w) => (
+              <WorkerRow
+                key={w.id}
+                w={w}
+                isClient={isClient}
+                isSaved={savedIds.has(w.id)}
+                onToggleSave={toggleSavedProvider}
+                onRequest={(worker) => setRequestingWorker(worker)}
+              />
+            ))}
+          </ul>
         </section>
       )}
 
@@ -145,48 +241,82 @@ export default function Workers() {
             {workers.some((x) => x.is_demo) && <span className="text-[11px] text-muted">Sample listings</span>}
           </div>
           <ul className="grid gap-4 md:grid-cols-2">
-            {workers.map((w) => (
-              <li key={w.id} className="min-w-0">
-                <Link
-                  to={`/w/${w.id}`}
-                  className="group relative flex gap-4 rounded-2xl border border-line bg-surface p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:bg-surface-elevated hover:shadow-[0_12px_28px_rgba(0,0,0,0.4)]"
-                >
-                  <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} size="lg" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-ink transition-colors group-hover:text-brand-400">{w.display_name}</p>
-                      {w.is_demo && <DemoBadge />}
-                    </div>
-                    {w.headline && <p className="truncate text-sm text-ink-soft">{w.headline}</p>}
-                    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-soft">
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="size-3.5 text-muted" aria-hidden />
-                        {w.area_name}{w.distance_km !== null && ` · ${formatDistance(w.distance_km)}`}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-sun-50 px-2 py-0.5 font-semibold text-gold-600 border border-sun-300">
-                        <BadgeCheck className="size-3.5 fill-gold-500/20 text-gold-600" aria-hidden />
-                        {w.completed} verified
-                      </span>
-                      {w.avg_rating && (
-                        <span className="inline-flex items-center gap-1 font-semibold text-ink">
-                          <Star className="size-3.5 fill-gold-500 text-gold-600" aria-hidden />
-                          {w.avg_rating} <span className="text-muted">({w.review_count})</span>
-                        </span>
-                      )}
-                    </p>
-                    {w.skills.length > 0 && (
-                      <div className="mt-2.5 flex flex-wrap gap-1.5">
-                        {w.skills.map((s) => (
-                          <span key={s} className="rounded-md bg-canvas border border-line px-2 py-0.5 text-[11px] font-medium text-ink-soft">
-                            {categoryLabel(s)}
+            {workers.map((w) => {
+              const isSaved = savedIds.has(w.id)
+              return (
+                <li key={w.id} className="min-w-0">
+                  <div className="group relative flex flex-col justify-between gap-3 rounded-2xl border border-line bg-surface p-5 transition-all duration-300 hover:border-brand-200 hover:bg-surface-elevated">
+                    <Link to={`/w/${w.id}`} className="flex gap-4">
+                      <Avatar name={w.display_name} id={w.id} src={avatarUrl(w.avatar_path)} size="lg" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-ink transition-colors group-hover:text-brand-400">{w.display_name}</p>
+                          {w.is_demo && <DemoBadge />}
+                        </div>
+                        {w.headline && <p className="truncate text-sm text-ink-soft">{w.headline}</p>}
+                        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-soft">
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin className="size-3.5 text-muted" aria-hidden />
+                            {w.area_name}{w.distance_km !== null && ` · ${formatDistance(w.distance_km)}`}
                           </span>
-                        ))}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-sun-50 px-2 py-0.5 font-semibold text-gold-600 border border-sun-300">
+                            <BadgeCheck className="size-3.5 fill-gold-500/20 text-gold-600" aria-hidden />
+                            {w.completed} verified
+                          </span>
+                          {w.avg_rating && (
+                            <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                              <Star className="size-3.5 fill-gold-500 text-gold-600" aria-hidden />
+                              {w.avg_rating} <span className="text-muted">({w.review_count})</span>
+                            </span>
+                          )}
+                        </p>
+                        {w.skills.length > 0 && (
+                          <div className="mt-2.5 flex flex-wrap gap-1.5">
+                            {w.skills.map((s) => (
+                              <span key={s} className="rounded-md bg-canvas border border-line px-2 py-0.5 text-[11px] font-medium text-ink-soft">
+                                {categoryLabel(s)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+
+                    {isClient && (
+                      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line pt-3">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => toggleSavedProvider(w)}
+                        >
+                          {isSaved ? (
+                            <><UserCheck className="size-3.5" aria-hidden /> In my providers</>
+                          ) : (
+                            <><Plus className="size-3.5" aria-hidden /> Add service provider</>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            setRequestingWorker({
+                              id: w.id,
+                              display_name: w.display_name,
+                              headline: w.headline,
+                              area_slug: w.area_slug,
+                              skills: w.skills,
+                              avatar_path: w.avatar_path,
+                              is_demo: w.is_demo,
+                            })
+                          }
+                        >
+                          <CalendarDays className="size-3.5" aria-hidden /> Request service
+                        </Button>
                       </div>
                     )}
                   </div>
-                </Link>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
           {q.hasNextPage && (
             <div className="mt-6 text-center">
@@ -196,6 +326,10 @@ export default function Workers() {
         </>
       )}
       </>
+      )}
+
+      {requestingWorker && (
+        <RequestServiceModal worker={requestingWorker} onClose={() => setRequestingWorker(null)} />
       )}
     </div>
   )
