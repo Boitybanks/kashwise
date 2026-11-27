@@ -27,10 +27,7 @@ export default function Services() {
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length === PAGE_SIZE ? pages.length : undefined),
   })
-  const services = useMemo(
-    () => (query.data?.pages.flat() ?? []).filter((s) => !s.is_demo),
-    [query.data],
-  )
+  const services = useMemo(() => query.data?.pages.flat() ?? [], [query.data])
 
   return (
     <div>

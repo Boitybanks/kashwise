@@ -9,7 +9,7 @@ import { Card, ErrorState, PageHeader, Skeleton } from '../components/ui'
 import { CategoryIcon } from '../components/CategoryIcon'
 
 export default function Impact() {
-  const q = useQuery({ queryKey: ['impact', false], queryFn: () => fetchImpact(false), refetchInterval: 30000 })
+  const q = useQuery({ queryKey: ['impact', true], queryFn: () => fetchImpact(true), refetchInterval: 30000 })
   const m = q.data
 
   const funnel = m

@@ -54,10 +54,7 @@ export default function Discover() {
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length === DISCOVER_BATCH ? pages.length : undefined),
   })
-  const allGigs = useMemo(
-    () => (query.data?.pages.flat() ?? []).filter((g) => !g.is_demo),
-    [query.data],
-  )
+  const allGigs = useMemo(() => query.data?.pages.flat() ?? [], [query.data])
 
   const effectiveRadius: VicinityRadius = area ? radiusKm : null
   const gigs = useMemo(

@@ -94,10 +94,7 @@ export default function Workers() {
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length === PAGE_SIZE ? pages.length : undefined),
   })
-  const workers = useMemo(
-    () => (q.data?.pages.flat() ?? []).filter((w) => !w.is_demo),
-    [q.data],
-  )
+  const workers = useMemo(() => q.data?.pages.flat() ?? [], [q.data])
 
   async function toggleSavedProvider(w: { id: string; display_name: string }) {
     if (!userId) return

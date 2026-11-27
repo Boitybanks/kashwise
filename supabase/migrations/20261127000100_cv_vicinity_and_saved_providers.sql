@@ -175,3 +175,49 @@ grant execute on function
   public.remove_client_provider(uuid),
   public.request_provider_service(uuid, uuid, text, text, text, text, date, text, integer, jsonb)
 to authenticated;
+
+-- ── 3. Creative, hyper-specific Mzansi marketplace gigs ─────────────────────
+insert into public.gigs (customer_id, title, category, description, area_slug, scheduled_date, time_window, payout_cents, is_demo)
+select p.id, v.title, v.category, v.description, v.area_slug,
+       (now() at time zone 'Africa/Johannesburg')::date + v.days_ahead,
+       v.time_window, v.payout_rands * 100, true
+from (values
+  ('Braai master for 4kg chuck, wors & chakalaka during the derby', 'catering',
+   'Hosting 12 cousins for the Chiefs vs Pirates match. Meat, charcoal and spices are bought — I just need someone with serious tong skills to braai everything to perfection and make spicy chakalaka so I do not miss a minute of the game.',
+   'soweto', 2, 'afternoon', 750),
+  ('Hold my spot in the Home Affairs queue from 5:30am with a chair', 'other',
+   'Need an early riser to stand in the passport collection queue before the doors open and call me when you are 15 people from the front. Bring a flask and a folding chair — paying specifically for the 3 hours you save my morning.',
+   'sandton', 1, 'morning', 400),
+  ('Mount a 75-inch TV on a skew brick wall & hide every single cable', 'repairs',
+   'My lounge wall in Braam is not completely straight and the dangling HDMI and PlayStation cords are driving me crazy. Bring a heavy-duty masonry drill, a spirit level and trunking so the TV sits dead-level and looks like it is floating.',
+   'braamfontein', 2, 'morning', 550),
+  ('Teach my mom crispy slap chips & kota secrets for her tuckshop', 'catering',
+   'My mom just opened a corner spaza window and wants her kotas to be the talk of Tembisa. Spend one morning showing her the exact oil temperature for soft-inside crispy chips, proper atchar-and-Russian layering, and fast wrapping.',
+   'tembisa', 3, 'morning', 650),
+  ('Untangle my gogo WhatsApp storage & recover her choir videos', 'tech-support',
+   'Gogo Samsung phone is 99% full of forwarded Good Morning roses and she cannot find her Sunday choir clips. Sit with her patiently for two hours, clear duplicate memes, back up her photos and make the font extra large.',
+   'rosebank', 1, 'afternoon', 450),
+  ('Golden-hour sneaker & vintage denim rooftop shoot in Maboneng', 'photography',
+   'Launching a 15-piece thrifted denim and sneaker drop on Instagram. I do not want stiff studio photos — I want 90 minutes of gritty, high-energy golden-hour shots on a CBD rooftop with someone who knows angles and natural light.',
+   'joburg-cbd', 3, 'evening', 800),
+  ('Bakkie rescue: move one giant L-shape couch & a stubborn aloe pot', 'moving',
+   'Bought a huge velvet L-shape couch on Marketplace and it will not fit in my hatchback even with prayers. Need someone with a bakkie, blankets and strong arms to pivot it out of a first-floor townhouse in Ferndale to Blairgowrie.',
+   'randburg', 2, 'afternoon', 600),
+  ('Pre-purchase mechanic check on a 2016 Polo Vivo before I pay', 'automotive',
+   'Seller swears the car has never been in a bump and just needs regas. Meet me at the dealership in Midrand for 45 minutes with an OBD scanner and a torch to check for overspray, head-gasket mayo and gearbox noises before I sign.',
+   'midrand', 1, 'morning', 550),
+  ('Rescue my neglected balcony succulents & repot 14 monsteras', 'gardening',
+   'I bought too many houseplants and now half look sad. Bring potting soil mix, perlite and secateurs — spend the morning repotting them on my stoep, pruning yellow leaves and writing a simple watering cheat-sheet for my fridge.',
+   'roodepoort', 4, 'morning', 480),
+  ('2-hour conversational isiZulu crash course before meeting in-laws', 'tutoring',
+   'Meeting my partner extended family this weekend and I refuse to just smile and nod. Coach me through respectful greetings, how to compliment the food properly, and warm small-talk phrases with real pronunciation.',
+   'alexandra', 2, 'evening', 420),
+  ('6am bridal squad: melt 4 lace frontal wigs & crisp groom line-up', 'hair-beauty',
+   'Lobby call is 8am sharp for a traditional wedding in Orlando West. Need a mobile stylist who does not play with time to lay four lace frontals and give the best man a razor-sharp fade and beard line-up before the taxis leave.',
+   'soweto', 5, 'morning', 680),
+  ('Post-amapiano-chill patio rescue: scrub braai grid & glass doors', 'cleaning',
+   'Had 15 friends over last night. Nothing is broken, but the patio tiles, sliding glass doors and stainless-steel braai stand need a miracle before my landlord visits at 3pm. All cleaning chemicals and a pressure washer are on site.',
+   'sandton', 1, 'morning', 700)
+) as v (title, category, description, area_slug, days_ahead, time_window, payout_rands)
+join auth.users u on lower(u.email) = 'demo.customer@sidegigs.app'
+join public.profiles p on p.id = u.id;
