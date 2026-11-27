@@ -14,12 +14,19 @@ export function optionalEnv(name: string): string | undefined {
   return globalThis.Netlify?.env.get(name) ?? process.env[name] ?? undefined
 }
 
+const DEFAULT_SUPABASE_URL = 'https://plzbbfoteevfpqxspyxi.supabase.co'
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_G5HXYOR3EysCbSpAibCBtA_NPS3pxee'
+
 /** A Supabase client that acts AS THE CALLER (their JWT), so Postgres RLS makes every access decision. */
 export function supabaseAs(jwt: string | null): SupabaseClient {
-  return createClient(env('VITE_SUPABASE_URL'), env('VITE_SUPABASE_PUBLISHABLE_KEY'), {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: jwt ? { headers: { Authorization: `Bearer ${jwt}` } } : undefined,
-  })
+  return createClient(
+    optionalEnv('VITE_SUPABASE_URL') ?? DEFAULT_SUPABASE_URL,
+    optionalEnv('VITE_SUPABASE_PUBLISHABLE_KEY') ?? DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: jwt ? { headers: { Authorization: `Bearer ${jwt}` } } : undefined,
+    },
+  )
 }
 
 export function json(body: unknown, status = 200): Response {

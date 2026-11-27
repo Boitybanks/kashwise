@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  VITE_SUPABASE_URL = "https://plzbbfoteevfpqxspyxi.supabase.co"
+  VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_G5HXYOR3EysCbSpAibCBtA_NPS3pxee"
 
 [functions]
   directory = "netlify/functions"
