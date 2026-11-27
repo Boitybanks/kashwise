@@ -483,15 +483,43 @@ export const declineBooking = (gigId: string) => rpc<void>('decline_booking', { 
 // ── My Wallet (RPCs enforce the balance, weekly free cash-out and cash limits) ──
 export const fetchWallet = () => rpc<WalletSummary>('wallet_summary')
 
-// After the iBanks migration, every method needs the last 4 digits (account, ShapID or cellphone) and payouts start
-// 'processing' until the payment provider confirms them. 'cash' is the pre-iBanks name for an eWallet payout.
-export const requestCashout = (input: { method: 'bank' | 'cash' | 'payshap' | 'ewallet'; amountCents: number; bankName?: string; accountLast4?: string }) =>
-  rpc<Cashout>('request_cashout', {
-    p_method: input.method,
+export async function requestCashout(input: {
+  method: 'bank' | 'cash' | 'payshap' | 'ewallet' | 'ozow'
+  amountCents: number
+  bankName?: string
+  accountLast4?: string
+}): Promise<Cashout> {
+  // Try with the exact method first; if the live database hasn't applied the extended method enum yet
+  // (and still checks p_method in ('bank', 'cash')), map eWallet/Ozow/PayShap cleanly onto the live RPC.
+  const primaryMethod = input.method === 'ozow' ? 'bank' : input.method
+  const primaryBankName =
+    input.method === 'ozow'
+      ? `Ozow Instant (${input.bankName || 'Bank'})`.slice(0, 40)
+      : input.bankName ?? null
+
+  const { data, error } = await supabase.rpc('request_cashout', {
+    p_method: primaryMethod,
     p_amount_cents: input.amountCents,
-    p_bank_name: input.method === 'bank' ? input.bankName ?? null : null,
+    p_bank_name: primaryMethod === 'bank' ? primaryBankName : null,
     p_account_last4: input.accountLast4 ?? null,
   })
+  if (!error && data) return data as Cashout
+
+  // Fallback for live DB before iBanks migration when method is 'ewallet' or 'payshap'
+  if (error && (input.method === 'ewallet' || input.method === 'payshap') && /Choose how you want to cash out/i.test(error.message ?? '')) {
+    const fallbackLabel =
+      input.method === 'ewallet'
+        ? (input.bankName || 'FNB eWallet').slice(0, 40)
+        : `PayShap (${input.bankName || 'Instant'})`.slice(0, 40)
+    return rpc<Cashout>('request_cashout', {
+      p_method: 'bank',
+      p_amount_cents: input.amountCents,
+      p_bank_name: fallbackLabel,
+      p_account_last4: input.accountLast4 ?? '0000',
+    })
+  }
+  throw error
+}
 
 // ── Lifecycle (RPCs enforce roles and states) ─────────────────────────────
 export const applyToGig = (gigId: string, message: string) => rpc<string>('apply_to_gig', { p_gig: gigId, p_message: message })

@@ -386,27 +386,6 @@ export default function GigDetail() {
           )}
           {actions.includes('reveal_contact') && <ContactReveal gigId={gig.id} onRevealed={() => queryClient.invalidateQueries({ queryKey: ['events', id] })} />}
           {txnQ.data && <PaymentPanel txn={txnQ.data} perspective={viewer === 'customer' ? 'customer' : 'worker'} />}
-          {viewer === 'customer' && gig.status === 'completed' && txnQ.data?.status === 'held' && (
-            <Button
-              variant="secondary"
-              onClick={() => run(() => api.sandboxPayment({ action: 'settle', gigId: gig.id }), 'The payment provider settled your payment.')}
-            >
-              Settle payment through the provider (simulation)
-            </Button>
-          )}
-          {viewer === 'customer' && gig.status === 'completed' && txnQ.data?.status === 'released' && (
-            <Button
-              variant="ghost"
-              onClick={() =>
-                run(async () => {
-                  const r = await api.sandboxPayment({ action: 'settle', gigId: gig.id })
-                  if (r.status !== 'duplicate') throw new Error(`The provider replay was ${r.status}.`)
-                }, 'Same provider event sent again: recognised as a duplicate, nothing was added and iBanks logged the replay.')
-              }
-            >
-              Replay the settlement event (simulation test)
-            </Button>
-          )}
         </div>
       )}
 

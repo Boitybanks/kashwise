@@ -54,7 +54,10 @@ export default function Discover() {
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length === DISCOVER_BATCH ? pages.length : undefined),
   })
-  const allGigs = useMemo(() => query.data?.pages.flat() ?? [], [query.data])
+  const allGigs = useMemo(
+    () => (query.data?.pages.flat() ?? []).filter((g) => !g.is_demo),
+    [query.data],
+  )
 
   const effectiveRadius: VicinityRadius = area ? radiusKm : null
   const gigs = useMemo(
@@ -275,7 +278,6 @@ export default function Discover() {
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
-              {gigs.some((g) => g.is_demo) ? <p className="text-xs text-muted">Sample listings</p> : <span />}
               {area && nextRadius !== undefined && (
                 <Button variant="secondary" size="sm" onClick={expandVicinity}>
                   <Compass className="size-4" aria-hidden /> Expand vicinity to{' '}

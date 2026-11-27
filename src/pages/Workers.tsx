@@ -94,7 +94,10 @@ export default function Workers() {
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length === PAGE_SIZE ? pages.length : undefined),
   })
-  const workers = useMemo(() => q.data?.pages.flat() ?? [], [q.data])
+  const workers = useMemo(
+    () => (q.data?.pages.flat() ?? []).filter((w) => !w.is_demo),
+    [q.data],
+  )
 
   async function toggleSavedProvider(w: { id: string; display_name: string }) {
     if (!userId) return
@@ -238,7 +241,6 @@ export default function Workers() {
               <Users className="size-3.5 text-brand-500" aria-hidden />
               Showing <strong className="text-ink">{workers.length}{q.hasNextPage ? '+' : ''}</strong> verified profile{workers.length === 1 ? '' : 's'}
             </p>
-            {workers.some((x) => x.is_demo) && <span className="text-[11px] text-muted">Sample listings</span>}
           </div>
           <ul className="grid gap-4 md:grid-cols-2">
             {workers.map((w) => {

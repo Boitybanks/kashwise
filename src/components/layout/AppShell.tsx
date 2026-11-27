@@ -4,7 +4,6 @@ import { Briefcase, Compass, PlusCircle, Store, User, Users, Home, LogIn, Wallet
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import { Logo } from './Logo'
-import { DemoSwitcher } from '../DemoSwitcher'
 import { buttonClass, Spinner } from '../ui'
 
 interface NavItem {
@@ -79,8 +78,6 @@ export function AppShell() {
         </div>
       </header>
 
-      <DemoSwitcher />
-
       <main id="main" className={`flex-1 ${isLanding ? '' : 'mx-auto w-full max-w-6xl px-4 py-6 sm:py-10'} pb-24 md:pb-0`}>
         <Suspense fallback={<Spinner />}>
           <Outlet />
@@ -93,6 +90,7 @@ export function AppShell() {
             © 2026 <strong className="text-ink">KashWise</strong>. Developed by Boitumelo Mbhele (Banks).
           </p>
           <nav aria-label="Footer" className="flex gap-4">
+            <NavLink to="/welcome#how-it-works" className="hover:text-ink">How it works</NavLink>
             <NavLink to="/trust" className="hover:text-ink">Trust &amp; safety</NavLink>
             <NavLink to="/impact" className="hover:text-ink">Impact</NavLink>
           </nav>

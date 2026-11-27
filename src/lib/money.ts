@@ -35,11 +35,17 @@ export function breakdown(priceCents: number) {
 }
 
 // ── Wallet cash-outs (same rules as public.request_cashout) ─────────────────
-export type CashoutMethod = 'bank' | 'cash' | 'payshap' | 'ewallet'
+export type CashoutMethod = 'bank' | 'cash' | 'payshap' | 'ewallet' | 'ozow'
 export const CASHOUT_MIN_CENTS = 5_000 // R50
 export const CASH_VOUCHER_MAX_CENTS = 500_000 // R5 000 per voucher and per day
 /** One cash-out a week is free; after that the worker pays what the payout costs KashWise. */
-export const CASHOUT_FEE_CENTS: Record<CashoutMethod, number> = { bank: 300, payshap: 300, cash: 2_000, ewallet: 2_000 }
+export const CASHOUT_FEE_CENTS: Record<CashoutMethod, number> = {
+  bank: 300,
+  payshap: 300,
+  ozow: 300,
+  cash: 2_000,
+  ewallet: 2_000,
+}
 /** eWallet payouts: FNB's public consumer limit per send (fnb.co.za, Oct 2026). Confirm in the FNB agreement. */
 export const EWALLET_MAX_CENTS = 300_000
 

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BadgeCheck, Clock, Repeat, Star, Users } from 'lucide-react'
 import { fetchImpact } from '../lib/api'
@@ -10,8 +9,7 @@ import { Card, ErrorState, PageHeader, Skeleton } from '../components/ui'
 import { CategoryIcon } from '../components/CategoryIcon'
 
 export default function Impact() {
-  const [includeDemo, setIncludeDemo] = useState(true)
-  const q = useQuery({ queryKey: ['impact', includeDemo], queryFn: () => fetchImpact(includeDemo), refetchInterval: 30000 })
+  const q = useQuery({ queryKey: ['impact', false], queryFn: () => fetchImpact(false), refetchInterval: 30000 })
   const m = q.data
 
   const funnel = m
@@ -27,23 +25,8 @@ export default function Impact() {
     <div>
       <PageHeader
         title="Impact"
-        subtitle="KashWise succeeds when people earn. Live numbers straight from the database."
-        action={
-          <div role="group" aria-label="Data shown" className="inline-flex rounded-xl bg-surface p-1 border border-line">
-            {[true, false].map((v) => (
-              <button key={String(v)} type="button" aria-pressed={includeDemo === v} onClick={() => setIncludeDemo(v)}
-                className={`min-h-10 rounded-lg px-3 text-sm font-semibold ${includeDemo === v ? 'bg-brand-600 text-white' : 'text-ink-soft'}`}>
-                {v ? 'All data' : 'Real users only'}
-              </button>
-            ))}
-          </div>
-        }
+        subtitle="KashWise succeeds when people earn. Live numbers from real accounts on the platform."
       />
-      <p className="mb-5 rounded-xl bg-sun-50 px-4 py-3 text-sm text-sun-700 ring-1 ring-inset ring-sun-100">
-        {includeDemo
-          ? 'Includes sample accounts.'
-          : 'Real accounts only.'}
-      </p>
 
       {q.isPending ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}</div>

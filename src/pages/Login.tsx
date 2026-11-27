@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { PlayCircle } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { friendlyError } from '../lib/errors'
 import { firstError, loginSchema } from '../lib/validation'
 import { Button, Card, Field } from '../components/ui'
-import { DemoButtons } from '../components/DemoButtons'
 import { safeNext } from '../lib/navigation'
 
 export default function Login() {
@@ -68,10 +68,15 @@ export default function Login() {
           New to KashWise? <Link to={`/signup${next ? `?next=${encodeURIComponent(next)}${next.startsWith('/gigs/new') ? '&role=customer' : ''}` : ''}`} className="font-semibold text-brand-500 hover:underline">Create a free account</Link>
         </p>
       </Card>
-      <Card className="mt-4 p-5">
-        <p className="text-sm font-semibold">Just looking?</p>
-        <DemoButtons compact next={next} />
-      </Card>
+      <div className="mt-4 text-center">
+        <Link
+          to="/welcome#how-it-works"
+          className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-brand-400 transition hover:border-brand-200"
+        >
+          <PlayCircle className="size-4 text-brand-500" aria-hidden />
+          Watch how KashWise works
+        </Link>
+      </div>
     </div>
   )
 }

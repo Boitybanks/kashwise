@@ -27,7 +27,10 @@ export default function Services() {
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length === PAGE_SIZE ? pages.length : undefined),
   })
-  const services = useMemo(() => query.data?.pages.flat() ?? [], [query.data])
+  const services = useMemo(
+    () => (query.data?.pages.flat() ?? []).filter((s) => !s.is_demo),
+    [query.data],
+  )
 
   return (
     <div>
@@ -106,7 +109,6 @@ export default function Services() {
               <Store className="size-3.5 text-brand-500" aria-hidden />
               Showing <strong className="text-ink">{services.length}{query.hasNextPage ? '+' : ''}</strong> service{services.length === 1 ? '' : 's'}
             </p>
-            {services.some((x) => x.is_demo) && <span className="text-[11px] text-muted">Sample listings</span>}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {services.map((s) => <ServiceCard key={s.id} service={s} />)}

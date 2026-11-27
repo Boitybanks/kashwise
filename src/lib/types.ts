@@ -128,7 +128,7 @@ export interface DiscoverService {
 /** A payout from My Wallet. Payments are simulated: in production a licensed banking partner sends it. */
 export interface Cashout {
   id: string
-  method: 'bank' | 'cash' | 'payshap' | 'ewallet'
+  method: 'bank' | 'cash' | 'payshap' | 'ewallet' | 'ozow'
   amount_cents: number
   fee_cents: number
   destination: string

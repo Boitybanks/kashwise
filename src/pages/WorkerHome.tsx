@@ -35,7 +35,7 @@ export default function WorkerHome() {
   })
 
   const stats = statsQ.data
-  const availableGigs = useMemo(() => (gigsQ.data ?? []).slice(0, 3), [gigsQ.data])
+  const availableGigs = useMemo(() => (gigsQ.data ?? []).filter((g) => !g.is_demo).slice(0, 3), [gigsQ.data])
 
   // Clients have their own home: the gigs they posted.
   if (profile && profile.role !== 'worker') return <Navigate to="/my-gigs" replace />
