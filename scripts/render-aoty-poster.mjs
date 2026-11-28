@@ -1,3 +1,4 @@
+/* global document */
 import { chromium } from '@playwright/test'
 import { readFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'

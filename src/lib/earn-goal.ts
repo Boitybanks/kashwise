@@ -338,7 +338,7 @@ export function buildIbanksGoalRoadmap(input: {
     }
   }
 
-  let summary = ''
+  let summary: string
   if (goalMetByPlan) {
     summary =
       steps.length === 0

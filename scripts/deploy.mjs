@@ -21,14 +21,14 @@ const netlifyCmd = process.platform === 'win32'
   ? join(process.env.APPDATA, 'npm', 'netlify.cmd')
   : 'netlify'
 
-console.log('Deploying KashWise to Netlify site f8d681ec-ab68-4d61-8a9a-586be62127b7 (https://kashwise.netlify.app)...')
+console.log(`Deploying KashWise to Netlify site ${process.env.NETLIFY_SITE ?? 'kashwise1'} (https://kashwise1.netlify.app)...`)
 
 const args = [
   'deploy',
   '--prod',
   '--dir=dist',
   '--functions=netlify/functions',
-  '--site=f8d681ec-ab68-4d61-8a9a-586be62127b7',
+  `--site=${process.env.NETLIFY_SITE ?? 'kashwise1'}`,
 ]
 
 if (token) {

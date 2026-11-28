@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { DEMO_PASSWORD } from '../src/lib/demo-password'
 
 // Local, read-only product review. No gigs, accounts or reviews are created.
 test.beforeEach(async ({ baseURL }) => {
@@ -46,7 +47,9 @@ test('editorial home, carousel controls, calculator, category routing and respon
 test('posting preview explains pricing and next steps without publishing', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/login?next=%2Fgigs%2Fnew')
-  await page.getByRole('button', { name: /Try as Thandi/ }).click()
+  await page.getByLabel('Email').fill('demo.customer@sidegigs.app')
+  await page.getByLabel('Password').fill(DEMO_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/gigs\/new/)
   await page.getByLabel('What do you need done?').fill('Help refresh my courtyard garden')
   await page.getByRole('button', { name: /Gardening/ }).click()

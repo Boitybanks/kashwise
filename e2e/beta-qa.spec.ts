@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { DEMO_PASSWORD } from '../src/lib/demo-password'
 
 // Read-only beta QA at 360 px against the local `netlify dev` build. Signs in with the demo accounts and only
 // navigates: no gigs, applications, reviews or AI calls are made. Screenshots go to REVIEW_OUTPUT.
@@ -18,10 +19,15 @@ async function check(page: Page, name: string, errors: string[]) {
   await page.screenshot({ path: `${OUT}/360-${name}.png`, fullPage: true })
 }
 
+// I sign in through the normal login form, now that the "Try as" demo buttons are gone.
+const DEMO_EMAIL = { Sipho: 'demo.worker@sidegigs.app', Thandi: 'demo.customer@sidegigs.app' } as const
+
 async function demo(page: Page, who: 'Sipho' | 'Thandi') {
   await page.goto('/login')
-  await page.getByRole('button', { name: new RegExp(`Try as ${who}`) }).click()
-  await page.waitForURL(/\/(home|my-gigs)/)
+  await page.getByLabel('Email').fill(DEMO_EMAIL[who])
+  await page.getByLabel('Password').fill(DEMO_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.waitForURL(/\/(home|my-gigs|discover)/)
 }
 
 test('signed out: landing, password reset pages', async ({ page }) => {

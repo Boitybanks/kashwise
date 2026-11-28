@@ -9,7 +9,8 @@ import type { IdentityInput } from './identity'
 
 // Public demo logins (seeded, badged "Demo" everywhere). See supabase/migrations/*_demo_seed.sql.
  
-export const DEMO_PASSWORD = 'SideGigsDemo2026'
+export { DEMO_PASSWORD } from './demo-password'
+import { DEMO_PASSWORD } from './demo-password'
 // eslint-disable-next-line react-refresh/only-export-components
 export const DEMO_ACCOUNTS: Record<Role, { email: string; name: string; blurb: string }> = {
   customer: { email: 'demo.customer@sidegigs.app', name: 'Thandi', blurb: 'Post a gig and hire someone' },
