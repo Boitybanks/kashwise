@@ -2,7 +2,7 @@
 
 **Earn it. Prove it. Grow it.**
 
-**Live app:** https://kashwise.netlify.app
+**Live app:** https://kashwise1.netlify.app
 
 KashWise connects South Africans with local paid work, turns each client-confirmed job into a verified work record,
 and explains a worker's earnings with **iBanks**, an event-driven financial-intelligence engine built for irregular

@@ -9,7 +9,7 @@ const credential = (n: number): WorkCredential => ({
   worker: { id: 'w', name: 'Nomsa Žulu', area: 'Orlando', member_since: '2026-08-01T10:00:00Z', skills: [] },
   summary: { completed_gigs: n, average_rating: 4.5, reviews: n, repeat_customers: 1 }, records: Array.from({ length: n }, (_, i) => record(i)), profile_url: 'x',
 })
-const input = (n: number) => ({ credential: credential(n), summary: 'A careful painter — reliable.', skills: [{ name: 'Painting', jobs: n, evidence: [], examples: ['Paint room 1'] }], facts: [{ label: 'Jobs', value: String(n) }], headline: 'Painter', bio: 'I paint.', url: 'https://kashwise.netlify.app/w/w/cv', reference: 'PS-W-ABCD1234' })
+const input = (n: number) => ({ credential: credential(n), summary: 'A careful painter — reliable.', skills: [{ name: 'Painting', jobs: n, evidence: [], examples: ['Paint room 1'] }], facts: [{ label: 'Jobs', value: String(n) }], headline: 'Painter', bio: 'I paint.', url: 'https://kashwise1.netlify.app/w/w/cv', reference: 'PS-W-ABCD1234' })
 
 describe('CV PDF', () => {
   it('makes a real PDF, whatever characters people use', async () => {

@@ -9,7 +9,7 @@ Source of truth: `.pipeline/idea.md` (brief), `docs/architecture.md` (design), `
 
 ## Stack
 React 19 + TypeScript + Vite + Tailwind v4 (`src/`), Supabase Postgres/Auth/Storage (project ref `plzbbfoteevfpqxspyxi`),
-Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise.netlify.app (the older `sidegigs-codecraft` site is the pre-KashWise SideGigs build).
+Netlify hosting + Functions (`netlify/functions`). Live app: https://kashwise1.netlify.app (the older `sidegigs-codecraft` site is the pre-KashWise SideGigs build).
 
 ## Commands
 - `npm run dev` — Vite dev server (functions need `netlify dev`)
