@@ -6,6 +6,9 @@
   NODE_VERSION = "22"
   VITE_SUPABASE_URL = "https://plzbbfoteevfpqxspyxi.supabase.co"
   VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_G5HXYOR3EysCbSpAibCBtA_NPS3pxee"
+  # I tell the secret scanner these two are public by design (they ship in the browser bundle).
+  # Real secrets (PQ_*, GROQ_API_KEY, IBANKS_*) are still scanned.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY"
 
 [functions]
   directory = "netlify/functions"
