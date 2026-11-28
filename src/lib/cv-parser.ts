@@ -3,7 +3,7 @@
 // categories, strips private contact details (phone, email, street address, SA ID) from public fields, merges
 // skills with existing and completed-job skills, and recommends specific jobs & services the worker can do.
 import { CATEGORIES, categoryLabel, isCategory } from './categories'
-import { baselineFloor, spokenSkills, withoutContactDetails } from './dictation'
+import { baselineFloor, withoutContactDetails } from './dictation'
 import { workerNetCents } from './money'
 
 export interface CvSuggestedJob {
@@ -26,18 +26,20 @@ export interface CvProfileDraft {
   suggested_jobs: CvSuggestedJob[]
 }
 
+// I am the CV skill matcher. I only tag a skill when the CV names the trade itself, as a whole word,
+// because office words ("installation", "pipelines", "maintenance", "Engineering") once turned a software CV into a handyman.
 const CV_SKILL_PATTERNS: Record<string, RegExp> = {
-  cleaning: /\b(clean(?:er|ing)?|domestic|housekeep(?:er|ing)|laundry|ironing|janitor(?:ial)?|hygiene|sanit[iz]\w*|char\b|deep[- ]clean)/i,
-  gardening: /\b(garden(?:er|ing)?|landscap(?:e|er|ing)|lawn|grass|hedge|weed(?:ing)?|prun(?:e|ing)|tree felling|horticult\w*|groundsman|irrigation|planting)/i,
-  tutoring: /\b(tutor(?:ing)?|teach(?:er|ing)?|educator|lectur(?:er|ing)|maths?|mathematics|physical science|science|accounting|homework|grade \d+|extra lessons)/i,
-  'hair-beauty': /\b(hair(?:dresser|stylist)?|braid(?:s|ing)?|knotless|nails?|manicur\w*|pedicur\w*|make-?up|beauty|beautician|barber|salon|cosmetolog\w*|wig|dreadlock)/i,
-  repairs: /\b(repair(?:s|ing)?|handyman|plumb(?:er|ing)|tap|geyser|pipe|leak|roof(?:ing)?|electric(?:al|ian)?|wiring|carpentr\w*|carpenter|weld(?:er|ing)|til(?:e|er|ing)|maintenance|mount(?:ing)?|install(?:er|ation)?|drywall|cupboard|gate|door)/i,
-  painting: /\b(paint(?:er|ing)?|repaint\w*|waterproof(?:ing)?|plaster(?:er|ing)?|skim(?:ming)?|coat(?:ing)?|varnish)/i,
-  catering: /\b(cater(?:er|ing)?|cook(?:ing)?|chef|kitchen|bak(?:e|er|ing)|pastry|food prep\w*|meal(?:s)?|hospitality|waiter|waitress|banquet|braai)/i,
-  photography: /\b(photograph(?:er|y)?|camera|videograph\w*|portrait(?:s)?|photo edit\w*|shoot(?:s)?|lighting)/i,
-  moving: /\b(mov(?:er|ing)|move house|bakkie|deliver(?:y|ies)|driver|code 10|code 14|pdp\b|prdp\b|furniture|removal(?:s)?|courier|logistics|loader|warehouse|rubble)/i,
-  'tech-support': /\b(tech[- ]?support|it support|computer|laptop|wi-?fi|network(?:ing)?|printer|software|hardware|help[- ]?desk|pc repair|cellphone repair|troubleshoot\w*|developer|programming|web|digital|data|system(?:s)?)/i,
-  automotive: /\b(automotiv\w*|mechanic|motor|vehicle|car service|panel[- ]?beat\w*|auto electric\w*|tyre|brake(?:s)?|engine|diesel|diagnostics)/i,
+  cleaning: /\b(cleaner|cleaners|cleaning services?|house cleaning|office cleaning|domestic work(?:er)?|housekeep(?:er|ing)|laundry|ironing|janitor(?:ial)?|deep[- ]clean(?:ing)?)\b/i,
+  gardening: /\b(gardener|gardening|garden (?:maintenance|services?|work)|landscap(?:er|ers|ing)|lawn ?mowing|lawn care|hedge trimming|weeding|pruning|tree felling|horticultur\w*|groundsman|irrigation)\b/i,
+  tutoring: /\b(tutor|tutors|tutoring|tutored|teacher|teaching|educator|lecturer|extra lessons|homework help|maths tutor)\b/i,
+  'hair-beauty': /\b(hairdress(?:er|ing)|hair ?stylist|hair styling|braid(?:s|ing|er)|knotless|nail tech(?:nician)?|manicur\w*|pedicur\w*|make-?up artist|beautician|beauty therap\w*|barber(?:ing)?|salon|cosmetolog\w*|dreadlocks?)\b/i,
+  repairs: /\b(handyman|home repairs?|house repairs?|general repairs?|repairs (?:and|&) maintenance|building maintenance|property maintenance|plumb(?:er|ers|ing)|geysers?|leaking (?:taps?|pipes?|roofs?)|roof(?:er|ing)|electrician|electrical (?:work|repairs?)|house wiring|carpent(?:er|ry)|weld(?:er|ing)|til(?:er|ing)|drywall|tv mounting|gate motors?)\b/i,
+  painting: /\b(painter|painters|house painting|wall painting|repainting|waterproofing|plaster(?:er|ing)|skimming|varnishing)\b/i,
+  catering: /\b(cater(?:er|ing)|cook|cooking|chef|kitchen (?:assistant|staff|hand)|baker|bakery|baking|pastry|food prep(?:aration)?|hospitality|waiter|waitress|banquets?|braai)\b/i,
+  photography: /\b(photograph(?:er|y)|videograph(?:er|y)|camera operator|photo editing|photoshoots?|portrait photography)\b/i,
+  moving: /\b(movers?|moving house|house moves?|furniture removals?|removals company|bakkie|delivery driver|deliveries|courier|code (?:10|14)|prdp|forklift|rubble removal)\b/i,
+  'tech-support': /\b(tech(?:nical)? support|it support|help ?desk|computer repairs?|laptop repairs?|pc repairs?|cellphone repairs?|phone repairs?|it technician|network support|troubleshooting|software (?:developer|engineer(?:ing)?)|developer|programm(?:er|ing)|web develop(?:er|ment))\b/i,
+  automotive: /\b(automotive|mechanics?|motor mechanic|vehicle (?:service|servicing|repairs?)|car service|panel[- ]?beat(?:er|ing)|auto[- ]?electrician|tyre fitment|brake repairs?|diesel mechanic)\b/i,
 }
 
 interface JobTemplate {
@@ -346,7 +348,7 @@ export function formatCleanBio(
         ? skillLabels[0]
         : `${skillLabels.slice(0, -1).join(', ')} and ${skillLabels[skillLabels.length - 1]}`
     return clipText(
-      `Reliable service provider experienced in ${listText}${yearsText}${areaText}. Focused on quality workmanship, clear communication and leaving every job neat and complete.`,
+      `${fallback?.headline ? `${fallback.headline.replace(/[.!?]+$/, '')}. ` : ''}Offers ${listText}${areaText}${yearsText}.`,
       500,
     )
   }
@@ -357,7 +359,7 @@ export function formatCleanBio(
 /** Detect all KashWise skill categories mentioned in a CV text. */
 export function extractSkillsFromCvText(text: string): string[] {
   const normalized = collapseSpacedLetters(text)
-  const found = new Set<string>(spokenSkills(normalized))
+  const found = new Set<string>()
   for (const [slug, re] of Object.entries(CV_SKILL_PATTERNS)) {
     if (re.test(normalized)) found.add(slug)
   }
@@ -460,20 +462,17 @@ export function parseCvText(
 
   // Detect area if mentioned in the CV
   let detectedArea: string | null = null
-  let detectedAreaName: string | null = null
   const lower = collapseSpacedLetters(normalized).toLowerCase()
   for (const a of areas) {
     const nameRe = new RegExp(`\\b${a.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
     if (nameRe.test(lower)) {
       detectedArea = a.slug
-      detectedAreaName = a.name
       break
     }
   }
   if (!detectedArea && /\b(orlando|diepkloof|meadowlands|dobsonville|pimville|protea glen|jabulani|zola|soweto)\b/i.test(lower)) {
     if (areas.some((a) => a.slug === 'soweto') || areas.length === 0) {
       detectedArea = 'soweto'
-      detectedAreaName = 'Soweto'
     }
   }
 
@@ -573,11 +572,8 @@ export function parseCvText(
   }
 
   const stitchedBio = stitchParagraphLines(bioLines)
-  const bio = formatCleanBio(stitchedBio, {
-    skills: cvSkills.length ? cvSkills : mergedSkills,
-    headline,
-    areaName: detectedAreaName,
-  })
+  // I am the CV bio. I use the person's own sentences or nothing, so I never claim work the CV doesn't mention.
+  const bio = formatCleanBio(stitchedBio)
 
   const suggestedJobs = suggestJobsFromCv(normalized, mergedSkills)
 
@@ -911,15 +907,64 @@ async function tryInflate(bytes: Uint8Array): Promise<string | null> {
   return null
 }
 
+// I turn each byte into exactly one character. TextDecoder('latin1') is really Windows-1252 and rewrites
+// bytes 0x80–0x9F, which corrupted every compressed PDF stream before it could be inflated.
+function bytesToBinaryString(bytes: Uint8Array): string {
+  let out = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    out += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  }
+  return out
+}
+
 /** Extracts human-readable text from a PDF or plain-text CV file in the browser. */
 export async function extractTextFromCvFile(file: Blob & { name?: string; type?: string }): Promise<string> {
   const buf = await file.arrayBuffer()
   const bytes = new Uint8Array(buf)
-  const latin1 = new TextDecoder('latin1').decode(bytes)
+  const latin1 = bytesToBinaryString(bytes)
 
   if (!latin1.startsWith('%PDF-')) {
     return new TextDecoder('utf-8', { fatal: false }).decode(bytes).trim()
   }
+
+  // I try Mozilla's PDF reader first (it understands per-font glyph tables), and fall back to my own scanner.
+  const viaPdfJs = await extractWithPdfJs(bytes).catch(() => '')
+  if (viaPdfJs.length >= 20) return viaPdfJs
+  return extractWithStreamScan(latin1)
+}
+
+// I load PDF.js only when someone uploads a CV, so it never slows down the rest of the app.
+async function extractWithPdfJs(bytes: Uint8Array): Promise<string> {
+  if (typeof window === 'undefined' || typeof Worker === 'undefined') return ''
+  const pdfjs = await import('pdfjs-dist')
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- one project sees the Vite type, the other doesn't
+  // @ts-ignore Vite turns `?url` into the worker file's URL (vite/client types don't always match this package path).
+  const { default: workerUrl } = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')) as { default: string }
+  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
+  const doc = await pdfjs.getDocument({ data: bytes.slice() }).promise
+  const lines: string[] = []
+  for (let n = 1; n <= Math.min(doc.numPages, 6); n++) {
+    const page = await doc.getPage(n)
+    const content = await page.getTextContent()
+    let line = ''
+    for (const item of content.items) {
+      if (!('str' in item)) continue
+      line += item.str
+      if (item.hasEOL) {
+        lines.push(line)
+        line = ''
+      }
+    }
+    if (line) lines.push(line)
+  }
+  await doc.destroy()
+  return lines
+    .map((l) => l.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n')
+}
+
+async function extractWithStreamScan(latin1: string): Promise<string> {
 
   const decodedStreams: string[] = []
   const combinedCMap: CMapTable = new Map()
@@ -935,7 +980,7 @@ export async function extractTextFromCvFile(file: Blob & { name?: string; type?:
 
     const rawStream = m[1]
     const isFlate = /\/FlateDecode\b/.test(header)
-    let content: string | null = null
+    let content: string | null
 
     if (isFlate) {
       const streamBytes = new Uint8Array(rawStream.length)
